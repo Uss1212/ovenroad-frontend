@@ -1,0 +1,384 @@
+/* ===================================================
+   Community 스타일 (커뮤니티 페이지)
+   - 데스크탑: 게시글 목록(왼쪽) + 사이드바(오른쪽)
+   - 모바일: 사이드바 숨김, 게시글 목록만
+   =================================================== */
+
+/* --- 전체 영역 --- */
+.community {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+/* ===== 1. 페이지 헤더 ===== */
+.cm-header {
+  margin-bottom: 24px;
+}
+
+.cm-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111111;
+  margin: 0 0 8px;
+}
+
+.cm-subtitle {
+  font-size: 15px;
+  color: #888888;
+  margin: 0;
+}
+
+/* ===== 2. 카테고리 탭 바 ===== */
+.cm-tab-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 탭 그룹 */
+.cm-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+/* 각 탭 버튼 */
+.cm-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #888888;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cm-tab:hover {
+  background: #f8f8f8;
+  color: #555555;
+}
+
+/* 선택된 탭 */
+.cm-tab.active {
+  background: #111111;
+  color: #ffffff;
+  border-color: #111111;
+}
+
+.cm-tab-icon {
+  font-size: 14px;
+}
+
+.cm-tab-name {
+  font-size: 13px;
+}
+
+/* 글쓰기 버튼 */
+.cm-write-btn {
+  padding: 10px 22px;
+  border-radius: 22px;
+  border: none;
+  background: #c96442;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.cm-write-btn:hover {
+  background: #a84e30;
+}
+
+/* ===== 3. 메인 영역: 목록 + 사이드바 ===== */
+.cm-content {
+  display: flex;
+  gap: 28px;
+}
+
+/* --- 왼쪽: 게시글 목록 --- */
+.cm-post-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ===== 게시글 카드 ===== */
+.cm-post-card {
+  padding: 22px 24px;
+  border: 1px solid #eeeeee;
+  border-radius: 14px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cm-post-card:hover {
+  border-color: #dddddd;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* 카드 상단: 카테고리 + 날짜 */
+.cm-post-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+/* 카테고리 뱃지 */
+.cm-post-category {
+  padding: 3px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* 날짜 */
+.cm-post-date {
+  font-size: 12px;
+  color: #bbbbbb;
+}
+
+/* 게시글 제목 */
+.cm-post-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
+/* 내용 미리보기 (2줄 말줄임) */
+.cm-post-content {
+  font-size: 14px;
+  color: #777777;
+  margin: 0 0 12px;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 이미지 미리보기 (임시) */
+.cm-post-image {
+  width: 100%;
+  height: 160px;
+  border-radius: 10px;
+  background: #f0ede8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #aaaaaa;
+  margin-bottom: 12px;
+}
+
+/* 하단: 작성자 + 통계 */
+.cm-post-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid #f5f5f5;
+}
+
+.cm-post-author {
+  font-size: 13px;
+  color: #888888;
+  font-weight: 600;
+}
+
+/* 좋아요 / 댓글 / 조회수 */
+.cm-post-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.cm-stat {
+  font-size: 12px;
+  color: #aaaaaa;
+}
+
+/* ===== 오른쪽: 사이드바 ===== */
+.cm-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* --- 인기 게시글 박스 --- */
+.cm-popular-box {
+  padding: 20px;
+  border: 1px solid #eeeeee;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.cm-popular-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 16px;
+}
+
+.cm-popular-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 각 인기 게시글 항목 */
+.cm-popular-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 순위 번호 */
+.cm-popular-rank {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: #f3f4f6;
+  font-size: 11px;
+  font-weight: 700;
+  color: #999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 1~3위는 강조 */
+.cm-popular-rank.top3 {
+  background: #c96442;
+  color: #ffffff;
+}
+
+/* 제목 (1줄 말줄임) */
+.cm-popular-name {
+  flex: 1;
+  font-size: 13px;
+  color: #333333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 좋아요 수 */
+.cm-popular-likes {
+  font-size: 11px;
+  color: #aaaaaa;
+  flex-shrink: 0;
+}
+
+/* --- 커뮤니티 규칙 박스 --- */
+.cm-rules-box {
+  padding: 20px;
+  border: 1px solid #eeeeee;
+  border-radius: 14px;
+  background: #fafafa;
+}
+
+.cm-rules-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 12px;
+}
+
+.cm-rules-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cm-rules-list li {
+  font-size: 12px;
+  color: #888888;
+  line-height: 1.5;
+  padding-left: 12px;
+  position: relative;
+}
+
+/* 리스트 앞에 작은 점 */
+.cm-rules-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #cccccc;
+}
+
+/* ===== 반응형: 모바일 ===== */
+@media (max-width: 768px) {
+  .community {
+    padding: 24px 16px 60px;
+  }
+
+  .cm-title {
+    font-size: 22px;
+  }
+
+  /* 탭바 세로 배치 */
+  .cm-tab-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  /* 탭 가로 스크롤 */
+  .cm-tabs {
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 4px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .cm-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 글쓰기 버튼 전체 너비 */
+  .cm-write-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* 사이드바 숨김 */
+  .cm-sidebar {
+    display: none;
+  }
+
+  /* 게시글 카드 패딩 줄이기 */
+  .cm-post-card {
+    padding: 16px 18px;
+  }
+
+  .cm-post-title {
+    font-size: 15px;
+  }
+
+  .cm-post-image {
+    height: 120px;
+  }
+}

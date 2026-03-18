@@ -1,0 +1,396 @@
+/* ===================================================
+   HeroBanner 스타일
+   - 높이 약 520px의 큰 배너 영역
+   - 배경에 지도, 추천 빵집 5개 마커 표시
+   - 마커 클릭 시 왼쪽에 빵집 상세 카드가 떠있는 구조
+   - 검색바 + 뱃지 필터 버튼이 지도 위에 떠있음
+   =================================================== */
+
+/* --- 히어로 배너 전체 영역 --- */
+/* position: relative → 안에 있는 카드/검색바를 absolute로 띄우기 위한 기준점 */
+.hero-banner {
+  position: relative;
+  width: 100%;
+  height: 520px;
+  overflow: hidden;
+}
+
+/* --- 배경: 네이버 지도 영역 --- */
+/* 배너 전체를 채우는 실제 네이버 지도 */
+.hero-map-bg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== 지도 위 검색바 + 뱃지 버튼 ===== */
+/* 지도 위 왼쪽 상단에 떠있는 검색 영역 */
+.hero-search-bar {
+  position: absolute;
+  top: 20px;
+  left: 32px;
+  z-index: 10; /* 지도보다 위에 표시 */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* --- 검색 입력 영역 --- */
+/* 돋보기 아이콘 + 입력창 + 검색 버튼을 가로로 배치 */
+.hero-search-wrap {
+  flex: 1; /* 남은 공간을 검색창이 채움 */
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 4px 4px 4px 16px;
+  position: relative;
+}
+
+/* 돋보기 아이콘 */
+.hero-search-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+/* 검색 입력 필드 */
+.hero-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111111;
+  background: transparent;
+  padding: 10px 0;
+}
+
+.hero-search-input::placeholder {
+  color: #aaaaaa;
+}
+
+/* 검색 버튼 */
+.hero-search-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 24px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.hero-search-btn:hover {
+  background: #333333;
+}
+
+/* --- 인증 뱃지 필터 버튼 영역 --- */
+/* 검색창 오른쪽에 가로로 나란히 배치 */
+.hero-badge-filters {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* 각 뱃지 버튼 (기본 상태) */
+.hero-badge-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 18px;
+  border-radius: 24px;
+  border: none;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #555555;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+/* 뱃지 버튼에 마우스를 올렸을 때 */
+.hero-badge-btn:hover {
+  color: var(--badge-color, #111111);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* 뱃지 버튼이 선택된 상태 */
+.hero-badge-btn.active {
+  background: var(--badge-color, #111111);
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* 뱃지 아이콘 */
+.hero-badge-icon {
+  font-size: 14px;
+}
+
+/* 뱃지 이름 */
+.hero-badge-name {
+  font-size: 13px;
+}
+
+/* --- 빵집 상세 카드 --- */
+/* position: absolute → 지도 위에 떠있도록 배치 */
+/* 왼쪽 상단에 위치, 흰색 배경에 둥근 모서리 + 그림자 */
+.hero-place-card {
+  position: absolute;
+  top: 80px;
+  left: 32px;
+  width: 320px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  /* 카드가 나타날 때 부드럽게 슬라이드 + 페이드인 애니메이션 */
+  animation: cardSlideIn 0.3s ease-out;
+  z-index: 10;
+}
+
+/* 카드 나타나는 애니메이션 */
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- 카드 상단: 이미지 영역 --- */
+/* 2개의 이미지를 가로로 나란히 배치 */
+.place-card-images {
+  display: flex;
+  gap: 2px;
+  height: 140px;
+}
+
+/* 각 이미지 공통 스타일 */
+.place-card-img {
+  background: #cccccc;
+  overflow: hidden;
+}
+
+/* 메인 이미지: 전체 너비의 55% 차지 */
+.main-img {
+  flex: 1.2;
+}
+
+/* 서브 이미지: 전체 너비의 45% 차지 */
+.sub-img {
+  flex: 1;
+}
+
+/* 이미지 자리 표시 (임시) */
+.img-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #888888;
+  background: #f0ede8;
+}
+
+/* --- 빵집 이름과 위치 --- */
+.place-card-info {
+  padding: 12px 16px 0;
+}
+
+/* 빵집 이름: 굵고 큰 글자 */
+.place-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #111111;
+  margin: 0 0 4px;
+}
+
+/* 빵집 주소: 작고 회색 글자 */
+.place-address {
+  font-size: 12px;
+  color: #888888;
+  margin: 0 0 8px;
+}
+
+/* --- 인증 뱃지 칩 (카드 안) --- */
+/* 뱃지들을 가로로 나열 */
+.place-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+/* 각 뱃지 칩: 색상 배경의 작은 라벨 */
+.place-badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  /* 뱃지 고유 색상을 글자에, 연한 색을 배경에 적용 */
+  color: var(--badge-color, #666666);
+  background: color-mix(in srgb, var(--badge-color, #666666) 12%, white);
+  border: 1px solid color-mix(in srgb, var(--badge-color, #666666) 25%, white);
+}
+
+/* --- 별점 + 대표 메뉴 영역 --- */
+.place-card-meta {
+  padding: 8px 16px 4px;
+}
+
+/* 별점 행 */
+.place-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.place-stars {
+  font-size: 14px;
+}
+
+.place-rating-num {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111111;
+}
+
+.place-review-count {
+  font-size: 12px;
+  color: #aaaaaa;
+}
+
+/* 대표 메뉴 텍스트 */
+.place-signature {
+  font-size: 13px;
+  color: #555555;
+  margin: 0;
+}
+
+/* --- 액션 버튼 모음 --- */
+/* 버튼을 가로로 균등하게 배치 */
+.place-card-actions {
+  display: flex;
+  justify-content: space-around;
+  padding: 12px 8px 14px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 8px;
+}
+
+/* 각 액션 버튼: 아이콘 + 텍스트를 세로로 */
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+}
+
+/* 버튼 아래 텍스트 */
+.action-btn span {
+  font-size: 10px;
+  color: #888888;
+  font-family: inherit;
+}
+
+/* 버튼 활성화(눌린) 상태 */
+.action-btn.active span {
+  color: #111111;
+  font-weight: 600;
+}
+
+/* ===== 안내 문구 (마커를 클릭하기 전) ===== */
+/* 왼쪽 하단에 반투명 배경으로 안내 텍스트 표시 */
+.hero-guide-msg {
+  position: absolute;
+  bottom: 20px;
+  left: 32px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  /* 나타날 때 부드럽게 */
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.hero-guide-icon {
+  font-size: 20px;
+}
+
+.hero-guide-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333333;
+  margin: 0;
+}
+
+/* ===== 반응형: 작은 화면 ===== */
+@media (max-width: 900px) {
+  /* 모바일: 검색바를 가운데 배치 */
+  .hero-search-bar {
+    left: 24px;
+    right: 24px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  /* 뱃지 버튼들은 가운데 정렬 */
+  .hero-badge-filters {
+    justify-content: center;
+  }
+
+  /* 모바일: 카드를 하단에 전체 너비로 */
+  .hero-place-card {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-radius: 16px 16px 0 0;
+  }
+
+  /* 안내 문구도 가운데로 */
+  .hero-guide-msg {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 600px) {
+  /* 더 작은 화면: 뱃지 버튼 작게 */
+  .hero-badge-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}

@@ -1,0 +1,394 @@
+/* ===================================================
+   CommunityWrite 스타일 (커뮤니티 글쓰기 페이지)
+   - 카테고리 → 제목 → 내용 → 이미지 → 버튼 세로 배치
+   =================================================== */
+
+/* --- 전체 영역 --- */
+.community-write {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 24px 24px 100px;
+}
+
+/* ===== 1. 상단 네비게이션 바 ===== */
+.cw-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 뒤로가기 버튼 */
+.cw-back-btn {
+  padding: 8px 16px;
+  border: 1px solid #eeeeee;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #666666;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cw-back-btn:hover {
+  border-color: #111111;
+  color: #111111;
+}
+
+/* 페이지 제목 */
+.cw-page-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #111111;
+  margin: 0;
+}
+
+/* 가운데 정렬용 빈 공간 */
+.cw-top-spacer {
+  width: 90px;
+}
+
+/* ===== 공통: 입력 섹션 ===== */
+.cw-section {
+  margin-bottom: 28px;
+}
+
+/* 라벨 */
+.cw-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111111;
+  margin-bottom: 8px;
+}
+
+/* 필수 표시 (*) 빨간색 */
+.cw-required {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+/* 글자 수 카운터 */
+.cw-char-count {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 400;
+  color: #bbbbbb;
+}
+
+/* 힌트 텍스트 (라벨 아래 설명) */
+.cw-hint {
+  font-size: 12px;
+  color: #aaaaaa;
+  margin: 0 0 10px;
+}
+
+/* ===== 2. 카테고리 선택 ===== */
+.cw-category-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 각 카테고리 버튼 */
+.cw-category-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: 1.5px solid #eeeeee;
+  border-radius: 10px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.cw-category-btn:hover {
+  border-color: #cccccc;
+  background: #fafafa;
+}
+
+/* 선택된 카테고리 */
+.cw-category-btn.active {
+  font-weight: 600;
+}
+
+/* 카테고리 아이콘 */
+.cw-category-icon {
+  font-size: 16px;
+}
+
+/* 카테고리 이름 */
+.cw-category-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: inherit;
+}
+
+/* 카테고리 설명 */
+.cw-category-desc {
+  font-size: 11px;
+  color: #aaaaaa;
+}
+
+.cw-category-btn.active .cw-category-desc {
+  color: inherit;
+  opacity: 0.7;
+}
+
+/* ===== 3. 제목 입력 ===== */
+.cw-title-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid #eeeeee;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #111111;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.cw-title-input:focus {
+  border-color: #111111;
+}
+
+.cw-title-input::placeholder {
+  color: #cccccc;
+  font-weight: 400;
+}
+
+/* ===== 4. 본문 입력 ===== */
+.cw-content-textarea {
+  width: 100%;
+  min-height: 280px;
+  padding: 16px;
+  border: 1.5px solid #eeeeee;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  color: #111111;
+  line-height: 1.7;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.cw-content-textarea:focus {
+  border-color: #111111;
+}
+
+.cw-content-textarea::placeholder {
+  color: #cccccc;
+}
+
+/* ===== 5. 이미지 첨부 ===== */
+.cw-image-list {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* 각 이미지 미리보기 */
+.cw-image-item {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #eeeeee;
+}
+
+/* 미리보기 이미지 */
+.cw-image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* X 삭제 버튼 (이미지 우상단) */
+.cw-image-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.cw-image-remove:hover {
+  background: rgba(239, 68, 68, 0.85);
+}
+
+/* "대표" 뱃지 (첫 번째 이미지에만) */
+.cw-image-main-badge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 3px 0;
+  background: rgba(201, 100, 66, 0.85);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* 이미지 추가 버튼 (점선 박스) */
+.cw-image-add {
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+  border: 1.5px dashed #dddddd;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cw-image-add:hover {
+  border-color: #999999;
+  background: #f5f5f5;
+}
+
+/* + 아이콘 */
+.cw-image-add-icon {
+  font-size: 24px;
+  color: #bbbbbb;
+  line-height: 1;
+}
+
+/* "사진 추가" 텍스트 */
+.cw-image-add-text {
+  font-size: 11px;
+  color: #aaaaaa;
+}
+
+/* ===== 6. 하단 버튼 영역 ===== */
+.cw-bottom-bar {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* 취소 버튼 */
+.cw-cancel-btn {
+  padding: 12px 32px;
+  border: 1px solid #dddddd;
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #666666;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cw-cancel-btn:hover {
+  border-color: #111111;
+  color: #111111;
+}
+
+/* 등록 버튼 */
+.cw-submit-btn {
+  padding: 12px 40px;
+  border: none;
+  border-radius: 10px;
+  background: #c96442;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cw-submit-btn:hover {
+  background: #b5573a;
+}
+
+/* 등록 중 비활성화 */
+.cw-submit-btn:disabled {
+  background: #dddddd;
+  cursor: not-allowed;
+}
+
+/* ===== 반응형: 모바일 ===== */
+@media (max-width: 768px) {
+  .community-write {
+    padding: 16px 16px 80px;
+  }
+
+  /* 상단바 간소화 */
+  .cw-top-spacer {
+    display: none;
+  }
+
+  .cw-page-title {
+    font-size: 17px;
+  }
+
+  /* 카테고리 버튼에서 설명 숨기기 (공간 절약) */
+  .cw-category-desc {
+    display: none;
+  }
+
+  /* 카테고리 버튼 크기 줄이기 */
+  .cw-category-btn {
+    padding: 8px 12px;
+  }
+
+  /* 제목 글씨 줄이기 */
+  .cw-title-input {
+    font-size: 15px;
+  }
+
+  /* 본문 높이 줄이기 */
+  .cw-content-textarea {
+    min-height: 200px;
+  }
+
+  /* 이미지 미리보기 크기 줄이기 */
+  .cw-image-item,
+  .cw-image-add {
+    width: 80px;
+    height: 80px;
+  }
+
+  /* 하단 버튼 전체 너비 */
+  .cw-bottom-bar {
+    flex-direction: column;
+  }
+
+  .cw-cancel-btn,
+  .cw-submit-btn {
+    width: 100%;
+    text-align: center;
+  }
+}

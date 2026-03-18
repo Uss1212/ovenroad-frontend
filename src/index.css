@@ -1,0 +1,28 @@
+/* ===================================================
+   전역(Global) 스타일
+   - 모든 페이지에 공통으로 적용되는 기본 스타일
+   - 폰트, 여백 초기화, 기본 색상 등
+   =================================================== */
+
+/* 모든 요소의 기본 여백과 패딩을 없애고, box-sizing 통일 */
+/* box-sizing: border-box → 패딩과 테두리를 너비에 포함시킴 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* body 태그: 페이지 전체의 기본 설정 */
+/* font-family: 사용할 글꼴 (Pretendard 우선, 없으면 시스템 기본 글꼴) */
+body {
+  font-family: 'Pretendard Variable', 'Pretendard', -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #ffffff;
+  color: #111111;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* #root: React 앱이 렌더링되는 최상위 요소 */
+#root {
+  width: 100%;
+}

@@ -1,0 +1,448 @@
+/* ===================================================
+   CourseList 스타일 (추천코스 목록 페이지)
+   - 카드 그리드: 2열 배치
+   - 상단 필터/정렬 바
+   - 모바일: 1열 배치
+   =================================================== */
+
+/* --- 전체 영역 --- */
+.course-list {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+/* ===== 1. 페이지 헤더 ===== */
+.cl-header {
+  margin-bottom: 28px;
+}
+
+.cl-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111111;
+  margin: 0 0 8px;
+}
+
+.cl-subtitle {
+  font-size: 15px;
+  color: #888888;
+  margin: 0;
+}
+
+/* ===== 2. 오늘의 추천코스 ===== */
+.cl-today-section {
+  margin-bottom: 32px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid #f0f0f0;
+  /* 순위 뱃지가 밖으로 나가도 잘리지 않게 */
+  overflow: visible;
+}
+
+/* 섹션 제목 */
+.cl-today-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #111111;
+  margin: 0 0 16px;
+}
+
+/* 카드 5개를 가로로 나열 + 스크롤 바 표시 */
+.cl-today-list {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  /* 순위 뱃지가 top: -8px, left: -8px 으로 튀어나오므로 */
+  /* 잘리지 않도록 위쪽과 왼쪽에 여백을 줌 */
+  padding: 10px 0 12px 10px;
+}
+
+/* 스크롤 바 스타일 (얇고 둥글게) */
+.cl-today-list::-webkit-scrollbar {
+  height: 6px;
+}
+
+.cl-today-list::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 3px;
+}
+
+.cl-today-list::-webkit-scrollbar-thumb {
+  background: #cccccc;
+  border-radius: 3px;
+}
+
+.cl-today-list::-webkit-scrollbar-thumb:hover {
+  background: #aaaaaa;
+}
+
+/* 각 추천 카드 */
+.cl-today-card {
+  position: relative;
+  min-width: 320px;
+  flex: 1;
+  display: flex;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid #eeeeee;
+  border-radius: 14px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cl-today-card:hover {
+  border-color: #c96442;
+  box-shadow: 0 4px 16px rgba(201, 100, 66, 0.1);
+}
+
+/* 순위 뱃지 (왼쪽 상단) */
+.cl-today-rank {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  background: #c96442;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 썸네일 (정사각형) */
+.cl-today-thumb {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f0ede8, #e2dfd8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+/* 코스 정보 영역 */
+.cl-today-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* 지역 태그 */
+.cl-today-region {
+  font-size: 11px;
+  font-weight: 600;
+  color: #c96442;
+}
+
+/* 코스 제목 */
+.cl-today-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 코스 설명 (1줄) */
+.cl-today-desc {
+  font-size: 12px;
+  color: #999999;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 좋아요/스크랩/별점 */
+.cl-today-stats {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  color: #888888;
+  margin-top: 2px;
+}
+
+/* ===== 3. 필터 + 정렬 바 ===== */
+.cl-toolbar {
+  margin-bottom: 24px;
+}
+
+/* --- 지역 필터 태그들 --- */
+.cl-region-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/* 각 지역 태그 버튼 */
+.cl-region-tag {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1px solid #e0e0e0;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #666666;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cl-region-tag:hover {
+  border-color: #111111;
+  color: #111111;
+}
+
+/* 선택된 지역 태그 */
+.cl-region-tag.active {
+  background: #111111;
+  color: #ffffff;
+  border-color: #111111;
+}
+
+/* --- 정렬 + 결과 개수 행 --- */
+.cl-sort-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 결과 개수 텍스트 */
+.cl-result-count {
+  font-size: 14px;
+  color: #888888;
+}
+
+.cl-result-count strong {
+  color: #111111;
+  font-weight: 700;
+}
+
+/* 정렬 버튼 그룹 */
+.cl-sort-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+/* 각 정렬 버튼 */
+.cl-sort-btn {
+  padding: 6px 14px;
+  border-radius: 16px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #888888;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cl-sort-btn:hover {
+  color: #111111;
+}
+
+/* 선택된 정렬 버튼 */
+.cl-sort-btn.active {
+  background: #f3f4f6;
+  color: #111111;
+  font-weight: 700;
+}
+
+/* ===== 3. 코스 카드 그리드 ===== */
+.cl-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+/* --- 각 코스 카드 --- */
+.cl-card {
+  border: 1px solid #eeeeee;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cl-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+/* 카드 썸네일 (상단 이미지 영역) */
+.cl-card-thumb {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(135deg, #f0ede8, #e2dfd8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+}
+
+/* 장소 개수 뱃지 (썸네일 우상단) */
+.cl-card-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 카드 하단 정보 영역 */
+.cl-card-body {
+  padding: 18px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 지역 태그 (카드 안) */
+.cl-card-region {
+  display: inline-block;
+  width: fit-content;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: #f3f4f6;
+  font-size: 11px;
+  font-weight: 600;
+  color: #666666;
+}
+
+/* 코스 제목 */
+.cl-card-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0;
+}
+
+/* 코스 설명 (1줄 말줄임) */
+.cl-card-desc {
+  font-size: 13px;
+  color: #888888;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 태그 칩들 */
+.cl-card-tags {
+  display: flex;
+  gap: 8px;
+}
+
+.cl-card-tag {
+  font-size: 12px;
+  color: #c96442;
+  font-weight: 500;
+}
+
+/* 거리 + 소요시간 */
+.cl-card-meta {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: #999999;
+}
+
+/* 하단: 작성자 + 통계 */
+.cl-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid #f5f5f5;
+  margin-top: 4px;
+}
+
+.cl-card-author {
+  font-size: 12px;
+  color: #aaaaaa;
+}
+
+/* 좋아요/스크랩/별점 */
+.cl-card-stats {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  color: #888888;
+}
+
+/* ===== 4. 더보기 버튼 ===== */
+.cl-more-wrap {
+  text-align: center;
+}
+
+.cl-more-btn {
+  padding: 14px 48px;
+  border-radius: 12px;
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #555555;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cl-more-btn:hover {
+  border-color: #111111;
+  color: #111111;
+}
+
+/* ===== 반응형: 모바일 ===== */
+@media (max-width: 768px) {
+  .course-list {
+    padding: 24px 16px 60px;
+  }
+
+  .cl-title {
+    font-size: 22px;
+  }
+
+  /* 카드 1열 배치 */
+  .cl-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* 정렬 행 세로 배치 */
+  .cl-sort-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .cl-card-thumb {
+    height: 160px;
+  }
+
+  /* 오늘의 추천코스 카드 최소 너비 줄이기 */
+  .cl-today-card {
+    min-width: 280px;
+  }
+}

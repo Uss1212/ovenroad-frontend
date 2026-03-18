@@ -1,0 +1,249 @@
+/* ===================================================
+   NoticeList 스타일 (공지사항 목록 페이지)
+   - 깔끔한 리스트형 레이아웃
+   - 카테고리 탭 필터
+   - 고정 공지 하이라이트
+   - 모바일: 카드형으로 전환
+   =================================================== */
+
+/* --- 전체 영역 --- */
+.notice-list-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+/* ===== 1. 페이지 헤더 ===== */
+.nl-header {
+  margin-bottom: 28px;
+}
+
+/* 페이지 제목 */
+.nl-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111111;
+  margin: 0 0 8px;
+}
+
+/* 부제목 설명 */
+.nl-subtitle {
+  font-size: 15px;
+  color: #888888;
+  margin: 0;
+}
+
+/* ===== 2. 카테고리 탭 ===== */
+.nl-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  /* 모바일에서 가로 스크롤 가능 */
+  overflow-x: auto;
+}
+
+/* 각 탭 버튼 */
+.nl-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 1px solid #e0e0e0;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #666666;
+  cursor: pointer;
+  transition: all 0.15s;
+  /* 글자가 줄바꿈되지 않게 */
+  white-space: nowrap;
+}
+
+.nl-tab:hover {
+  border-color: #111111;
+  color: #111111;
+}
+
+/* 선택된 탭 */
+.nl-tab.active {
+  background: #111111;
+  color: #ffffff;
+  border-color: #111111;
+}
+
+/* 탭 아이콘 */
+.nl-tab-icon {
+  font-size: 14px;
+}
+
+/* ===== 3. 공지사항 목록 ===== */
+.nl-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- 각 공지 항목 --- */
+.nl-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 16px;
+  border-bottom: 1px solid #f5f5f5;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.nl-item:hover {
+  background: #fafafa;
+}
+
+/* --- 고정 공지 (배경색으로 강조) --- */
+.nl-item-pinned {
+  background: #fef9f6;
+  border-left: 3px solid #c96442;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.nl-item-pinned:hover {
+  background: #fdf3ed;
+}
+
+/* --- 왼쪽: 고정 아이콘 + 카테고리 --- */
+.nl-item-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+/* 고정 표시 */
+.nl-pin {
+  font-size: 14px;
+}
+
+/* 카테고리 뱃지 */
+.nl-category {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* --- 가운데: 제목 + 미리보기 --- */
+.nl-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 공지 제목 */
+.nl-item-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 6px;
+  /* 1줄 말줄임 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 고정 공지 제목은 더 진하게 */
+.nl-item-pinned .nl-item-title {
+  color: #c96442;
+}
+
+/* 미리보기 (1줄 말줄임) */
+.nl-item-preview {
+  font-size: 13px;
+  color: #999999;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- 오른쪽: 날짜 + 조회수 --- */
+.nl-item-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* 날짜 */
+.nl-item-date {
+  font-size: 12px;
+  color: #bbbbbb;
+}
+
+/* 조회수 */
+.nl-item-views {
+  font-size: 11px;
+  color: #cccccc;
+}
+
+/* --- 목록이 비어있을 때 --- */
+.nl-empty {
+  text-align: center;
+  padding: 60px 0;
+}
+
+.nl-empty p {
+  font-size: 15px;
+  color: #bbbbbb;
+  margin: 0;
+}
+
+/* ===== 반응형: 모바일 ===== */
+@media (max-width: 768px) {
+  .notice-list-page {
+    padding: 24px 16px 60px;
+  }
+
+  .nl-title {
+    font-size: 22px;
+  }
+
+  /* 탭 더 작게 */
+  .nl-tab {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+
+  /* 공지 항목을 세로로 배치 (카드형) */
+  .nl-item {
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px 14px;
+  }
+
+  /* 왼쪽 영역 */
+  .nl-item-left {
+    min-width: auto;
+  }
+
+  /* 제목 줄바꿈 허용 */
+  .nl-item-title {
+    white-space: normal;
+    /* 2줄까지만 */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  /* 오른쪽을 가로로 배치 */
+  .nl-item-right {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+}

@@ -1,0 +1,579 @@
+/* ===================================================
+   CourseDetail 스타일 (코스 상세 페이지)
+   - 히어로 이미지 → 코스 정보 → 지도 → 장소 목록
+     → 코스 소개 → 댓글 → 하단 고정바
+   =================================================== */
+
+/* --- 코스 상세 전체 --- */
+/* 하단 고정바 높이(68px)만큼 아래 여백 추가 */
+.course-detail {
+  max-width: 860px;
+  margin: 0 auto;
+  padding-bottom: 68px;
+}
+
+/* ===== 1. 히어로 이미지 ===== */
+/* 코스 대표 이미지가 크게 보이는 영역 */
+.cd-hero {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  background: #e8e4df;
+  overflow: hidden;
+}
+
+/* 이미지 자리 표시 (임시) */
+.cd-hero-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #999999;
+  background: linear-gradient(135deg, #f0ede8, #e2dfd8);
+}
+
+/* ← 뒤로가기 버튼 */
+/* 히어로 이미지 위에 떠있는 둥근 버튼 */
+.cd-back-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.cd-back-btn:hover {
+  background: #ffffff;
+}
+
+/* ===== 메인 콘텐츠 영역 ===== */
+/* 히어로 이미지 아래 모든 섹션을 감쌈 */
+.cd-content {
+  padding: 0 100px;
+}
+
+/* ===== 2. 코스 정보 ===== */
+.cd-info {
+  padding: 24px 0 28px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 위치 + 날짜 */
+.cd-info-meta {
+  font-size: 12px;
+  color: #888888;
+  margin: 0 0 8px;
+}
+
+/* 코스 제목 */
+.cd-info-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 12px;
+}
+
+/* 작성자 영역 */
+.cd-info-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+/* 작성자 프로필 아바타 (원형) */
+.cd-author-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #4a90d9;
+}
+
+/* 작성자 이름 */
+.cd-info-author span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #333333;
+}
+
+/* 태그 칩들 (소요시간, 거리, 장소 수) */
+.cd-info-chips {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+/* 각 태그 칩 */
+.cd-chip {
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: #f3f4f6;
+  font-size: 12px;
+  color: #555555;
+}
+
+/* 좋아요 + 저장 버튼 영역 */
+.cd-info-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* 좋아요/저장 버튼 */
+.cd-action-btn {
+  padding: 10px 24px;
+  border-radius: 22px;
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  color: #333333;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cd-action-btn:hover {
+  border-color: #111111;
+}
+
+/* 좋아요/저장 활성화 상태 */
+.cd-action-btn.active {
+  background: #111111;
+  color: #ffffff;
+  border-color: #111111;
+}
+
+/* ===== 3. 코스 지도 ===== */
+.cd-map {
+  padding: 28px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 섹션 제목 (공통) */
+.cd-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 12px;
+}
+
+/* 지도 영역 */
+.cd-map-area {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f0ede8, #e2dfd8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #999999;
+  overflow: hidden;
+}
+
+/* 지도 위 마커 */
+.cd-map-marker {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== 4. 코스 장소 목록 ===== */
+.cd-places {
+  padding: 28px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 각 장소 항목 */
+/* 번호 + 이미지 + 정보를 가로로 나열 */
+.cd-place-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+/* 장소 사이 구분선 */
+.cd-place-item + .cd-place-item {
+  border-top: 1px solid #f5f5f5;
+}
+
+/* 순서 번호 (원형 뱃지) */
+.cd-place-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 장소 이미지 */
+.cd-place-img {
+  width: 120px;
+  height: 80px;
+  border-radius: 12px;
+  background: #f0ede8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+/* 장소 텍스트 정보 */
+.cd-place-info {
+  flex: 1;
+}
+
+/* 장소 이름 */
+.cd-place-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 4px;
+}
+
+/* 장소 주소 */
+.cd-place-address {
+  font-size: 11px;
+  color: #888888;
+  margin: 0 0 4px;
+}
+
+/* 별점 */
+.cd-place-rating {
+  font-size: 11px;
+  color: #888888;
+  margin: 0 0 4px;
+}
+
+/* 시그니처 메뉴 */
+.cd-place-signature {
+  font-size: 11px;
+  color: #888888;
+  margin: 0;
+}
+
+/* ===== 5. 코스 소개 ===== */
+.cd-description {
+  padding: 28px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 소개 텍스트 */
+.cd-description-text {
+  font-size: 14px;
+  color: #333333;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ===== 6. 댓글 ===== */
+.cd-comments {
+  padding: 28px 0 40px;
+}
+
+/* --- 댓글 입력 영역 --- */
+.cd-comment-input-wrap {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* 내 아바타 */
+.cd-comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  background: #4a90d9;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 댓글 입력 박스 */
+.cd-comment-input-box {
+  flex: 1;
+}
+
+/* 댓글 텍스트 입력 */
+.cd-comment-input {
+  width: 100%;
+  height: 56px;
+  padding: 12px;
+  border: 1px solid #dddddd;
+  border-radius: 12px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #111111;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.cd-comment-input:focus {
+  border-color: #111111;
+}
+
+.cd-comment-input::placeholder {
+  color: #aaaaaa;
+}
+
+/* 댓글 입력 아래 버튼들 (사진 + 등록) */
+.cd-comment-input-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* 사진 버튼 */
+.cd-comment-photo-btn {
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  font-size: 12px;
+  font-family: inherit;
+  color: #555555;
+  cursor: pointer;
+}
+
+/* 등록 버튼 */
+.cd-comment-submit-btn {
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: none;
+  background: #111111;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* --- 댓글 항목 --- */
+.cd-comment-item {
+  display: flex;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+
+/* 댓글 작성자 아바타 */
+.cd-comment-item-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  background: #e8e4df;
+  font-size: 11px;
+  font-weight: 700;
+  color: #555555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 댓글 본문 */
+.cd-comment-item-body {
+  flex: 1;
+}
+
+/* 댓글 작성자 + 날짜 */
+.cd-comment-item-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.cd-comment-author {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111111;
+}
+
+.cd-comment-date {
+  font-size: 13px;
+  color: #aaaaaa;
+}
+
+/* 댓글 텍스트 */
+.cd-comment-text {
+  font-size: 13px;
+  color: #333333;
+  margin: 0 0 6px;
+  line-height: 1.5;
+}
+
+/* --- 답글 버튼 --- */
+.cd-comment-reply-btn {
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-family: inherit;
+  color: #999999;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cd-comment-reply-btn:hover {
+  background: #f3f4f6;
+  color: #666666;
+}
+
+/* 답글 버튼 활성화 (답글 입력창 열린 상태) */
+.cd-comment-reply-btn.active {
+  color: #c96442;
+  background: #fef5f1;
+}
+
+/* --- 댓글 그룹 (댓글 + 답글들을 묶음) --- */
+.cd-comment-group {
+  padding: 0;
+}
+
+.cd-comment-group + .cd-comment-group {
+  border-top: 1px solid #f5f5f5;
+}
+
+/* --- 답글 목록 --- */
+/* 들여쓰기 + 왼쪽 선으로 답글임을 표시 */
+.cd-reply-list {
+  margin-left: 44px;
+  padding-left: 0;
+}
+
+/* 각 답글 항목 */
+.cd-reply-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.cd-reply-item + .cd-reply-item {
+  border-top: 1px solid #f9f9f9;
+}
+
+/* --- 답글 입력창 --- */
+.cd-reply-input-wrap {
+  display: flex;
+  gap: 12px;
+  margin-left: 44px;
+  padding: 12px 0 12px 16px;
+  /* 답글 입력창 열릴 때 슬라이드 애니메이션 */
+  animation: replySlideIn 0.2s ease-out;
+}
+
+/* 답글 입력 텍스트박스 (댓글보다 작게) */
+.cd-reply-input {
+  height: 44px !important;
+  font-size: 12px !important;
+}
+
+/* 취소 버튼 */
+.cd-reply-cancel-btn {
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  font-size: 12px;
+  font-family: inherit;
+  color: #888888;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cd-reply-cancel-btn:hover {
+  border-color: #999999;
+  color: #555555;
+}
+
+/* 답글 입력창 슬라이드 애니메이션 */
+@keyframes replySlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== 7. 하단 고정바 ===== */
+/* 스크롤해도 항상 화면 아래에 고정 */
+.cd-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  background: #ffffff;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  z-index: 50;
+}
+
+/* 좋아요 수 + 저장 수 */
+.cd-bottom-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #333333;
+}
+
+/* "이 코스로 탐방하기" CTA 버튼 */
+.cd-bottom-cta {
+  padding: 10px 40px;
+  border-radius: 22px;
+  border: none;
+  background: #111111;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cd-bottom-cta:hover {
+  background: #333333;
+}

@@ -1,0 +1,153 @@
+/* ===================================================
+   FindAccount 스타일 (아이디/비밀번호 찾기)
+   - 로그인/회원가입과 비슷한 가운데 카드 구조
+   - 상단에 탭 2개 (아이디 찾기 / 비밀번호 찾기)
+   - 선택된 탭 아래에 굵은 밑줄 표시
+   =================================================== */
+
+/* --- 찾기 영역 전체 --- */
+.find-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 52px);
+  background: #f8f8f8;
+}
+
+/* --- 찾기 카드 --- */
+.find-card {
+  width: 500px;
+  padding: 50px 40px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* --- 제목 --- */
+.find-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111111;
+  text-align: center;
+  margin: 0 0 32px;
+}
+
+/* --- 탭 메뉴 영역 --- */
+/* 2개의 탭을 가로로 나란히 배치 */
+/* 아래에 얇은 구분선이 깔려있고, 선택된 탭은 굵은 밑줄 */
+.find-tabs {
+  display: flex;
+  border-bottom: 1px solid #eeeeee;
+  margin-bottom: 32px;
+}
+
+/* --- 각 탭 버튼 --- */
+.find-tab {
+  flex: 1;
+  padding: 12px 0;
+  font-size: 15px;
+  font-weight: 400;
+  color: #aaaaaa;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+/* 선택된 탭: 글자가 진해지고, 아래에 검정 밑줄 */
+.find-tab.active {
+  font-weight: 700;
+  color: #111111;
+  border-bottom-color: #111111;
+}
+
+/* --- 폼 영역 --- */
+.find-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* --- 입력 필드 그룹 --- */
+.find-input-group {
+  padding: 8px 0;
+}
+
+/* --- 입력 + 버튼을 가로로 나란히 --- */
+.find-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+/* --- 입력 필드 (밑줄 스타일) --- */
+.find-input {
+  width: 100%;
+  padding: 12px 0;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111111;
+  border: none;
+  border-bottom: 1px solid #dddddd;
+  outline: none;
+  background: transparent;
+  transition: border-color 0.2s;
+}
+
+.find-input:focus {
+  border-bottom-color: #111111;
+}
+
+.find-input::placeholder {
+  color: #aaaaaa;
+}
+
+/* --- 인증번호 전송 / 확인 버튼 (옆에 붙는 작은 버튼) --- */
+.find-side-btn {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #555555;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.find-side-btn:hover {
+  background: #f5f5f5;
+  border-color: #111111;
+}
+
+/* 전송완료/인증완료 상태 */
+.find-side-btn.done {
+  background: #111111;
+  color: #ffffff;
+  border-color: #111111;
+}
+
+/* --- 제출 버튼 (아이디 찾기 / 비밀번호 찾기) --- */
+.find-submit-btn {
+  width: 100%;
+  padding: 16px;
+  margin-top: 32px;
+  border: none;
+  border-radius: 28px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.find-submit-btn:hover {
+  background: #333333;
+}

@@ -1,0 +1,565 @@
+/* ===================================================
+   MyPage 스타일 (마이페이지)
+   - 프로필 카드 + 탭 메뉴 + 탭별 내용
+   =================================================== */
+
+/* --- 마이페이지 전체 --- */
+.mypage {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 40px;
+}
+
+/* --- 페이지 제목 --- */
+.mypage-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 24px;
+}
+
+/* ===== 프로필 카드 ===== */
+/* 아바타 + 텍스트를 가로로 배치 */
+.mypage-profile {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 28px;
+  border: 1px solid #eeeeee;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+/* 프로필 사진 (원형) */
+.mypage-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 40px;
+  background: #4a90d9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 아바타 안 이니셜 글자 */
+.mypage-avatar span {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* 프로필 텍스트 영역 */
+.mypage-profile-info {
+  flex: 1;
+}
+
+/* 사용자 이름 */
+.mypage-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 4px;
+}
+
+/* 이메일 */
+.mypage-email {
+  font-size: 13px;
+  color: #888888;
+  margin: 0 0 6px;
+}
+
+/* 활동 통계 */
+.mypage-stats {
+  font-size: 12px;
+  color: #888888;
+  margin: 0;
+}
+
+/* ===== 탭 메뉴 ===== */
+/* 6개 탭을 가로로 나열 */
+.mypage-tabs {
+  display: flex;
+  border: 1px solid #eeeeee;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+/* 각 탭 버튼 */
+.mypage-tab {
+  flex: 1;
+  padding: 14px 0;
+  font-size: 14px;
+  font-weight: 400;
+  color: #888888;
+  background: #ffffff;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+/* 선택된 탭 */
+.mypage-tab.active {
+  font-weight: 700;
+  color: #111111;
+  background: #f8f8f8;
+}
+
+/* 탭에 마우스 올리면 */
+.mypage-tab:hover {
+  background: #fafafa;
+}
+
+/* ===== 탭 내용 영역 ===== */
+.mypage-content {
+  border: 1px solid #eeeeee;
+  border-radius: 12px;
+  min-height: 400px;
+}
+
+/* --- 회원정보 수정 섹션 --- */
+.mypage-info-section {
+  padding: 28px 32px;
+}
+
+/* 섹션 제목 */
+.mypage-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 24px;
+}
+
+/* 입력 필드 그룹 */
+.mypage-field {
+  margin-bottom: 20px;
+}
+
+/* 필드 라벨 */
+.mypage-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #333333;
+  margin-bottom: 8px;
+}
+
+/* 입력 필드 */
+.mypage-input {
+  width: 540px;
+  padding: 12px 14px;
+  border: 1px solid #dddddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111111;
+  outline: none;
+  transition: border-color 0.2s;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.mypage-input:focus {
+  border-color: #111111;
+}
+
+.mypage-input::placeholder {
+  color: #aaaaaa;
+}
+
+/* 저장하기 버튼 */
+.mypage-save-btn {
+  width: 540px;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 12px;
+}
+
+.mypage-save-btn:hover {
+  background: #333333;
+}
+
+/* 회원 탈퇴 링크 */
+.mypage-delete-account {
+  font-size: 13px;
+  color: #aaaaaa;
+  margin-top: 24px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.mypage-delete-account:hover {
+  color: #ff4444;
+}
+
+/* --- 구분선 --- */
+.mypage-divider {
+  border: none;
+  border-top: 1px solid #eeeeee;
+  margin: 28px 0;
+}
+
+/* --- 성공/에러 메시지 --- */
+.mypage-message {
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+.mypage-message.success {
+  color: #22c55e;
+}
+
+.mypage-message.error {
+  color: #ef4444;
+}
+
+/* --- 회원탈퇴 확인 섹션 --- */
+.mypage-delete-section {
+  margin-top: 8px;
+}
+
+.mypage-delete-warning {
+  font-size: 14px;
+  color: #ef4444;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.mypage-delete-btns {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* 탈퇴하기 버튼 (빨간색) */
+.mypage-delete-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.mypage-delete-btn:hover {
+  background: #dc2626;
+}
+
+/* 취소 버튼 */
+.mypage-cancel-btn {
+  padding: 10px 24px;
+  border: 1px solid #dddddd;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #666666;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.mypage-cancel-btn:hover {
+  background: #f9f9f9;
+}
+
+/* ===== 탭 내용 공통 섹션 ===== */
+/* 각 탭(내 코스, 내 리뷰, 좋아요 등)의 내용 영역 */
+.mypage-tab-section {
+  padding: 20px 24px;
+}
+
+/* ===== 카드 목록 (내 코스, 내 리뷰, 좋아요 등 공통) ===== */
+/* 카드들을 세로로 나열 */
+.my-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 각 카드: 썸네일 + 정보 + 액션 버튼을 가로로 배치 */
+.my-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+/* 카드에 마우스 올리면 살짝 강조 */
+.my-card:hover {
+  background: #fafafa;
+  border-color: #e0e0e0;
+}
+
+/* 카드 왼쪽: 썸네일 (원형 아이콘) */
+.my-card-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: #f0ede8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+/* 질문 탭 썸네일: 보라색 배경 */
+.my-card-thumb-question {
+  background: #f0edf8;
+}
+
+/* 카드 가운데: 정보 영역 */
+.my-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* 카드 제목 (빵집 이름, 코스 제목, 질문 제목 등) */
+.my-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 카드 부가 정보 (날짜, 좋아요 수 등) */
+.my-card-meta {
+  font-size: 12px;
+  color: #999999;
+}
+
+/* 카드 오른쪽: 액션 버튼 영역 */
+.my-card-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* --- 수정 버튼 --- */
+.my-card-edit-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #555555;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.my-card-edit-btn:hover {
+  border-color: #111111;
+  color: #111111;
+}
+
+/* --- 삭제 버튼 --- */
+.my-card-delete-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #ffcccc;
+  background: #fff5f5;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.my-card-delete-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+/* --- 좋아요 취소 버튼 --- */
+.my-card-unlike-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #ffcccc;
+  background: #fff5f5;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.my-card-unlike-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+/* --- 스크랩 취소 버튼 --- */
+.my-card-unscrap-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #fde68a;
+  background: #fefce8;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #b45309;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.my-card-unscrap-btn:hover {
+  background: #f59e0b;
+  color: #ffffff;
+  border-color: #f59e0b;
+}
+
+/* ===== 리뷰 카드 전용 스타일 ===== */
+/* 리뷰 상단: 빵집 이름 + 별점을 가로로 */
+.my-review-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 별점 */
+.my-review-stars {
+  font-size: 12px;
+  color: #f59e0b;
+  letter-spacing: -1px;
+}
+
+/* 리뷰 내용 (1줄만 보이고 나머지는 ... 처리) */
+.my-review-content {
+  font-size: 13px;
+  color: #555555;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== 질문 상태 뱃지 ===== */
+.my-question-status {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* 답변완료 (초록색) */
+.my-question-status.answered {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+/* 답변대기 (회색) */
+.my-question-status.waiting {
+  background: #f5f5f5;
+  color: #999999;
+}
+
+/* ===== 빈 상태 (데이터가 없을 때) ===== */
+.mypage-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.mypage-empty-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.mypage-empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 6px;
+}
+
+.mypage-empty-desc {
+  font-size: 13px;
+  color: #888888;
+  margin: 0 0 20px;
+}
+
+/* 빈 상태에서 보여주는 액션 버튼 (코스 만들기, 둘러보기 등) */
+.mypage-empty-btn {
+  padding: 10px 28px;
+  border-radius: 8px;
+  border: none;
+  background: #c96442;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mypage-empty-btn:hover {
+  background: #b5573a;
+}
+
+/* ===== 반응형: 작은 화면 ===== */
+@media (max-width: 768px) {
+  .mypage {
+    padding: 20px 16px;
+  }
+
+  /* 탭 메뉴: 가로 스크롤 */
+  .mypage-tabs {
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .mypage-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mypage-tab {
+    font-size: 12px;
+    padding: 12px 8px;
+    white-space: nowrap;
+  }
+
+  /* 카드 액션 버튼 세로로 */
+  .my-card-actions {
+    flex-direction: column;
+  }
+
+  .mypage-input {
+    width: 100%;
+  }
+
+  .mypage-save-btn {
+    width: 100%;
+  }
+}

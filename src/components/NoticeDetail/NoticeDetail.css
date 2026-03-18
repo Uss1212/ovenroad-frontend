@@ -1,0 +1,194 @@
+/* ===================================================
+   NoticeDetail 스타일 (공지사항 상세 페이지)
+   - 깔끔한 글 읽기 레이아웃
+   - 이전글/다음글 네비게이션
+   =================================================== */
+
+/* --- 전체 영역 --- */
+.notice-detail {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+/* ===== 1. 상단 네비게이션 ===== */
+.nd-nav {
+  margin-bottom: 24px;
+}
+
+.nd-back-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #666666;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.nd-back-btn:hover {
+  border-color: #111111;
+  color: #111111;
+}
+
+/* ===== 2. 공지 헤더 ===== */
+.nd-header {
+  padding-bottom: 24px;
+  border-bottom: 1px solid #eeeeee;
+  margin-bottom: 32px;
+}
+
+/* 카테고리 뱃지 */
+.nd-category {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+/* 제목 */
+.nd-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #111111;
+  margin: 0 0 14px;
+  line-height: 1.4;
+}
+
+/* 날짜 + 조회수 */
+.nd-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #aaaaaa;
+}
+
+/* ===== 3. 공지 본문 ===== */
+.nd-content {
+  padding-bottom: 40px;
+  border-bottom: 1px solid #eeeeee;
+  margin-bottom: 0;
+}
+
+.nd-content p {
+  font-size: 15px;
+  color: #444444;
+  line-height: 1.8;
+  margin: 0;
+}
+
+/* 섹션 제목 (■ 로 시작하는 줄) */
+.nd-content p.nd-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111111;
+  margin-top: 8px;
+}
+
+/* ===== 4. 이전글 / 다음글 ===== */
+.nd-post-nav {
+  border-bottom: 1px solid #eeeeee;
+}
+
+/* 각 이전/다음글 항목 */
+.nd-post-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid #f5f5f5;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.nd-post-nav-item:hover {
+  background: #fafafa;
+}
+
+/* 비활성 (글 없음) */
+.nd-post-nav-empty {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.nd-post-nav-empty:hover {
+  background: transparent;
+}
+
+/* 라벨 (▲ 다음글 / ▼ 이전글) */
+.nd-post-nav-label {
+  width: 70px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #888888;
+  flex-shrink: 0;
+}
+
+/* 글 제목 */
+.nd-post-nav-title {
+  flex: 1;
+  font-size: 14px;
+  color: #333333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 날짜 */
+.nd-post-nav-date {
+  font-size: 12px;
+  color: #bbbbbb;
+  flex-shrink: 0;
+}
+
+/* ===== 5. 목록으로 버튼 ===== */
+.nd-list-btn-wrap {
+  text-align: center;
+  margin-top: 32px;
+}
+
+.nd-list-btn {
+  padding: 14px 40px;
+  border-radius: 12px;
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #555555;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nd-list-btn:hover {
+  border-color: #111111;
+  color: #111111;
+}
+
+/* ===== 반응형: 모바일 ===== */
+@media (max-width: 768px) {
+  .notice-detail {
+    padding: 24px 16px 60px;
+  }
+
+  .nd-title {
+    font-size: 20px;
+  }
+
+  .nd-content p {
+    font-size: 14px;
+  }
+
+  .nd-post-nav-item {
+    gap: 10px;
+  }
+
+  .nd-post-nav-date {
+    display: none;
+  }
+}

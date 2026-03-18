@@ -1,0 +1,363 @@
+/* ===================================================
+   CourseComplete 스타일 (코스 완성 페이지)
+   - 축하 느낌의 화려한 디자인
+   - 가운데 정렬 레이아웃
+   =================================================== */
+
+/* --- 전체 영역 --- */
+.course-complete {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 40px 32px 80px;
+}
+
+/* ===== 1. 축하 메시지 ===== */
+.cc-celebration {
+  text-align: center;
+  padding: 48px 0 40px;
+}
+
+/* 체크 아이콘 (큰 원형) */
+.cc-check-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 36px;
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3);
+}
+
+.cc-check-circle span {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* 축하 제목 */
+.cc-congrats-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111111;
+  margin: 0 0 8px;
+}
+
+/* 축하 부제목 */
+.cc-congrats-subtitle {
+  font-size: 15px;
+  color: #888888;
+  margin: 0;
+}
+
+/* ===== 2. 코스 요약 카드 ===== */
+.cc-summary-card {
+  border: 1px solid #eeeeee;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* 히어로 이미지 */
+.cc-summary-hero {
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(135deg, #f0ede8, #e2dfd8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #999999;
+}
+
+/* 카드 하단 정보 */
+.cc-summary-body {
+  padding: 24px;
+}
+
+.cc-summary-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 6px;
+}
+
+.cc-summary-desc {
+  font-size: 14px;
+  color: #888888;
+  margin: 0 0 16px;
+}
+
+/* 태그 칩들 */
+.cc-summary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.cc-summary-chip {
+  padding: 6px 14px;
+  border-radius: 14px;
+  background: #f3f4f6;
+  font-size: 12px;
+  color: #555555;
+}
+
+/* 상세 설명 */
+.cc-summary-detail {
+  font-size: 13px;
+  color: #666666;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ===== 3. 통계 미리보기 ===== */
+.cc-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* 각 통계 카드 */
+.cc-stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 20px;
+  border: 1px solid #eeeeee;
+  border-radius: 10px;
+}
+
+.cc-stat-label {
+  font-size: 12px;
+  color: #888888;
+}
+
+.cc-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111111;
+}
+
+/* ===== 4. 지도 미리보기 ===== */
+.cc-map-section {
+  margin-bottom: 32px;
+}
+
+.cc-map-area {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  border-radius: 16px;
+  border: 1px solid #eeeeee;
+  background: linear-gradient(135deg, #f0ede8, #e2dfd8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #999999;
+  overflow: hidden;
+}
+
+/* 지도 마커 - 색상별로 구분 */
+.cc-map-marker {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.cc-marker-1 { background: #ef4444; }
+.cc-marker-2 { background: #f97316; }
+.cc-marker-3 { background: #3b82f6; }
+.cc-marker-4 { background: #22c55e; }
+
+/* ===== 5. 코스 장소 목록 ===== */
+.cc-place-section {
+  margin-bottom: 32px;
+}
+
+/* 섹션 제목 (공통) */
+.cc-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 16px;
+}
+
+/* 각 장소 항목 */
+.cc-place-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.cc-place-item:last-child {
+  border-bottom: none;
+}
+
+/* 순서 번호 - 색상별 */
+.cc-place-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cc-num-1 { background: #ef4444; }
+.cc-num-2 { background: #f97316; }
+.cc-num-3 { background: #3b82f6; }
+.cc-num-4 { background: #22c55e; }
+
+/* 장소 정보 */
+.cc-place-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cc-place-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111111;
+}
+
+.cc-place-menu {
+  font-size: 13px;
+  color: #888888;
+}
+
+/* 장소 이미지 (임시) */
+.cc-place-img {
+  width: 80px;
+  height: 50px;
+  border-radius: 8px;
+  background: #f0ede8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+/* ===== 6. 공유하기 ===== */
+.cc-share-section {
+  margin-bottom: 40px;
+  text-align: center;
+  padding: 32px;
+  background: #fafafa;
+  border-radius: 16px;
+}
+
+.cc-share-section .cc-section-title {
+  text-align: center;
+}
+
+.cc-share-desc {
+  font-size: 14px;
+  color: #888888;
+  margin: 0 0 20px;
+}
+
+/* 공유 버튼들 */
+.cc-share-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.cc-share-btn {
+  padding: 10px 20px;
+  border-radius: 22px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.cc-share-btn:hover {
+  opacity: 0.85;
+}
+
+.cc-share-kakao {
+  background: #fee500;
+  color: #3c1e1e;
+}
+
+.cc-share-link {
+  background: #111111;
+  color: #ffffff;
+}
+
+.cc-share-x {
+  background: #1da1f2;
+  color: #ffffff;
+}
+
+.cc-share-insta {
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  color: #ffffff;
+}
+
+/* ===== 7. 다음 단계 ===== */
+.cc-next-section {
+  margin-bottom: 24px;
+}
+
+/* 2x2 그리드 */
+.cc-next-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* 각 액션 카드 */
+.cc-next-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px;
+  border: 1px solid #eeeeee;
+  border-radius: 12px;
+  background: #ffffff;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.cc-next-card:hover {
+  border-color: #111111;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.cc-next-icon {
+  font-size: 24px;
+}
+
+.cc-next-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111111;
+}

@@ -1,0 +1,282 @@
+/* ===================================================
+   Signup 스타일 (회원가입 카드)
+   - 로그인 카드와 비슷한 구조 (가운데 흰색 카드)
+   - 밑줄 스타일 입력 필드
+   - 아이디/닉네임 옆에 중복확인 버튼
+   - 이메일/인증번호 옆에 전송/확인 버튼
+   - 에러 메시지: 빨간색 / 성공 메시지: 초록색
+   - 네이버: 초록색, 카카오: 노란색
+   =================================================== */
+
+/* --- 회원가입 영역 전체 --- */
+/* 화면 가운데에 카드를 배치하기 위한 래퍼 */
+.signup-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 52px);
+  background: #f8f8f8;
+  padding: 40px 0;
+}
+
+/* --- 회원가입 카드 --- */
+.signup-card {
+  width: 500px;
+  padding: 50px 40px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* --- 제목: "회원가입" --- */
+.signup-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111111;
+  text-align: center;
+  margin: 0 0 40px;
+}
+
+/* --- 회원가입 폼 --- */
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* --- 입력 필드 그룹 --- */
+.signup-input-group {
+  padding: 6px 0;
+}
+
+/* --- 아이디/닉네임/이메일/인증번호 줄: 입력 + 버튼을 가로로 나란히 --- */
+.signup-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+/* --- 입력 필드 (밑줄 스타일) --- */
+.signup-input {
+  width: 100%;
+  padding: 12px 0;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111111;
+  border: none;
+  border-bottom: 1px solid #dddddd;
+  outline: none;
+  background: transparent;
+  transition: border-color 0.2s;
+}
+
+/* 입력 필드에 커서가 들어가면 밑줄 진해짐 */
+.signup-input:focus {
+  border-bottom-color: #111111;
+}
+
+/* placeholder 색상 */
+.signup-input::placeholder {
+  color: #aaaaaa;
+}
+
+/* --- 입력 필드 에러 상태 --- */
+/* 유효성 검사 실패하면 밑줄이 빨간색으로 변함 */
+.signup-input.error {
+  border-bottom-color: #ef4444;
+}
+
+/* --- 입력 필드 비활성화 상태 --- */
+/* 인증 완료된 이메일은 수정 못하게 잠금 */
+.signup-input:disabled {
+  color: #999999;
+  background: #fafafa;
+}
+
+/* --- 에러 메시지 (빨간색) --- */
+/* 각 입력 필드 아래에 표시되는 경고 문구 */
+.signup-error {
+  font-size: 12px;
+  color: #ef4444;
+  margin: 6px 0 0;
+  line-height: 1.4;
+}
+
+/* --- 성공 메시지 (초록색) --- */
+/* "사용 가능한 아이디입니다" 같은 확인 문구 */
+.signup-success {
+  font-size: 12px;
+  color: #22c55e;
+  margin: 6px 0 0;
+  line-height: 1.4;
+}
+
+/* --- 전체 에러 메시지 (서버 에러 등) --- */
+.signup-general-error {
+  text-align: center;
+  font-size: 13px;
+  margin-top: 12px;
+  padding: 10px;
+  background: #fef2f2;
+  border-radius: 8px;
+}
+
+/* --- 전송 / 확인 / 중복확인 버튼 (입력 필드 옆 작은 버튼) --- */
+.signup-side-btn {
+  flex-shrink: 0;
+  padding: 8px 20px;
+  border-radius: 20px;
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #555555;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.signup-side-btn:hover {
+  background: #f5f5f5;
+  border-color: #111111;
+}
+
+/* 완료 상태 (확인완료, 전송완료, 인증완료) */
+.signup-side-btn.done {
+  background: #22c55e;
+  color: #ffffff;
+  border-color: #22c55e;
+  cursor: default;
+}
+
+/* 비활성화 상태 */
+.signup-side-btn:disabled {
+  cursor: default;
+}
+
+.signup-side-btn:disabled:not(.done):hover {
+  background: #ffffff;
+  border-color: #dddddd;
+}
+
+/* --- 가입하기 버튼 --- */
+.signup-btn {
+  width: 100%;
+  padding: 16px;
+  margin-top: 24px;
+  border: none;
+  border-radius: 28px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.signup-btn:hover {
+  background: #333333;
+}
+
+/* 가입 중 로딩 상태 */
+.signup-btn:disabled {
+  background: #999999;
+  cursor: not-allowed;
+}
+
+/* --- "이미 계정이 있으신가요? 로그인" 링크 --- */
+.signup-login-link {
+  text-align: center;
+  font-size: 13px;
+  color: #888888;
+  margin: 20px 0 0;
+}
+
+/* "로그인" 텍스트: 클릭 가능하게 */
+.signup-login-link span {
+  color: #111111;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.signup-login-link span:hover {
+  color: #c96442;
+}
+
+/* --- 소셜 가입 구분선 ("or") --- */
+.signup-divider {
+  display: flex;
+  align-items: center;
+  margin: 28px 0 20px;
+}
+
+.signup-divider::before,
+.signup-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #eeeeee;
+}
+
+.signup-divider span {
+  padding: 0 16px;
+  font-size: 12px;
+  color: #aaaaaa;
+}
+
+/* --- 소셜 가입 버튼 영역 --- */
+.signup-social {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* --- 소셜 가입 버튼 공통 --- */
+.social-signup-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 28px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.social-signup-btn:hover {
+  opacity: 0.85;
+}
+
+/* --- 네이버 버튼 --- */
+.naver-signup-btn {
+  background: #03c75a;
+  color: #ffffff;
+  border: none;
+}
+
+/* --- 카카오 버튼 --- */
+.kakao-signup-btn {
+  background: #fee500;
+  color: #3c1e1e;
+  border: none;
+}
+
+/* ===== 반응형: 모바일 ===== */
+@media (max-width: 768px) {
+  .signup-wrapper {
+    padding: 20px 16px;
+  }
+
+  .signup-card {
+    width: 100%;
+    padding: 36px 24px;
+  }
+
+  .signup-title {
+    font-size: 20px;
+    margin-bottom: 30px;
+  }
+}

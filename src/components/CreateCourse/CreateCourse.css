@@ -1,0 +1,657 @@
+/* ===================================================
+   CreateCourse 스타일 (코스 만들기)
+   - 좌우 분할 레이아웃: 왼쪽 입력 패널 + 오른쪽 네이버 지도
+   - 장소 검색 + 추가 + 대표 이미지 선택
+   - 코스 경로가 지도에 표시됨
+   =================================================== */
+
+/* --- 전체 영역 --- */
+/* 화면 전체 높이에서 헤더 높이만큼 빼서 꽉 채움 */
+.create-course {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 72px);
+  overflow: hidden;
+}
+
+/* ===== 페이지 헤더 ===== */
+.cc-header {
+  padding: 20px 32px 16px;
+  border-bottom: 1px solid #eeeeee;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+.cc-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 4px;
+}
+
+.cc-subtitle {
+  font-size: 13px;
+  color: #888888;
+  margin: 0;
+}
+
+/* ===== 메인 영역: 좌우 분할 ===== */
+.cc-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ────── 왼쪽 패널: 코스 정보 입력 ────── */
+/* 고정 너비 + 세로 스크롤 가능 */
+.cc-left-panel {
+  width: 420px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  padding: 24px 24px 80px;
+  border-right: 1px solid #eeeeee;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 왼쪽 패널 스크롤바 스타일 */
+.cc-left-panel::-webkit-scrollbar {
+  width: 5px;
+}
+
+.cc-left-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cc-left-panel::-webkit-scrollbar-thumb {
+  background: #dddddd;
+  border-radius: 3px;
+}
+
+/* ────── 오른쪽 패널: 네이버 지도 ────── */
+/* 남은 공간을 모두 차지 */
+.cc-right-panel {
+  flex: 1;
+  position: relative;
+}
+
+/* 지도 영역: 오른쪽 패널 전체를 채움 */
+.cc-map {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== 각 입력 필드 그룹 ===== */
+.cc-field {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 필드 라벨 */
+.cc-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111111;
+  margin-bottom: 8px;
+}
+
+/* --- 텍스트 입력 필드 --- */
+.cc-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #dddddd;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111111;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.cc-input:focus {
+  border-color: #111111;
+}
+
+.cc-input::placeholder {
+  color: #aaaaaa;
+}
+
+/* --- 텍스트 영역 (코스 설명) --- */
+.cc-textarea {
+  width: 100%;
+  height: 100px;
+  padding: 12px 14px;
+  border: 1px solid #dddddd;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111111;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
+.cc-textarea:focus {
+  border-color: #111111;
+}
+
+.cc-textarea::placeholder {
+  color: #aaaaaa;
+}
+
+/* ===== 장소 검색 ===== */
+.cc-search-wrap {
+  position: relative;
+  margin-bottom: 4px;
+}
+
+.cc-search-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #dddddd;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111111;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.cc-search-input:focus {
+  border-color: #111111;
+}
+
+.cc-search-input::placeholder {
+  color: #aaaaaa;
+}
+
+/* --- 검색 결과 드롭다운 --- */
+.cc-search-results {
+  border: 1px solid #eeeeee;
+  border-radius: 10px;
+  overflow: hidden;
+  max-height: 240px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* 각 검색 결과 항목 */
+.cc-search-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #f5f5f5;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+
+.cc-search-item:last-child {
+  border-bottom: none;
+}
+
+.cc-search-item:hover {
+  background: #fafafa;
+}
+
+/* 검색 결과 빵집 이미지 아이콘 */
+.cc-search-item-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+/* 검색 결과 장소 정보 */
+.cc-search-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cc-search-item-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111111;
+}
+
+.cc-search-item-address {
+  font-size: 11px;
+  color: #888888;
+}
+
+.cc-search-item-sig {
+  font-size: 11px;
+  color: #c96442;
+}
+
+/* + 추가 버튼 */
+.cc-search-add-btn {
+  padding: 5px 14px;
+  border-radius: 14px;
+  border: 1px solid #c96442;
+  background: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #c96442;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.cc-search-add-btn:hover {
+  background: #c96442;
+  color: #ffffff;
+}
+
+/* 이미 추가된 상태 */
+.cc-search-add-btn.added {
+  background: #f0f0f0;
+  border-color: #dddddd;
+  color: #aaaaaa;
+  cursor: default;
+}
+
+/* 검색 결과 없음 */
+.cc-search-empty {
+  padding: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: #aaaaaa;
+  margin: 0;
+}
+
+/* ===== 추가된 장소 목록 ===== */
+.cc-place-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* 각 장소 항목 */
+.cc-place-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #eeeeee;
+  border-radius: 10px;
+  background: #ffffff;
+  transition: box-shadow 0.2s;
+}
+
+.cc-place-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* 순서 번호 (갈색 동그라미) */
+.cc-place-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 13px;
+  background: #c96442;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 빵집 이미지 아이콘 */
+.cc-place-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+/* 장소 정보 */
+.cc-place-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.cc-place-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111111;
+}
+
+.cc-place-address {
+  font-size: 11px;
+  color: #888888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 삭제 버튼 */
+.cc-place-remove {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  border: none;
+  background: #f5f5f5;
+  color: #888888;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.cc-place-remove:hover {
+  background: #ff4444;
+  color: #ffffff;
+}
+
+/* ===== 대표 이미지 선택 ===== */
+.cc-thumb-hint {
+  font-size: 12px;
+  color: #888888;
+  margin: 0 0 8px;
+}
+
+/* 이미지 선택 그리드 */
+.cc-thumb-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+/* 각 이미지 카드 */
+.cc-thumb-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 6px 8px;
+  border: 2px solid #eeeeee;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #ffffff;
+}
+
+.cc-thumb-item:hover {
+  border-color: #c96442;
+}
+
+/* 선택된 이미지 카드 */
+.cc-thumb-item.selected {
+  border-color: #c96442;
+  background: #fef9f5;
+}
+
+/* 이미지 영역 */
+.cc-thumb-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: #f0ede8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+/* 빵집 이름 */
+.cc-thumb-name {
+  font-size: 10px;
+  font-weight: 600;
+  color: #555555;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* 선택됨 체크 표시 */
+.cc-thumb-check {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  background: #c96442;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== 버튼 영역 ===== */
+.cc-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* 임시 저장 버튼 */
+.cc-draft-btn {
+  padding: 12px 28px;
+  border-radius: 10px;
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #555555;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cc-draft-btn:hover {
+  border-color: #111111;
+  color: #111111;
+}
+
+/* 코스 저장하기 버튼 */
+.cc-save-btn {
+  padding: 12px 32px;
+  border-radius: 10px;
+  border: none;
+  background: #c96442;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cc-save-btn:hover {
+  background: #b5573a;
+}
+
+/* ===== 지도 위 안내 문구 ===== */
+.cc-map-guide {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 20px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  font-size: 13px;
+  font-weight: 600;
+  color: #555555;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+/* ===== 지도 위 빵집 정보 팝업 ===== */
+/* 마커를 클릭하면 지도 하단에 나타나는 팝업 */
+.cc-map-popup {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  max-width: 400px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  animation: popupSlideUp 0.25s ease-out;
+}
+
+@keyframes popupSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 팝업 빵집 이미지 */
+.cc-popup-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: #f0ede8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+/* 팝업 빵집 정보 */
+.cc-popup-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cc-popup-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111111;
+}
+
+.cc-popup-address {
+  font-size: 11px;
+  color: #888888;
+}
+
+.cc-popup-sig {
+  font-size: 11px;
+  color: #c96442;
+}
+
+/* 팝업 뱃지 */
+.cc-popup-badges {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.cc-popup-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--badge-color, #666666);
+  background: color-mix(in srgb, var(--badge-color, #666666) 12%, white);
+}
+
+/* 팝업 코스에 추가 버튼 */
+.cc-popup-add-btn {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #c96442;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.cc-popup-add-btn:hover {
+  background: #b5573a;
+}
+
+.cc-popup-add-btn.added {
+  background: #e0e0e0;
+  color: #aaaaaa;
+  cursor: default;
+}
+
+/* ===== 반응형: 작은 화면 ===== */
+@media (max-width: 900px) {
+  .create-course {
+    height: auto;
+    min-height: calc(100vh - 72px);
+  }
+
+  /* 모바일: 세로 배치 (지도 위 + 입력 아래) */
+  .cc-main {
+    flex-direction: column-reverse;
+  }
+
+  /* 왼쪽 패널: 전체 너비 */
+  .cc-left-panel {
+    width: 100%;
+    border-right: none;
+    border-top: 1px solid #eeeeee;
+    padding: 20px 20px 80px;
+  }
+
+  /* 오른쪽 패널: 높이 제한 */
+  .cc-right-panel {
+    height: 300px;
+    flex-shrink: 0;
+  }
+
+  /* 대표 이미지 그리드: 2열 */
+  .cc-thumb-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .cc-header {
+    padding: 16px 20px 12px;
+  }
+
+  .cc-title {
+    font-size: 18px;
+  }
+}

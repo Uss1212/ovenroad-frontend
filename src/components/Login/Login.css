@@ -1,0 +1,194 @@
+/* ===================================================
+   Login 스타일 (로그인 카드)
+   - 화면 가운데에 흰색 카드
+   - 밑줄 스타일 입력 필드
+   - 둥근 버튼들
+   - 카카오: 노란색, 네이버: 초록색
+   =================================================== */
+
+/* --- 로그인 영역 전체 --- */
+/* 화면 가운데에 카드를 배치하기 위한 래퍼 */
+/* min-height: 화면 전체 높이에서 헤더(52px) 뺀 만큼 */
+.login-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 52px);
+  background: #f8f8f8;
+}
+
+/* --- 로그인 카드 --- */
+/* 흰색 배경 + 둥근 모서리 + 그림자 */
+.login-card {
+  width: 500px;
+  padding: 50px 40px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* --- 제목: "로그인" --- */
+.login-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111111;
+  text-align: center;
+  margin: 0 0 40px;
+}
+
+/* --- 로그인 폼 --- */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* --- 입력 필드 그룹 --- */
+.login-input-group {
+  padding: 8px 0;
+}
+
+/* --- 입력 필드 (이메일, 비밀번호) --- */
+/* 밑줄만 있는 깔끔한 스타일 (와이어프레임 참고) */
+/* border: 위/좌/우는 없고, 아래만 1px 선 */
+.login-input {
+  width: 100%;
+  padding: 12px 0;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111111;
+  border: none;
+  border-bottom: 1px solid #dddddd;
+  outline: none;
+  background: transparent;
+  transition: border-color 0.2s;
+}
+
+/* 입력 필드에 커서가 들어가면 밑줄 색이 진해짐 */
+.login-input:focus {
+  border-bottom-color: #111111;
+}
+
+/* placeholder(힌트 텍스트) 색상 */
+.login-input::placeholder {
+  color: #aaaaaa;
+}
+
+/* --- 로그인 에러 메시지 --- */
+.login-error {
+  color: #ef4444;
+  font-size: 13px;
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* --- 로그인 버튼 --- */
+/* 와이어프레임: 둥근 버튼 (border-radius 28) */
+.login-btn {
+  width: 100%;
+  padding: 16px;
+  margin-top: 24px;
+  border: none;
+  border-radius: 28px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+/* 버튼에 마우스 올리면 살짝 밝아짐 */
+.login-btn:hover {
+  background: #333333;
+}
+
+/* --- 아이디/비밀번호 찾기 + 회원가입 링크 --- */
+.login-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* 각 링크 스타일 */
+.login-link {
+  font-size: 13px;
+  color: #888888;
+  text-decoration: none;
+}
+
+.login-link:hover {
+  color: #111111;
+}
+
+/* 링크 사이 구분선 "|" */
+.login-link-divider {
+  font-size: 13px;
+  color: #dddddd;
+}
+
+/* --- 소셜 로그인 구분선 ("또는") --- */
+/* 왼쪽 선 --- 또는 --- 오른쪽 선 형태 */
+.login-divider {
+  display: flex;
+  align-items: center;
+  margin: 32px 0 24px;
+}
+
+/* 구분선 양쪽의 선 */
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #eeeeee;
+}
+
+/* "또는" 텍스트 */
+.login-divider span {
+  padding: 0 16px;
+  font-size: 12px;
+  color: #aaaaaa;
+}
+
+/* --- 소셜 로그인 버튼 영역 --- */
+.login-social {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* --- 소셜 로그인 버튼 공통 --- */
+.social-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 28px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.social-btn:hover {
+  opacity: 0.85;
+}
+
+/* --- 카카오톡 버튼 --- */
+/* 카카오 공식 색상: 노란색 배경 + 검정 글씨 */
+.kakao-btn {
+  background: #fee500;
+  color: #3c1e1e;
+  border: none;
+}
+
+/* --- 네이버 버튼 --- */
+/* 네이버 공식 색상: 초록색 배경 + 흰색 글씨 */
+.naver-btn {
+  background: #03c75a;
+  color: #ffffff;
+  border: none;
+}

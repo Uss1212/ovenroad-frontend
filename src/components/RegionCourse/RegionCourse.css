@@ -1,0 +1,219 @@
+/* ===================================================
+   RegionCourse 스타일
+   - 가로로 스크롤되는 코스 카드 목록
+   - 카드마다 썸네일 + 제목 + 작성자 + 좋아요/스크랩
+   - ◀ ▶ 버튼으로 좌우 스크롤
+   =================================================== */
+
+/* --- 섹션 전체 영역 --- */
+.region-course {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 48px 32px;
+}
+
+/* --- 상단: 제목 + View more --- */
+.region-course-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+/* 섹션 제목 */
+.region-course-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #111111;
+  margin: 0 0 4px;
+  letter-spacing: -0.5px;
+}
+
+/* 부제목 */
+.region-course-subtitle {
+  font-size: 13px;
+  color: #888888;
+  margin: 0;
+}
+
+/* View more 링크 */
+.region-course-more {
+  font-size: 13px;
+  color: #888888;
+  text-decoration: none;
+  margin-top: 8px;
+}
+
+.region-course-more:hover {
+  color: #111111;
+}
+
+/* --- 캐러셀 전체 영역 --- */
+/* position: relative → 좌우 버튼을 이 영역 기준으로 배치 */
+.region-course-carousel {
+  position: relative;
+}
+
+/* --- 카드 목록 (가로 스크롤) --- */
+/* display: flex → 카드들을 가로로 나열 */
+/* overflow-x: auto → 가로로 넘치면 스크롤바 생김 */
+/* scroll-snap → 스크롤할 때 카드 단위로 딱딱 맞춰서 멈춤 */
+.region-course-list {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  padding: 8px 0;
+  /* 스크롤바 숨기기 */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 스크롤바 숨기기 (크롬, 사파리) */
+.region-course-list::-webkit-scrollbar {
+  display: none;
+}
+
+/* --- 각 코스 카드 --- */
+/* flex-shrink: 0 → 카드가 찌그러지지 않게 고정 */
+/* scroll-snap-align → 스크롤 멈출 때 카드 시작점에 맞춤 */
+.region-card {
+  flex-shrink: 0;
+  width: 240px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  scroll-snap-align: start;
+}
+
+/* 카드에 마우스 올리면 살짝 위로 떠오르는 효과 */
+.region-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* --- 카드 상단: 썸네일 이미지 --- */
+/* position: relative → 뱃지(장소 수)를 이미지 위에 띄우기 위함 */
+.region-card-img {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  background: #e8e4df;
+}
+
+/* 이미지 자리 표시 (임시) */
+.region-card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  background: linear-gradient(135deg, #f5f0eb, #e8e0d8);
+}
+
+/* 장소 수 뱃지 */
+/* position: absolute → 이미지 위에 떠있게 */
+/* 오른쪽 상단에 위치 */
+.region-card-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* --- 카드 하단: 텍스트 정보 --- */
+.region-card-body {
+  padding: 14px 16px 16px;
+}
+
+/* 코스 제목 */
+.region-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 10px;
+  /* 제목이 길면 1줄로 자르고 ... 표시 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 작성자 정보 (아바타 + 이름) */
+.region-card-author {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+/* 작성자 프로필 사진 (원형) */
+.region-author-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #4a90d9;
+}
+
+/* 작성자 이름 */
+.region-card-author span {
+  font-size: 12px;
+  color: #888888;
+}
+
+/* 좋아요 수 + 스크랩 수 */
+.region-card-stats {
+  display: flex;
+  gap: 12px;
+}
+
+/* 각 통계 텍스트 */
+.region-card-stats span {
+  font-size: 12px;
+  color: #888888;
+}
+
+/* --- ◀ ▶ 넘기기 버튼 --- */
+/* 카드 목록의 양쪽에 둥근 버튼 */
+.region-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  font-size: 14px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.region-btn:hover {
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* ◀ 왼쪽 버튼 위치 */
+.region-btn-left {
+  left: -16px;
+}
+
+/* ▶ 오른쪽 버튼 위치 */
+.region-btn-right {
+  right: -16px;
+}
