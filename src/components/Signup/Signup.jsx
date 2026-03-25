@@ -20,6 +20,7 @@ import {
   checkNicknameDuplicate,
   sendEmailVerification,
   verifyEmailCode,
+  BASE_URL,
 } from '../../api/api';
 import './Signup.css';
 
@@ -334,13 +335,13 @@ export default function Signup() {
 
   /* --- 소셜 가입 --- */
   const handleNaverSignup = () => {
-    /* 나중에 네이버 OAuth API 연동 예정 */
-    /* TODO: 네이버 OAuth 연동 */
+    /* 네이버 로그인 페이지로 이동 (계정 없으면 자동 가입됨) */
+    window.location.href = BASE_URL + '/api/user/naver/login';
   };
 
   const handleKakaoSignup = () => {
-    /* 나중에 카카오 OAuth API 연동 예정 */
-    /* TODO: 카카오 OAuth 연동 */
+    /* 카카오 로그인 페이지로 이동 (계정 없으면 자동 가입됨) */
+    window.location.href = BASE_URL + '/api/user/kakao/login';
   };
 
   return (
