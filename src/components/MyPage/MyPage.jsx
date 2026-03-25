@@ -251,7 +251,7 @@ export default function MyPage() {
 
   /* --- 회원탈퇴 --- */
   /* 소셜 로그인 사용자인지 확인 (네이버/카카오는 비밀번호가 없음) */
-  const isSocialUser = user?.SOCIAL_TYPE === 'naver' || user?.SOCIAL_TYPE === 'kakao';
+  const isSocialUser = user?.SOCIAL_TYPE === 'naver' || user?.SOCIAL_TYPE === 'kakao' || user?.socialType === 'naver' || user?.socialType === 'kakao';
 
   const handleDeleteAccount = async () => {
     setError('');
