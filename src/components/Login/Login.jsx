@@ -9,7 +9,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; /* 페이지 이동 도구 */
-import { login } from '../../api/api';           /* 로그인 API 함수 */
+import { login, BASE_URL } from '../../api/api';  /* 로그인 API 함수 + 서버 주소 */
 import './Login.css';
 
 export default function Login() {
@@ -55,15 +55,15 @@ export default function Login() {
   };
 
   /* --- 카카오 로그인 버튼 클릭 --- */
-  // 나중에 카카오 OAuth API 연동 예정
+  /* 클릭하면 → 백엔드 서버로 이동 → 카카오 로그인 페이지로 자동 이동됨 */
   const handleKakaoLogin = () => {
-    console.log('카카오 로그인 시도');
+    window.location.href = BASE_URL + '/api/user/kakao/login';
   };
 
   /* --- 네이버 로그인 버튼 클릭 --- */
-  // 나중에 네이버 OAuth API 연동 예정
+  /* 클릭하면 → 백엔드 서버로 이동 → 네이버 로그인 페이지로 자동 이동됨 */
   const handleNaverLogin = () => {
-    console.log('네이버 로그인 시도');
+    window.location.href = BASE_URL + '/api/user/naver/login';
   };
 
   return (

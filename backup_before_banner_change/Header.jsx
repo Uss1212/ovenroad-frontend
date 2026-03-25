@@ -62,7 +62,7 @@ export default function Header() {
   // name: 화면에 보여줄 이름
   // path: 클릭하면 이동할 URL 경로
   const navItems = [
-    { name: '빵집탐색',   path: '/places' },     // 인기 빵집 목록을 볼 수 있는 페이지
+    { name: '빵지도',     path: '/map' },       // 빵집 위치를 지도에서 볼 수 있는 페이지
     { name: '추천코스',   path: '/courses' },    // 추천 빵집 코스를 모아보는 페이지
     { name: '코스만들기', path: '/create' },     // 나만의 빵집 코스를 만드는 페이지
     { name: '커뮤니티',   path: '/community' },  // 사용자들끼리 소통하는 게시판

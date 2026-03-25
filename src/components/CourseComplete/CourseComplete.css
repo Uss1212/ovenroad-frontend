@@ -1,14 +1,14 @@
 /* ===================================================
    CourseComplete 스타일 (코스 완성 페이지)
-   - 축하 느낌의 화려한 디자인
+   - 따뜻한 빵 테마 색상 기반 축하 페이지
    - 가운데 정렬 레이아웃
    =================================================== */
 
 /* --- 전체 영역 --- */
 .course-complete {
-  max-width: 700px;
+  max-width: 640px;
   margin: 0 auto;
-  padding: 40px 32px 80px;
+  padding: 40px 24px 80px;
 }
 
 /* ===== 1. 축하 메시지 ===== */
@@ -17,59 +17,58 @@
   padding: 48px 0 40px;
 }
 
-/* 체크 아이콘 (큰 원형) */
+/* 체크 아이콘 (빵 테마 색 원형) */
 .cc-check-circle {
-  width: 72px;
-  height: 72px;
-  border-radius: 36px;
-  background: linear-gradient(135deg, #4ade80, #22c55e);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c96442, #92400e);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px;
-  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3);
+  margin: 0 auto 24px;
+  box-shadow: 0 8px 24px rgba(201, 100, 66, 0.3);
 }
 
 .cc-check-circle span {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 700;
   color: #ffffff;
 }
 
 /* 축하 제목 */
 .cc-congrats-title {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 800;
-  color: #111111;
-  margin: 0 0 8px;
+  color: #1c1917;
+  margin: 0 0 10px;
 }
 
 /* 축하 부제목 */
 .cc-congrats-subtitle {
   font-size: 15px;
-  color: #888888;
+  color: #a8a29e;
   margin: 0;
 }
 
 /* ===== 2. 코스 요약 카드 ===== */
 .cc-summary-card {
-  border: 1px solid #eeeeee;
-  border-radius: 16px;
+  border: 1px solid #f5f5f4;
+  border-radius: 20px;
   overflow: hidden;
   margin-bottom: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
-/* 히어로 이미지 */
+/* 히어로 이미지 (따뜻한 그라데이션) */
 .cc-summary-hero {
   width: 100%;
-  height: 200px;
-  background: linear-gradient(135deg, #f0ede8, #e2dfd8);
+  height: 180px;
+  background: linear-gradient(135deg, #fef3c7, #fed7aa, #fecaca);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  color: #999999;
+  font-size: 3.5rem;
 }
 
 /* 카드 하단 정보 */
@@ -79,47 +78,40 @@
 
 .cc-summary-title {
   font-size: 20px;
-  font-weight: 700;
-  color: #111111;
-  margin: 0 0 6px;
+  font-weight: 800;
+  color: #1c1917;
+  margin: 0 0 8px;
 }
 
 .cc-summary-desc {
   font-size: 14px;
-  color: #888888;
+  color: #78716c;
   margin: 0 0 16px;
+  line-height: 1.6;
 }
 
-/* 태그 칩들 */
+/* 태그 칩들 (따뜻한 색) */
 .cc-summary-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 16px;
 }
 
 .cc-summary-chip {
   padding: 6px 14px;
-  border-radius: 14px;
-  background: #f3f4f6;
-  font-size: 12px;
-  color: #555555;
-}
-
-/* 상세 설명 */
-.cc-summary-detail {
+  border-radius: 20px;
+  background: #fef3c7;
   font-size: 13px;
-  color: #666666;
-  line-height: 1.7;
-  margin: 0;
+  font-weight: 600;
+  color: #92400e;
 }
 
 /* ===== 3. 통계 미리보기 ===== */
 .cc-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 /* 각 통계 카드 */
@@ -127,106 +119,76 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 16px 20px;
-  border: 1px solid #eeeeee;
-  border-radius: 10px;
+  padding: 20px;
+  background: #fafaf9;
+  border: 1px solid #f5f5f4;
+  border-radius: 16px;
+  text-align: center;
 }
 
 .cc-stat-label {
-  font-size: 12px;
-  color: #888888;
+  font-size: 13px;
+  color: #a8a29e;
+  font-weight: 600;
 }
 
 .cc-stat-value {
-  font-size: 22px;
-  font-weight: 700;
-  color: #111111;
+  font-size: 24px;
+  font-weight: 800;
+  color: #c96442;
 }
 
-/* ===== 4. 지도 미리보기 ===== */
-.cc-map-section {
-  margin-bottom: 32px;
-}
-
-.cc-map-area {
-  position: relative;
-  width: 100%;
-  height: 300px;
-  border-radius: 16px;
-  border: 1px solid #eeeeee;
-  background: linear-gradient(135deg, #f0ede8, #e2dfd8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  color: #999999;
-  overflow: hidden;
-}
-
-/* 지도 마커 - 색상별로 구분 */
-.cc-map-marker {
-  position: absolute;
-  width: 24px;
-  height: 24px;
-  border-radius: 12px;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.cc-marker-1 { background: #ef4444; }
-.cc-marker-2 { background: #f97316; }
-.cc-marker-3 { background: #3b82f6; }
-.cc-marker-4 { background: #22c55e; }
-
-/* ===== 5. 코스 장소 목록 ===== */
+/* ===== 4. 코스 장소 목록 ===== */
 .cc-place-section {
   margin-bottom: 32px;
 }
 
-/* 섹션 제목 (공통) */
+/* 섹션 제목 */
 .cc-section-title {
   font-size: 18px;
-  font-weight: 700;
-  color: #111111;
+  font-weight: 800;
+  color: #1c1917;
   margin: 0 0 16px;
 }
 
-/* 각 장소 항목 */
+/* 각 장소 카드 */
 .cc-place-item {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 0;
-  border-bottom: 1px solid #f5f5f5;
-}
-
-.cc-place-item:last-child {
-  border-bottom: none;
-}
-
-/* 순서 번호 - 색상별 */
-.cc-place-num {
-  width: 28px;
-  height: 28px;
+  padding: 16px;
+  background: #fafaf9;
   border-radius: 14px;
+  margin-bottom: 10px;
+  border: 1px solid #f5f5f4;
+  transition: all 0.2s;
+}
+
+.cc-place-item:hover {
+  border-color: #e7e5e4;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* 순서 번호 (빵 테마 갈색 그라데이션) */
+.cc-place-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c96442, #92400e);
   color: #ffffff;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(201, 100, 66, 0.3);
 }
 
-.cc-num-1 { background: #ef4444; }
-.cc-num-2 { background: #f97316; }
-.cc-num-3 { background: #3b82f6; }
-.cc-num-4 { background: #22c55e; }
+/* 색상별 번호 클래스 (더 이상 사용 안 함, 통일 색상) */
+.cc-num-1, .cc-num-2, .cc-num-3, .cc-num-4, .cc-num-5 {
+  background: linear-gradient(135deg, #c96442, #92400e);
+}
 
 /* 장소 정보 */
 .cc-place-info {
@@ -234,94 +196,37 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .cc-place-name {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  color: #111111;
+  color: #1c1917;
 }
 
 .cc-place-menu {
   font-size: 13px;
-  color: #888888;
+  color: #a8a29e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* 장소 이미지 (임시) */
+/* 장소 이미지 */
 .cc-place-img {
-  width: 80px;
-  height: 50px;
-  border-radius: 8px;
-  background: #f0ede8;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fef3c7, #fed7aa);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 1.5rem;
   flex-shrink: 0;
 }
 
-/* ===== 6. 공유하기 ===== */
-.cc-share-section {
-  margin-bottom: 40px;
-  text-align: center;
-  padding: 32px;
-  background: #fafafa;
-  border-radius: 16px;
-}
-
-.cc-share-section .cc-section-title {
-  text-align: center;
-}
-
-.cc-share-desc {
-  font-size: 14px;
-  color: #888888;
-  margin: 0 0 20px;
-}
-
-/* 공유 버튼들 */
-.cc-share-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.cc-share-btn {
-  padding: 10px 20px;
-  border-radius: 22px;
-  border: none;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.cc-share-btn:hover {
-  opacity: 0.85;
-}
-
-.cc-share-kakao {
-  background: #fee500;
-  color: #3c1e1e;
-}
-
-.cc-share-link {
-  background: #111111;
-  color: #ffffff;
-}
-
-.cc-share-x {
-  background: #1da1f2;
-  color: #ffffff;
-}
-
-.cc-share-insta {
-  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-  color: #ffffff;
-}
-
-/* ===== 7. 다음 단계 ===== */
+/* ===== 5. 다음 단계 ===== */
 .cc-next-section {
   margin-bottom: 24px;
 }
@@ -337,27 +242,53 @@
 .cc-next-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 20px 24px;
-  border: 1px solid #eeeeee;
-  border-radius: 12px;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid #f5f5f4;
+  border-radius: 16px;
   background: #ffffff;
   cursor: pointer;
-  font-family: inherit;
+  font-family: 'Noto Sans KR', sans-serif;
   transition: all 0.2s;
 }
 
 .cc-next-card:hover {
-  border-color: #111111;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  border-color: #c96442;
+  box-shadow: 0 4px 16px rgba(201, 100, 66, 0.1);
+  transform: translateY(-2px);
 }
 
 .cc-next-icon {
-  font-size: 24px;
+  font-size: 28px;
 }
 
 .cc-next-label {
   font-size: 14px;
   font-weight: 700;
-  color: #111111;
+  color: #1c1917;
+}
+
+/* ===== 반응형: 모바일 ===== */
+@media (max-width: 600px) {
+  .course-complete {
+    padding: 24px 16px 60px;
+  }
+
+  .cc-congrats-title {
+    font-size: 22px;
+  }
+
+  .cc-summary-hero {
+    height: 140px;
+    font-size: 2.5rem;
+  }
+
+  .cc-next-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .cc-place-item {
+    padding: 12px;
+  }
 }

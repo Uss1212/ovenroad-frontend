@@ -129,10 +129,12 @@
 }
 
 /* --- 로그인 후 사용자 영역 --- */
+/* position: relative → 드롭다운 메뉴를 이 영역 기준으로 위치시키기 위해 */
 .header-user-area {
   display: flex;
   align-items: center;
   gap: 8px;
+  position: relative;
 }
 
 /* --- 프로필 사진 (클릭하면 마이페이지) --- */
@@ -168,20 +170,58 @@
   opacity: 0.8;
 }
 
-/* --- 로그아웃 버튼 --- */
-.header-logout-btn {
-  padding: 5px 12px;
-  border-radius: 18px;
-  border: 1px solid #e0e0e0;
+/* ===== 프로필 드롭다운 메뉴 ===== */
+/* 프로필 아이콘 아래에 나타나는 작은 메뉴 */
+.header-dropdown {
+  position: absolute;
+  top: 42px;
+  right: 0;
   background: #ffffff;
-  cursor: pointer;
-  font-size: 11px;
-  color: #888888;
-  font-family: inherit;
+  border: 1px solid #e7e5e4;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  min-width: 160px;
+  padding: 6px;
+  z-index: 200;
+  /* 부드럽게 나타나는 효과 */
+  animation: header-dropdown-fade 0.15s ease;
 }
 
-.header-logout-btn:hover {
-  background: #f9f9f9;
+@keyframes header-dropdown-fade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 드롭다운 안의 각 버튼 */
+.header-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1c1917;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+/* 마우스 올리면 배경색 변경 */
+.header-dropdown-item:hover {
+  background: #f5f5f4;
+}
+
+/* 로그아웃 버튼은 빨간색 글자 */
+.header-dropdown-item.logout {
+  color: #dc2626;
+}
+
+.header-dropdown-item.logout:hover {
+  background: #fef2f2;
 }
 
 /* --- 다크모드 토글 감싸는 영역 --- */

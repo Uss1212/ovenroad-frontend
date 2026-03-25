@@ -54,7 +54,7 @@
 
 /* --- 2번, 3번 컬럼: 링크 그룹 --- */
 
-/* 컬럼 제목 (소개, 고객지원) */
+/* 컬럼 제목 (서비스, 고객지원) */
 .footer-link-title {
   font-size: 12px;
   font-weight: 700;
@@ -82,13 +82,28 @@
   color: #999999;
 }
 
+/* 링크 태그 스타일 (밑줄 제거, 색상 상속) */
+.footer-links a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  color: #999999;
+}
+
 /* --- 4번 컬럼: SNS 아이콘들 --- */
-/* justify-content: flex-end → 오른쪽 끝으로 정렬 */
 .footer-sns {
   display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* SNS 버튼들을 가로로 나열 */
+.footer-sns-row {
+  display: flex;
   gap: 8px;
-  justify-content: flex-end;
-  align-items: flex-start;
+  margin-top: 4px;
 }
 
 /* SNS 버튼 (동그란 원) */
@@ -102,18 +117,16 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
 .footer-sns-btn:hover {
   background: #3a3a3a;
 }
 
-/* SNS 아이콘 (나중에 실제 아이콘으로 교체) */
-.footer-sns-icon {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-  background: #555555;
+/* SNS 이모지 아이콘 */
+.footer-sns-emoji {
+  font-size: 14px;
 }
 
 /* --- 하단: 저작권 문구 --- */
@@ -125,4 +138,16 @@
   text-align: center;
   font-size: 10.5px;
   color: #555555;
+}
+
+/* --- 모바일 반응형 --- */
+@media (max-width: 768px) {
+  .footer-columns {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .footer-sns {
+    align-items: flex-start;
+  }
 }

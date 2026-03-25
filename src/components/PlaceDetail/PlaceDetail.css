@@ -1,0 +1,1074 @@
+/* ===================================================
+   PlaceDetail 스타일 (빵집 상세 페이지)
+   - 히어로에 이름+뱃지 오버레이
+   - 텍스트 라벨 포함 액션 버튼
+   - 사진 갤러리 + 라이트박스
+   - 카드형 메뉴 그리드
+   =================================================== */
+
+/* --- 페이지 배경 --- */
+.place-detail {
+  min-height: 100vh;
+  background: #fafaf9;
+}
+
+/* ===== 1. 히어로 이미지 ===== */
+.pd-hero {
+  position: relative;
+  width: 100%;
+  height: 420px;
+  overflow: hidden;
+  background: #1c1917;
+}
+
+/* 대표 이미지 */
+.pd-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 어두운 오버레이 (글씨가 잘 보이도록) */
+.pd-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0.15) 50%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+  pointer-events: none;
+}
+
+/* 히어로 위 텍스트 (이름, 뱃지, 별점) */
+.pd-hero-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2rem 2.5rem;
+  z-index: 1;
+}
+
+/* 히어로 뱃지 */
+.pd-hero-badges {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.pd-hero-badge {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  backdrop-filter: blur(4px);
+}
+
+.pd-hero-badge.ribbon {
+  background: rgba(254, 243, 199, 0.9);
+  color: #92400e;
+}
+
+.pd-hero-badge.category {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* 히어로 빵집 이름 */
+.pd-hero-name {
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: white;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 히어로 별점 + 리뷰 */
+.pd-hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.pd-hero-rating {
+  font-weight: 700;
+  color: white;
+}
+
+.pd-hero-dot {
+  opacity: 0.5;
+}
+
+/* ===== 2. 액션 바 (공유, 좋아요, 지도) ===== */
+.pd-action-bar {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  display: flex;
+  gap: 0.75rem;
+  transform: translateY(-50%);
+}
+
+/* 각 액션 버튼 (텍스트 라벨 포함) */
+.pd-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  background: white;
+  border: 1px solid #e7e5e4;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #44403c;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.pd-action-btn:hover {
+  background: #fafaf9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* 좋아요 눌렀을 때 */
+.pd-action-btn.liked {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #ef4444;
+}
+
+/* 아이콘 크기 */
+.pd-action-icon {
+  font-size: 1.125rem;
+}
+
+/* ===== 3. 본문 컨테이너 ===== */
+.pd-container {
+  max-width: 800px;
+  margin: -0.5rem auto 0;
+  padding: 0 1.25rem 4rem;
+}
+
+/* ===== 각 섹션 ===== */
+.pd-section {
+  padding: 2rem 0;
+  border-bottom: 1px solid #f0eeec;
+}
+
+/* 마지막 섹션은 하단 border 없음 */
+.pd-section:last-child {
+  border-bottom: none;
+}
+
+/* 섹션 헤더 (제목 + 버튼) */
+.pd-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+/* 섹션 제목 */
+.pd-section-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1c1917;
+  margin: 0 0 1.25rem;
+}
+
+.pd-section-header .pd-section-title {
+  margin-bottom: 0;
+}
+
+/* 빈 상태 박스 */
+.pd-empty-box {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: #a8a29e;
+  background: white;
+  border-radius: 16px;
+  border: 1px dashed #e7e5e4;
+}
+
+.pd-empty-box span {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.pd-empty-box p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* ===== 매장 정보 카드 ===== */
+.pd-info-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0eeec;
+}
+
+.pd-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.pd-info-row + .pd-info-row {
+  border-top: 1px solid #f5f5f4;
+}
+
+.pd-info-clickable {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pd-info-clickable:hover {
+  background: #fafaf9;
+}
+
+.pd-info-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #fef3c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.125rem;
+}
+
+.pd-info-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.pd-info-label {
+  font-weight: 700;
+  color: #1c1917;
+  margin: 0 0 0.25rem;
+  font-size: 0.875rem;
+}
+
+.pd-info-value {
+  color: #57534e;
+  line-height: 1.5;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.pd-info-link-hint {
+  font-size: 0.75rem;
+  color: #92400e;
+  font-weight: 600;
+  margin-top: 0.375rem;
+  display: inline-block;
+}
+
+/* ===== 사진 갤러리 ===== */
+.pd-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.pd-gallery-item {
+  aspect-ratio: 1;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  background: #f5f0eb;
+}
+
+.pd-gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.pd-gallery-item:hover img {
+  transform: scale(1.05);
+}
+
+/* hover 시 어둡게 */
+.pd-gallery-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.3s;
+}
+
+.pd-gallery-item:hover::after {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* ===== 시그니처 메뉴 (BEST 상위 3개) ===== */
+.pd-sig-section {
+  margin-bottom: 1.5rem;
+}
+
+/* "⭐ 시그니처 메뉴" 라벨 */
+.pd-sig-label {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: #92400e;
+  margin: 0 0 0.75rem;
+}
+
+/* 시그니처 카드 가로 나열 */
+.pd-sig-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+/* 시그니처 메뉴 카드 (강조 디자인) */
+.pd-sig-card {
+  position: relative;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid #fde68a;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.12);
+  transition: all 0.2s;
+}
+
+.pd-sig-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.2);
+}
+
+/* BEST 뱃지 (왼쪽 상단) */
+.pd-sig-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  background: #92400e;
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  z-index: 1;
+}
+
+/* 시그니처 썸네일 */
+.pd-sig-thumb {
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  font-size: 2.5rem;
+  overflow: hidden;
+}
+
+/* 시그니처 메뉴 실제 이미지 */
+.pd-sig-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 시그니처 정보 */
+.pd-sig-info {
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pd-sig-name {
+  font-weight: 800;
+  color: #1c1917;
+  font-size: 0.9375rem;
+  line-height: 1.3;
+}
+
+.pd-sig-price {
+  font-weight: 800;
+  color: #92400e;
+  font-size: 1rem;
+}
+
+/* 전체 메뉴 라벨 */
+.pd-menu-rest {
+  margin-top: 0.5rem;
+}
+
+.pd-menu-rest-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #78716c;
+  margin: 0 0 0.75rem;
+}
+
+/* ===== 메뉴 그리드 (카드형) ===== */
+.pd-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+/* 각 메뉴 카드 */
+.pd-menu-card {
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #f0eeec;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s;
+}
+
+.pd-menu-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+/* 메뉴 썸네일 (이모지 배경) */
+.pd-menu-thumb {
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fef3c7 0%, #f5e6d3 100%);
+  font-size: 2rem;
+  overflow: hidden;
+}
+
+/* 전체 메뉴 실제 이미지 */
+.pd-menu-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 메뉴 정보 (이름 + 가격) */
+.pd-menu-info {
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pd-menu-name {
+  font-weight: 700;
+  color: #1c1917;
+  font-size: 0.875rem;
+  line-height: 1.3;
+}
+
+.pd-menu-price {
+  font-weight: 800;
+  color: #92400e;
+  font-size: 0.9375rem;
+}
+
+/* ===== 관련 코스 ===== */
+.pd-course-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pd-course-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #f0eeec;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pd-course-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.pd-course-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.pd-course-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pd-course-name {
+  font-weight: 700;
+  color: #1c1917;
+  margin: 0 0 0.25rem;
+  font-size: 0.9375rem;
+}
+
+.pd-course-desc {
+  font-size: 0.8125rem;
+  color: #78716c;
+  margin: 0;
+}
+
+.pd-course-arrow {
+  color: #a8a29e;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* ===== 리뷰 섹션 ===== */
+.pd-review-write-btn {
+  padding: 0.625rem 1.25rem;
+  background: #92400e;
+  color: white;
+  font-weight: 700;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.8125rem;
+  transition: all 0.2s;
+}
+
+.pd-review-write-btn:hover {
+  background: #78350f;
+  transform: translateY(-1px);
+}
+
+/* 리뷰 요약 */
+.pd-review-summary {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0eeec;
+  margin-bottom: 1.25rem;
+  text-align: center;
+}
+
+.pd-review-big-score {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.pd-review-num {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #1c1917;
+}
+
+.pd-review-max {
+  font-size: 1.125rem;
+  color: #a8a29e;
+  font-weight: 500;
+}
+
+/* 별점 행 */
+.pd-review-stars-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* 별 (큰 사이즈) */
+.pd-star {
+  font-size: 1.5rem;
+  color: #e7e5e4;
+  transition: color 0.2s;
+}
+
+.pd-star.filled {
+  color: #f59e0b;
+}
+
+/* 별 (작은 사이즈 - 리뷰 카드용) */
+.pd-star-sm {
+  font-size: 0.75rem;
+  color: #e7e5e4;
+}
+
+.pd-star-sm.filled {
+  color: #f59e0b;
+}
+
+.pd-review-total {
+  font-size: 0.875rem;
+  color: #78716c;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* 리뷰 목록 */
+.pd-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* 리뷰 카드 */
+.pd-review-card {
+  background: white;
+  padding: 1.25rem 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f0eeec;
+}
+
+.pd-review-author {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.pd-review-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fef3c7, #f5e6d3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.875rem;
+  color: #92400e;
+}
+
+.pd-review-name {
+  font-weight: 700;
+  color: #1c1917;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.pd-review-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.125rem;
+}
+
+.pd-review-meta-stars {
+  display: flex;
+  gap: 1px;
+}
+
+.pd-review-meta-date {
+  font-size: 0.75rem;
+  color: #a8a29e;
+}
+
+.pd-review-text {
+  color: #44403c;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.pd-review-delete {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.375rem 0;
+  margin-top: 0.5rem;
+  font-weight: 600;
+}
+
+.pd-review-delete:hover {
+  text-decoration: underline;
+}
+
+/* ===== 사진 라이트박스 (크게 보기) ===== */
+.pd-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pd-fade-in 0.2s ease;
+}
+
+.pd-lightbox img {
+  max-width: 90%;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* 닫기 버튼 */
+.pd-lightbox-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  z-index: 1;
+}
+
+.pd-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 이전/다음 버튼 */
+.pd-lightbox-prev,
+.pd-lightbox-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.pd-lightbox-prev { left: 1.25rem; }
+.pd-lightbox-next { right: 1.25rem; }
+
+.pd-lightbox-prev:hover,
+.pd-lightbox-next:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 사진 번호 */
+.pd-lightbox-count {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* ===== 로딩 + 에러 ===== */
+.pd-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+  color: #78716c;
+}
+
+.pd-loading-icon {
+  font-size: 3rem;
+  animation: pd-spin 1s infinite linear;
+}
+
+@keyframes pd-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 돌아가기 버튼 */
+.pd-back-btn {
+  padding: 0.75rem 1.5rem;
+  background: #92400e;
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* ===== 리뷰 작성 모달 ===== */
+.pd-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: pd-fade-in 0.2s ease;
+}
+
+@keyframes pd-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pd-modal {
+  background: white;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 500px;
+  padding: 2rem;
+  animation: pd-slide-up 0.3s ease;
+}
+
+@keyframes pd-slide-up {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.pd-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.pd-modal-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #1c1917;
+  margin: 0;
+}
+
+.pd-modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #f5f5f4;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #78716c;
+  transition: background 0.2s;
+}
+
+.pd-modal-close:hover {
+  background: #e7e5e4;
+}
+
+.pd-modal-rating {
+  margin-bottom: 1.5rem;
+}
+
+.pd-modal-label {
+  font-weight: 700;
+  color: #1c1917;
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+}
+
+.pd-modal-stars {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pd-modal-star {
+  font-size: 2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #d6d3d1;
+  transition: color 0.15s, transform 0.15s;
+  padding: 0;
+}
+
+.pd-modal-star.active {
+  color: #f59e0b;
+}
+
+.pd-modal-star:hover {
+  transform: scale(1.2);
+}
+
+.pd-modal-rating-text {
+  font-size: 0.875rem;
+  color: #92400e;
+  font-weight: 700;
+  margin-left: 0.75rem;
+}
+
+.pd-modal-body {
+  margin-bottom: 1.5rem;
+}
+
+.pd-modal-textarea {
+  width: 100%;
+  border: 1px solid #e7e5e4;
+  border-radius: 12px;
+  padding: 1rem;
+  font-size: 0.875rem;
+  font-family: 'Noto Sans KR', sans-serif;
+  resize: vertical;
+  line-height: 1.6;
+  color: #1c1917;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.pd-modal-textarea:focus {
+  outline: none;
+  border-color: #92400e;
+}
+
+.pd-modal-textarea::placeholder {
+  color: #a8a29e;
+}
+
+.pd-modal-charcount {
+  text-align: right;
+  font-size: 0.75rem;
+  color: #a8a29e;
+  margin: 0.5rem 0 0;
+}
+
+.pd-modal-footer {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.pd-modal-cancel {
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  border: 1px solid #e7e5e4;
+  background: white;
+  font-weight: 700;
+  color: #78716c;
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: background 0.2s;
+}
+
+.pd-modal-cancel:hover {
+  background: #f5f5f4;
+}
+
+.pd-modal-submit {
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  border: none;
+  background: #92400e;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: background 0.2s;
+}
+
+.pd-modal-submit:hover {
+  background: #78350f;
+}
+
+.pd-modal-submit:disabled {
+  background: #d6d3d1;
+  cursor: not-allowed;
+}
+
+/* ===== 반응형: 모바일 ===== */
+@media (max-width: 600px) {
+  .pd-hero {
+    height: 280px;
+  }
+
+  .pd-hero-name {
+    font-size: 1.5rem;
+  }
+
+  .pd-hero-content {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .pd-action-bar {
+    flex-direction: row;
+    padding: 0 1rem;
+  }
+
+  .pd-action-btn {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.75rem;
+    gap: 0.375rem;
+    border-radius: 12px;
+  }
+
+  .pd-container {
+    padding: 0 1rem 3rem;
+  }
+
+  /* 사진 갤러리 2열 */
+  .pd-gallery {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* 시그니처 메뉴 1열 */
+  .pd-sig-list {
+    grid-template-columns: 1fr;
+  }
+
+  .pd-sig-thumb {
+    height: 120px;
+  }
+
+  /* 메뉴 1열 */
+  .pd-menu-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pd-review-num {
+    font-size: 2.25rem;
+  }
+
+  .pd-modal {
+    padding: 1.5rem;
+  }
+
+  .pd-modal-title {
+    font-size: 1.25rem;
+  }
+}

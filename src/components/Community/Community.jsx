@@ -9,8 +9,9 @@
      5) 인기 게시글 사이드바 (데스크탑)
    =================================================== */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getBoardList, getPopularPosts, BASE_URL } from '../../api/api'; /* 게시판 API */
 import './Community.css';
 
 export default function Community() {
@@ -24,6 +25,49 @@ export default function Community() {
   /* 현재 선택한 카테고리 탭 */
   const [activeTab, setActiveTab] = useState('전체');
 
+  /* 검색어 입력값 */
+  const [searchInput, setSearchInput] = useState('');
+
+  /* 실제로 검색 요청에 사용되는 검색어 */
+  const [searchKeyword, setSearchKeyword] = useState('');
+
+  /* DB에서 가져온 게시글 목록 */
+  const [posts, setPosts] = useState([]);
+
+  /* DB에서 가져온 인기 게시글 */
+  const [popularPosts, setPopularPosts] = useState([]);
+
+  /* 로딩 중인지 여부 */
+  const [loading, setLoading] = useState(true);
+
+  /* --- 게시글 데이터 불러오기 --- */
+  /* 페이지가 열리거나, 카테고리 탭/검색어가 바뀔 때 실행 */
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        /* 게시글 목록 + 인기 게시글 동시에 가져오기 */
+        const [boardData, popularData] = await Promise.all([
+          getBoardList(activeTab, searchKeyword),
+          getPopularPosts(),
+        ]);
+        setPosts(boardData);
+        setPopularPosts(popularData);
+      } catch (err) {
+        console.error('게시글 불러오기 실패:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [activeTab, searchKeyword]);
+
+  /* --- 검색 실행 --- */
+  /* 엔터 키를 누르거나 검색 버튼을 클릭하면 실행 */
+  const handleSearch = () => {
+    setSearchKeyword(searchInput);
+  };
+
   /* --- 카테고리 탭 목록 --- */
   const tabs = [
     { name: '전체', icon: '📋' },
@@ -34,116 +78,9 @@ export default function Community() {
     { name: '모임', icon: '👥' },
   ];
 
-  /* --- 게시글 더미 데이터 --- */
-  /* 나중에 백엔드 API에서 받아올 예정 */
-  const posts = [
-    {
-      id: 1,
-      category: '후기',
-      title: '연남동 빵지순례 다녀왔어요! 소금빵 진짜 맛있음',
-      content: '바로 베이커리 소금빵이 진짜 미쳤어요... 겉은 바삭하고 안은 촉촉한데 버터가 쫙 퍼지는 그 맛... 줄 서서 먹을 가치 있습니다!',
-      author: '빵순이',
-      date: '2025.12.27',
-      likes: 47,
-      comments: 12,
-      views: 234,
-      hasImage: true,
-    },
-    {
-      id: 2,
-      category: '질문',
-      title: '종로 쪽에 당근케이크 맛집 아시는 분?',
-      content: '종로나 광화문 근처에서 당근케이크 맛있는 곳 추천해주세요! 생일에 사갈건데 예쁘고 맛있는 곳이면 좋겠어요.',
-      author: '케이크러버',
-      date: '2025.12.27',
-      likes: 15,
-      comments: 8,
-      views: 156,
-      hasImage: false,
-    },
-    {
-      id: 3,
-      category: '꿀팁',
-      title: '빵집 웨이팅 없이 가는 꿀팁 공유합니다',
-      content: '유명 빵집들 오픈 시간 30분 전에 가면 거의 줄 없이 들어갈 수 있어요. 특히 평일 오전이 최고! 그리고 인스타에서 실시간 웨이팅 확인하면 편해요.',
-      author: '빵덕후',
-      date: '2025.12.26',
-      likes: 89,
-      comments: 23,
-      views: 567,
-      hasImage: false,
-    },
-    {
-      id: 4,
-      category: '자유',
-      title: '오늘 빵 털이 성공 🍞🍞🍞',
-      content: '퇴근길에 밀도 들렀는데 마감세일 해서 식빵 2개, 밤식빵 1개 득템했어요! 원래 2만원인데 만이천원에 샀습니다 ㅎㅎ',
-      author: '빵털이범',
-      date: '2025.12.26',
-      likes: 62,
-      comments: 18,
-      views: 345,
-      hasImage: true,
-    },
-    {
-      id: 5,
-      category: '후기',
-      title: '을지로 레트로 빵투어 코스 후기',
-      content: '태극당 → 오월의 종 → 카페 레이어드 순서로 돌았는데요, 태극당 야채샐러드빵은 진짜 전설이에요. 60년 전통의 맛...',
-      author: '레트로빵',
-      date: '2025.12.25',
-      likes: 73,
-      comments: 15,
-      views: 412,
-      hasImage: true,
-    },
-    {
-      id: 6,
-      category: '모임',
-      title: '[모집] 1/5 토요일 성수동 빵투어 같이 가실 분!',
-      content: '성수동 빵집 4곳 돌 예정이에요. 오후 2시 성수역 3번 출구 집합! 현재 3/6명 모집 완료. 관심 있으시면 댓글 달아주세요~',
-      author: '빵모임장',
-      date: '2025.12.25',
-      likes: 34,
-      comments: 27,
-      views: 289,
-      hasImage: false,
-    },
-    {
-      id: 7,
-      category: '꿀팁',
-      title: '빵 보관법 총정리! 냉동하면 한 달도 OK',
-      content: '빵을 많이 사면 먹기 전에 딱딱해지잖아요. 랩으로 하나씩 감싸서 지퍼백에 넣고 냉동하면 한 달까지 보관 가능해요. 먹을 때는 오븐 180도에서 5분!',
-      author: '빵박사',
-      date: '2025.12.24',
-      likes: 112,
-      comments: 31,
-      views: 789,
-      hasImage: false,
-    },
-    {
-      id: 8,
-      category: '자유',
-      title: '빵지순례 앱 너무 좋아요 ㅠㅠ',
-      content: '코스 만들기 기능으로 우리 동네 빵집 코스 만들었는데 친구들한테 공유했더니 다들 좋아해요! 개발자님 감사합니다 ❤️',
-      author: '빵앱팬',
-      date: '2025.12.24',
-      likes: 56,
-      comments: 9,
-      views: 198,
-      hasImage: false,
-    },
-  ];
-
-  /* --- 인기 게시글 (좋아요 많은 순 상위 5개) --- */
-  const popularPosts = [...posts]
-    .sort((a, b) => b.likes - a.likes)
-    .slice(0, 5);
-
   /* --- 카테고리 필터링 --- */
-  const filteredPosts = activeTab === '전체'
-    ? posts
-    : posts.filter((p) => p.category === activeTab);
+  /* DB에서 이미 카테고리별로 가져오므로 그대로 사용 */
+  const filteredPosts = posts;
 
   /* --- 카테고리별 색상 --- */
   const getCategoryColor = (category) => {
@@ -166,7 +103,20 @@ export default function Community() {
         <p className="cm-subtitle">빵순이들과 함께 빵 이야기를 나눠보세요</p>
       </div>
 
-      {/* ===== 2. 카테고리 탭 + 글쓰기 버튼 ===== */}
+      {/* ===== 2. 검색창 ===== */}
+      <div className="cm-search-bar">
+        <input
+          type="text"
+          className="cm-search-input"
+          placeholder="제목이나 내용으로 검색해보세요"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+        />
+        <button className="cm-search-btn" onClick={handleSearch}>🔍</button>
+      </div>
+
+      {/* ===== 3. 카테고리 탭 + 글쓰기 버튼 ===== */}
       <div className="cm-tab-bar">
         <div className="cm-tabs">
           {tabs.map((tab) => (
@@ -188,29 +138,53 @@ export default function Community() {
 
         {/* --- 왼쪽: 게시글 목록 --- */}
         <div className="cm-post-list">
+          {/* 로딩 중이면 로딩 표시 */}
+          {loading && <p style={{ textAlign: 'center', color: '#999', padding: '40px' }}>게시글을 불러오는 중...</p>}
+
+          {/* 검색 중이면 검색 결과 안내 + 초기화 버튼 */}
+          {searchKeyword && !loading && (
+            <div className="cm-search-result">
+              <span>"{searchKeyword}" 검색 결과 {filteredPosts.length}건</span>
+              <button className="cm-search-clear" onClick={() => { setSearchInput(''); setSearchKeyword(''); }}>
+                검색 초기화
+              </button>
+            </div>
+          )}
+
+          {/* 게시글이 없으면 안내 메시지 */}
+          {!loading && filteredPosts.length === 0 && (
+            <p style={{ textAlign: 'center', color: '#999', padding: '40px' }}>
+              {searchKeyword ? '검색 결과가 없어요. 다른 키워드로 검색해보세요!' : '아직 작성된 글이 없어요. 첫 글을 작성해보세요!'}
+            </p>
+          )}
+
           {filteredPosts.map((post) => (
-            <div key={post.id} className="cm-post-card" onClick={() => navigate(`/community/${post.id}`)}>
+            <div key={post.BOARD_NUM} className="cm-post-card" onClick={() => navigate(`/community/${post.BOARD_NUM}`)}>
               {/* 카드 상단: 카테고리 + 날짜 */}
               <div className="cm-post-top">
                 <span
                   className="cm-post-category"
-                  style={{ color: getCategoryColor(post.category), backgroundColor: getCategoryColor(post.category) + '15' }}
+                  style={{ color: getCategoryColor(post.CATEGORY), backgroundColor: getCategoryColor(post.CATEGORY) + '15' }}
                 >
-                  {post.category}
+                  {post.CATEGORY}
                 </span>
-                <span className="cm-post-date">{post.date}</span>
+                <span className="cm-post-date">{new Date(post.CREATED_TIME).toLocaleDateString('ko-KR')}</span>
               </div>
 
               {/* 제목 */}
-              <h3 className="cm-post-title">{post.title}</h3>
+              <h3 className="cm-post-title">{post.TITLE}</h3>
 
               {/* 내용 미리보기 (2줄까지) */}
-              <p className="cm-post-content">{post.content}</p>
+              <p className="cm-post-content">{post.CONTENT}</p>
 
-              {/* 이미지가 있으면 이미지 자리 표시 */}
-              {post.hasImage && (
+              {/* 이미지가 있으면 실제 사진 보여주기 */}
+              {post.thumbnail && (
                 <div className="cm-post-image">
-                  <span>📷 이미지</span>
+                  <img
+                    src={post.thumbnail.startsWith('http') ? post.thumbnail : `${BASE_URL}${post.thumbnail}`}
+                    alt="게시글 사진"
+                    className="cm-post-thumb"
+                  />
                 </div>
               )}
 
@@ -220,7 +194,7 @@ export default function Community() {
                 <div className="cm-post-stats">
                   <span className="cm-stat">❤️ {post.likes}</span>
                   <span className="cm-stat">💬 {post.comments}</span>
-                  <span className="cm-stat">👁 {post.views}</span>
+                  <span className="cm-stat">👁 {post.VIEWS}</span>
                 </div>
               </div>
             </div>
@@ -234,13 +208,13 @@ export default function Community() {
             <h3 className="cm-popular-title">🔥 인기 게시글</h3>
             <div className="cm-popular-list">
               {popularPosts.map((post, index) => (
-                <div key={post.id} className="cm-popular-item" onClick={() => navigate(`/community/${post.id}`)} style={{ cursor: 'pointer' }}>
+                <div key={post.BOARD_NUM} className="cm-popular-item" onClick={() => navigate(`/community/${post.BOARD_NUM}`)} style={{ cursor: 'pointer' }}>
                   {/* 순위 번호 */}
                   <span className={`cm-popular-rank ${index < 3 ? 'top3' : ''}`}>
                     {index + 1}
                   </span>
                   {/* 제목 (1줄 말줄임) */}
-                  <span className="cm-popular-name">{post.title}</span>
+                  <span className="cm-popular-name">{post.TITLE}</span>
                   {/* 좋아요 수 */}
                   <span className="cm-popular-likes">❤️ {post.likes}</span>
                 </div>

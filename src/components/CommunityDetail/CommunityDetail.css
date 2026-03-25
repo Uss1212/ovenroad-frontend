@@ -119,18 +119,35 @@
   margin-bottom: 28px;
 }
 
-/* 이미지 영역 (임시 플레이스홀더) */
+/* 이미지 영역 */
 .cd-image-area {
   width: 100%;
-  height: 300px;
-  border-radius: 14px;
-  background: #f0ede8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  color: #aaaaaa;
+  display: grid;
+  gap: 8px;
   margin-bottom: 24px;
+}
+
+/* 이미지 1장일 때: 가운데 정렬, 최대 높이 제한 */
+.cd-image-area img {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+/* 이미지 2장일 때: 2열 그리드 */
+.cd-image-area.cd-images-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* 이미지 3장 이상일 때: 2열 그리드 */
+.cd-image-area.cd-images-multi {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* 3장 이상일 때 첫 번째 이미지만 2열 차지 (크게) */
+.cd-image-area.cd-images-multi img:first-child {
+  grid-column: 1 / -1;
 }
 
 /* 본문 텍스트 컨테이너 */
@@ -640,9 +657,16 @@
     font-size: 20px;
   }
 
-  /* 이미지 높이 줄이기 */
-  .cd-image-area {
-    height: 200px;
+  /* 이미지: 모바일에서는 1열로 */
+  .cd-image-area.cd-images-2,
+  .cd-image-area.cd-images-multi {
+    grid-template-columns: 1fr;
+  }
+  .cd-image-area.cd-images-multi img:first-child {
+    grid-column: 1;
+  }
+  .cd-image-area img {
+    max-height: 300px;
   }
 
   /* 좋아요/공유 버튼 크기 조절 */

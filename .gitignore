@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Firebase 비밀키 (절대 git에 올리면 안 됨!)
+firebase-service-account.json
+
+# 환경변수 파일 (비밀번호, API 키 등)
+.env
+.env.local
+.env.production
+
+# 백엔드 서버 (별도 저장소로 관리)
+server/

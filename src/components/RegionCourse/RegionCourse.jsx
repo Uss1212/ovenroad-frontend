@@ -1,14 +1,14 @@
 /* ===================================================
-   RegionCourse 컴포넌트 (지역별 추천 코스)
+   RegionCourse 컴포넌트 → Best 5
    - 메인 페이지에서 TodayCourse 바로 아래에 위치
-   - "용산구 추천 코스" 같은 제목 + View more 링크
-   - 가로로 스크롤되는 코스 카드 5장
-   - ◀ ▶ 버튼으로 카드를 좌우로 넘김
-   - 카드에는 썸네일 이미지 + 코스 제목 + 작성자 + 좋아요/스크랩 수
+   - 평점 높은 순으로 상위 5개 빵집을 카드로 보여줌
+   - 사진 위에 순위 번호 표시
+   - 백엔드 API에서 빵집 데이터를 가져옴
    =================================================== */
 
-import { useState, useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BASE_URL } from '../../api/api';
 import './RegionCourse.css';
 
 export default function RegionCourse() {
@@ -17,80 +17,51 @@ export default function RegionCourse() {
   const navigate = useNavigate();
 
   /* --- 스크롤 영역을 직접 조작하기 위한 ref --- */
-  // useRef: HTML 요소를 직접 가리키는 "손가락" 같은 것
-  // 스크롤 영역(카드 목록)을 가리켜서 ◀▶ 버튼 누를 때 스크롤시킴
   const scrollRef = useRef(null);
 
-  /* --- 추천 코스 더미 데이터 --- */
-  // 나중에 백엔드 API에서 받아올 데이터
-  // 지금은 가짜 데이터로 화면을 먼저 만듦
-  const courses = [
-    {
-      id: 1,
-      title: '을지로 빵 투어 코스',
-      author: '빵지순례자',
-      likes: 128,
-      scraps: 45,
-      places: 5,        // 코스에 포함된 장소 수
-      image: null,       // 나중에 실제 이미지 URL
-    },
-    {
-      id: 2,
-      title: '연남동 카페 & 베이커리',
-      author: '카페탐험가',
-      likes: 96,
-      scraps: 32,
-      places: 4,
-      image: null,
-    },
-    {
-      id: 3,
-      title: '성수동 디저트 로드',
-      author: '달콤이',
-      likes: 214,
-      scraps: 87,
-      places: 6,
-      image: null,
-    },
-    {
-      id: 4,
-      title: '홍대 빵집 완전정복',
-      author: '글루텐러버',
-      likes: 73,
-      scraps: 28,
-      places: 4,
-      image: null,
-    },
-    {
-      id: 5,
-      title: '이태원 브런치 코스',
-      author: '오븐마스터',
-      likes: 156,
-      scraps: 61,
-      places: 5,
-      image: null,
-    },
-  ];
+  /* --- DB에서 불러온 빵집 Best 5 데이터 --- */
+  const [bakeries, setBakeries] = useState([]);
+
+  /* --- 백엔드 API에서 평점 높은 순 Best 5 가져오기 --- */
+  useEffect(() => {
+    async function fetchBest5() {
+      try {
+        const res = await fetch(`${BASE_URL}/api/places`);
+        const data = await res.json();
+
+        /* 평점 높은 순 → 같으면 리뷰 많은 순으로 정렬, 상위 5개 */
+        const mapped = data
+          .filter(p => p.LATITUDE && p.LONGITUDE && p.avgRating)
+          .map(p => ({
+            id: p.PLACE_NUM,
+            name: p.PLACE_NAME,
+            address: p.ADDRESS || '',
+            rating: Number(p.avgRating).toFixed(1),
+            reviewCount: p.reviewCount || 0,
+            image: p.thumbnailImage || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=300&fit=crop',
+          }))
+          .sort((a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount)
+          .slice(0, 5);
+
+        setBakeries(mapped);
+      } catch (err) {
+        console.error('Best 5 데이터 불러오기 실패:', err);
+      }
+    }
+    fetchBest5();
+  }, []);
 
   /* --- ◀ 왼쪽으로 스크롤 --- */
-  // 카드 목록을 왼쪽으로 300px만큼 부드럽게 이동
   const scrollLeft = () => {
     if (scrollRef.current) {
-      scrollRef.current.scrollBy({
-        left: -300,           // 왼쪽으로 300px 이동
-        behavior: 'smooth',   // 부드럽게 스크롤
-      });
+      scrollRef.current.scrollBy({ left: -300, behavior: 'smooth' });
     }
   };
 
   /* --- ▶ 오른쪽으로 스크롤 --- */
-  // 카드 목록을 오른쪽으로 300px만큼 부드럽게 이동
   const scrollRight = () => {
     if (scrollRef.current) {
-      scrollRef.current.scrollBy({
-        left: 300,
-        behavior: 'smooth',
-      });
+      scrollRef.current.scrollBy({ left: 300, behavior: 'smooth' });
     }
   };
 
@@ -100,22 +71,15 @@ export default function RegionCourse() {
       {/* ===== 상단: 제목 + View more ===== */}
       <div className="region-course-header">
         <div>
-          {/* 섹션 제목: 어떤 지역의 추천 코스인지 */}
-          <h2 className="region-course-title">용산구 추천 코스</h2>
-          {/* 부제목: 설명 한 줄 */}
+          <h2 className="region-course-title">Best 5</h2>
           <p className="region-course-subtitle">
-            용산구의 인기 빵지순례 코스를 확인해보세요
+            평점이 가장 높은 빵집 TOP 5
           </p>
         </div>
-        {/* 더보기 링크: 클릭하면 해당 지역의 코스 전체 목록 페이지로 이동 */}
-        {/* 더보기 링크: 클릭하면 추천코스 목록 페이지(/courses)로 이동 */}
         <a
-          href="/courses"
+          href="/places"
           className="region-course-more"
-          onClick={(e) => {
-            e.preventDefault();
-            navigate('/courses');
-          }}
+          onClick={(e) => { e.preventDefault(); navigate('/places'); }}
         >
           View more →
         </a>
@@ -130,45 +94,37 @@ export default function RegionCourse() {
         </button>
 
         {/* --- 카드 목록 (가로 스크롤) --- */}
-        {/* ref={scrollRef}: 이 영역을 scrollRef로 가리킴 → 버튼으로 스크롤 제어 가능 */}
         <div className="region-course-list" ref={scrollRef}>
-          {courses.map((course) => (
+          {bakeries.map((bakery, index) => (
             <div
-              key={course.id}
+              key={bakery.id}
               className="region-card"
-              onClick={() => navigate(`/courses/${course.id}`)}
+              onClick={() => navigate(`/place/${bakery.id}`)}
               style={{ cursor: 'pointer' }}
             >
 
-              {/* 카드 상단: 썸네일 이미지 */}
+              {/* 카드 상단: 썸네일 이미지 + 순위 번호 */}
               <div className="region-card-img">
-                {/* 나중에 실제 이미지로 교체 */}
-                <div className="region-card-placeholder">
-                  🍞
+                <img
+                  src={bakery.image}
+                  alt={bakery.name}
+                  className="region-card-photo"
+                />
+                {/* 순위 뱃지 */}
+                <div className={`region-card-rank region-card-rank-${index + 1}`}>
+                  {index + 1}
                 </div>
-                {/* 장소 수 뱃지: 카드 오른쪽 상단에 표시 */}
-                <span className="region-card-badge">
-                  {course.places}곳
-                </span>
               </div>
 
-              {/* 카드 하단: 텍스트 정보 */}
+              {/* 카드 하단: 빵집 정보 */}
               <div className="region-card-body">
-                {/* 코스 제목 */}
-                <h3 className="region-card-title">{course.title}</h3>
-
-                {/* 작성자 정보 */}
+                <h3 className="region-card-title">{bakery.name}</h3>
                 <div className="region-card-author">
-                  {/* 작성자 프로필 사진 (원형) */}
-                  <div className="region-author-avatar" />
-                  {/* 작성자 이름 */}
-                  <span>{course.author}</span>
+                  <span>{bakery.address}</span>
                 </div>
-
-                {/* 좋아요 수 + 스크랩 수 */}
                 <div className="region-card-stats">
-                  <span>❤️ {course.likes}</span>
-                  <span>⭐ {course.scraps}</span>
+                  <span>⭐ {bakery.rating}</span>
+                  <span>💬 리뷰 {bakery.reviewCount}</span>
                 </div>
               </div>
 

@@ -27,9 +27,10 @@ import FindAccount from './components/FindAccount/FindAccount'; // 아이디/비
 import CourseDetail from './components/CourseDetail/CourseDetail'; // 코스 상세
 import MyPage from './components/MyPage/MyPage'; // 마이페이지
 import CreateCourse from './components/CreateCourse/CreateCourse'; // 코스 만들기
+import CourseComplete from './components/CourseComplete/CourseComplete'; // 코스 완성
 import PlaceDetail from './components/PlaceDetail/PlaceDetail'; // 빵집 상세
 import PlaceList from './components/PlaceList/PlaceList'; // 빵집 목록
-/* BreadMap: 빵지도 별도 페이지는 제거 (메인 HeroBanner 지도로 통합) */
+import BreadMap from './components/BreadMap/BreadMap'; // 빵지도
 import CourseList from './components/CourseList/CourseList'; // 추천코스 목록
 import Community from './components/Community/Community'; // 커뮤니티
 import CommunityDetail from './components/CommunityDetail/CommunityDetail'; // 커뮤니티 글 상세
@@ -87,11 +88,14 @@ function App() {
             <Route path="/mypage" element={<MyPage />} />
             {/* "/create" → 코스 만들기 */}
             <Route path="/create" element={<CreateCourse />} />
+            {/* "/complete" → 코스 완성 */}
+            <Route path="/complete" element={<CourseComplete />} />
             {/* "/place/:id" → 빵집 상세 페이지 (:id는 빵집 번호) */}
             <Route path="/place/:id" element={<PlaceDetail />} />
             {/* "/places" → 빵집 목록 (인기있는 빵집 View more) */}
             <Route path="/places" element={<PlaceList />} />
-            {/* /map 라우트 제거 → 메인 HeroBanner 지도로 통합 */}
+            {/* "/map" → 빵지도 */}
+            <Route path="/map" element={<BreadMap />} />
             {/* "/courses" → 추천코스 목록 */}
             <Route path="/courses" element={<CourseList />} />
             {/* "/community" → 커뮤니티 */}

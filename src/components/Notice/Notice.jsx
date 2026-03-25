@@ -1,12 +1,13 @@
 /* ===================================================
-   Notice 컴포넌트 (공지사항)
+   Notice 컴포넌트 (공지사항 위젯)
    - 메인 페이지 하단에 위치
-   - "공지사항" 제목 + View more 링크
-   - 공지사항 목록: 각 항목에 작은 이미지 + 제목 + 날짜
-   - 최신 공지 4~5개를 보여줌
+   - DB에서 최신 공지 4개를 가져와서 보여줌
+   - "View more"를 누르면 공지사항 목록 페이지로 이동
    =================================================== */
 
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getNoticeList } from '../../api/api';
 import './Notice.css';
 
 export default function Notice() {
@@ -14,35 +15,21 @@ export default function Notice() {
   /* --- 페이지 이동 도구 --- */
   const navigate = useNavigate();
 
-  /* --- 공지사항 더미 데이터 --- */
-  // 나중에 백엔드 API(NOTICE 테이블)에서 받아올 데이터
-  // 지금은 가짜 데이터로 화면을 먼저 만듦
-  const notices = [
-    {
-      id: 1,
-      title: '오븐로드 서비스 오픈 안내',
-      date: '2026.03.15',
-      image: null,  // 나중에 실제 이미지 URL
-    },
-    {
-      id: 2,
-      title: '3월 이벤트: 빵지순례 스탬프 투어',
-      date: '2026.03.12',
-      image: null,
-    },
-    {
-      id: 3,
-      title: '신규 지역 추가 안내 (성동구, 강남구)',
-      date: '2026.03.10',
-      image: null,
-    },
-    {
-      id: 4,
-      title: '개인정보 처리방침 변경 안내',
-      date: '2026.03.05',
-      image: null,
-    },
-  ];
+  /* --- 공지사항 데이터 (DB에서 가져옴) --- */
+  const [notices, setNotices] = useState([]);
+
+  /* --- 공지사항 불러오기 --- */
+  useEffect(() => {
+    const fetchNotices = async () => {
+      try {
+        const data = await getNoticeList();
+        setNotices(data.slice(0, 4));  /* 최신 4개만 표시 */
+      } catch (err) {
+        console.error('공지사항 불러오기 실패:', err);
+      }
+    };
+    fetchNotices();
+  }, []);
 
   return (
     <section className="notice">
@@ -50,7 +37,6 @@ export default function Notice() {
       {/* ===== 상단: 제목 + View more ===== */}
       <div className="notice-header">
         <h2 className="notice-title">공지사항</h2>
-        {/* 더보기 링크: 클릭하면 공지사항 목록 페이지(/notice)로 이동 */}
         <a
           href="/notice"
           className="notice-more"
@@ -65,27 +51,28 @@ export default function Notice() {
 
       {/* ===== 공지사항 목록 ===== */}
       <ul className="notice-list">
-        {notices.map((notice) => (
-          <li
-            key={notice.id}
-            className="notice-item"
-            onClick={() => navigate(`/notice/${notice.id}`)}
-            style={{ cursor: 'pointer' }}
-          >
-
-            {/* 왼쪽: 공지 썸네일 이미지 */}
-            <div className="notice-item-img">
-              <span>📢</span>
-            </div>
-
-            {/* 가운데: 공지 제목 */}
-            <p className="notice-item-title">{notice.title}</p>
-
-            {/* 오른쪽: 작성 날짜 */}
-            <span className="notice-item-date">{notice.date}</span>
-
+        {notices.length === 0 ? (
+          <li className="notice-item" style={{ justifyContent: 'center', color: '#999' }}>
+            등록된 공지사항이 없습니다.
           </li>
-        ))}
+        ) : (
+          notices.map((notice) => (
+            <li
+              key={notice.NOTICE_NUM}
+              className="notice-item"
+              onClick={() => navigate(`/notice/${notice.NOTICE_NUM}`)}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="notice-item-img">
+                <span>📢</span>
+              </div>
+              <p className="notice-item-title">{notice.TITLE}</p>
+              <span className="notice-item-date">
+                {new Date(notice.CREATED_TIME).toLocaleDateString('ko-KR')}
+              </span>
+            </li>
+          ))
+        )}
       </ul>
 
     </section>

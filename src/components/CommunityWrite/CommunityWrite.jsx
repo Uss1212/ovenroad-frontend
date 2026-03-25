@@ -10,14 +10,19 @@
      6) 등록 / 취소 버튼
    =================================================== */
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { createBoard, updateBoard, getBoardDetail, BASE_URL } from '../../api/api';
 import './CommunityWrite.css';
 
 export default function CommunityWrite() {
 
   /* --- 페이지 이동 도구 --- */
   const navigate = useNavigate();
+  /* URL에서 boardNum 가져오기 (수정 모드일 때만 존재) */
+  const { boardNum } = useParams();
+  /* 수정 모드인지 여부 */
+  const isEditMode = !!boardNum;
 
   /* --- 상태(state) 관리 --- */
 
@@ -35,6 +40,29 @@ export default function CommunityWrite() {
 
   /* 등록 중인지 여부 (중복 클릭 방지) */
   const [submitting, setSubmitting] = useState(false);
+
+  /* --- 수정 모드: 기존 글 데이터 불러오기 --- */
+  useEffect(() => {
+    if (!isEditMode) return;
+    async function fetchPost() {
+      try {
+        const data = await getBoardDetail(boardNum);
+        setCategory(data.CATEGORY);
+        setTitle(data.TITLE);
+        setContent(data.CONTENT);
+        /* 기존 이미지가 있으면 미리보기 목록에 추가 */
+        /* 이미 업로드된 URL이므로 file은 null, preview는 URL 자체 */
+        if (data.images && data.images.length > 0) {
+          setImages(data.images.map(url => ({ file: null, preview: url, uploaded: url })));
+        }
+      } catch (err) {
+        console.error('글 불러오기 실패:', err);
+        alert('글을 불러올 수 없습니다.');
+        navigate('/community');
+      }
+    }
+    fetchPost();
+  }, [boardNum]);
 
   /* --- 카테고리 목록 --- */
   /* 사용자가 글의 종류를 선택할 수 있는 카테고리들 */
@@ -88,16 +116,17 @@ export default function CommunityWrite() {
   /* --- 이미지 삭제 함수 --- */
   /* 미리보기에서 X 버튼을 누르면 해당 이미지 제거 */
   const handleImageRemove = (index) => {
-    /* URL.revokeObjectURL: 더 이상 안 쓰는 미리보기 URL을 메모리에서 해제 */
-    URL.revokeObjectURL(images[index].preview);
-
+    /* 새로 추가한 이미지만 URL 해제 (기존 업로드된 이미지는 해제 불필요) */
+    if (!images[index].uploaded) {
+      URL.revokeObjectURL(images[index].preview);
+    }
     /* 해당 인덱스의 이미지를 빼고 새 배열 만들기 */
     setImages(images.filter((_, i) => i !== index));
   };
 
   /* --- 글 등록 함수 --- */
   /* "등록" 버튼을 누르면 실행 */
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     /* 필수 항목 검증: 카테고리, 제목, 내용이 모두 있어야 함 */
     if (!category) {
       alert('카테고리를 선택해주세요!');
@@ -112,20 +141,68 @@ export default function CommunityWrite() {
       return;
     }
 
+    /* 로그인 확인 */
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+      alert('로그인이 필요합니다!');
+      navigate('/login');
+      return;
+    }
+    const user = JSON.parse(userData);
+
     /* 중복 클릭 방지 */
     setSubmitting(true);
 
-    /* ==============================
-       여기에 나중에 백엔드 API 호출 코드가 들어갈 자리
-       예: await fetch('/api/community', {
-             method: 'POST',
-             body: JSON.stringify({ category, title, content, images })
-           });
-       ============================== */
+    try {
+      /* 이미지 처리: 새로 추가한 파일은 Firebase에 업로드, 기존 URL은 그대로 유지 */
+      let imageUrls = [];
+      if (images.length > 0) {
+        for (const img of images) {
+          if (img.uploaded) {
+            /* 이미 업로드된 이미지 (수정 모드에서 기존 이미지) */
+            imageUrls.push(img.uploaded);
+          } else if (img.file) {
+            /* 새로 추가한 이미지 → Firebase에 업로드 */
+            const formData = new FormData();
+            formData.append('image', img.file);
+            formData.append('folder', 'board');
+            const uploadRes = await fetch(`${BASE_URL}/api/upload/image`, {
+              method: 'POST',
+              body: formData,
+            });
+            const uploadData = await uploadRes.json();
+            if (uploadData.url) imageUrls.push(uploadData.url);
+          }
+        }
+      }
 
-    /* 지금은 임시로 알림만 띄우고 커뮤니티 목록으로 이동 */
-    alert('글이 등록되었어요! (백엔드 연결 후 실제 저장됩니다)');
-    navigate('/community');
+      if (isEditMode) {
+        /* 수정 모드: 기존 글 업데이트 */
+        await updateBoard(boardNum, {
+          userNum: user.userNum,
+          category,
+          title: title.trim(),
+          content: content.trim(),
+          images: imageUrls,
+        });
+        alert('글이 수정되었어요!');
+        navigate(`/community/${boardNum}`);
+      } else {
+        /* 새 글 작성 */
+        await createBoard({
+          userNum: user.userNum,
+          category,
+          title: title.trim(),
+          content: content.trim(),
+          images: imageUrls,
+        });
+        alert('글이 등록되었어요!');
+        navigate('/community');
+      }
+    } catch (err) {
+      alert((isEditMode ? '글 수정' : '글 등록') + '에 실패했습니다: ' + err.message);
+      setSubmitting(false);
+    }
   };
 
   /* --- 제목 글자 수 제한 (최대 50자) --- */
@@ -147,7 +224,7 @@ export default function CommunityWrite() {
           ← 돌아가기
         </button>
         {/* 페이지 제목 */}
-        <h1 className="cw-page-title">글쓰기</h1>
+        <h1 className="cw-page-title">{isEditMode ? '글 수정' : '글쓰기'}</h1>
         {/* 오른쪽 빈 공간 (가운데 정렬용) */}
         <div className="cw-top-spacer" />
       </div>
@@ -297,7 +374,7 @@ export default function CommunityWrite() {
           /* 등록 중이면 버튼 비활성화 (중복 클릭 방지) */
           disabled={submitting}
         >
-          {submitting ? '등록 중...' : '등록하기'}
+          {submitting ? (isEditMode ? '수정 중...' : '등록 중...') : (isEditMode ? '수정하기' : '등록하기')}
         </button>
       </div>
     </div>

@@ -1,0 +1,499 @@
+/* ===================================================
+   빵BTI 미니게임 스타일
+   - 4개 질문 → 프로그레스 바 → 4가지 결과 유형
+   - 따뜻한 빵 느낌의 그라데이션 배경
+   - 질문 전환 애니메이션 + 점수 막대그래프
+   =================================================== */
+
+/* 섹션 전체 감싸기 (가운데 정렬 + 좌우 여백) */
+.bti-section {
+  max-width: 1280px;
+  margin: 4rem auto 0;
+  padding: 0 1rem;
+}
+
+/* 빵BTI 박스 (둥근 카드 형태) */
+.bti-box {
+  background: linear-gradient(135deg, #fef3c7, #fff7ed, #fefce8);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(254, 243, 199, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 태블릿 이상에서 패딩 넓히기 */
+@media (min-width: 768px) {
+  .bti-box {
+    padding: 3rem;
+  }
+}
+
+/* 배경 장식 동그라미 1 (오른쪽 위) */
+.bti-deco1 {
+  position: absolute;
+  top: -2.5rem;
+  right: -2.5rem;
+  width: 10rem;
+  height: 10rem;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  filter: blur(2rem);
+}
+
+/* 배경 장식 동그라미 2 (왼쪽 아래) */
+.bti-deco2 {
+  position: absolute;
+  bottom: -2.5rem;
+  left: -2.5rem;
+  width: 10rem;
+  height: 10rem;
+  background: rgba(254, 243, 199, 0.4);
+  border-radius: 50%;
+  filter: blur(2rem);
+}
+
+/* 상단 헤더 (뱃지 + 제목 + 설명) */
+.bti-header {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 2rem;
+}
+
+/* MINI GAME 뱃지 (갈색 둥근 라벨) */
+.bti-badge {
+  display: inline-block;
+  padding: 0.375rem 1rem;
+  background: #92400e;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 900;
+  border-radius: 9999px;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  animation: bti-pulse 2s infinite;
+}
+
+/* 뱃지 깜빡이는 애니메이션 */
+@keyframes bti-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* 메인 제목 */
+.bti-title {
+  font-size: 1.875rem;
+  font-weight: 900;
+  color: #1c1917;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.025em;
+}
+
+/* 태블릿 이상에서 제목 크게 */
+@media (min-width: 768px) {
+  .bti-title {
+    font-size: 2.25rem;
+  }
+}
+
+/* 부제목 */
+.bti-subtitle {
+  color: #57534e;
+  font-weight: 500;
+}
+
+/* ===== 프로그레스 바 (진행 상황 표시) ===== */
+.bti-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 20rem;
+  margin: 0 auto 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* 프로그레스 바 배경 (회색 트랙) */
+.bti-progress-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+/* 프로그레스 바 채워지는 부분 (갈색) */
+.bti-progress-fill {
+  height: 100%;
+  background: #92400e;
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+
+/* 진행 텍스트 ("1 / 4") */
+.bti-progress-text {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #92400e;
+  white-space: nowrap;
+}
+
+/* 질문 텍스트 */
+.bti-question {
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-align: center;
+  color: #78350f;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
+  /* 질문이 바뀔 때 페이드인 애니메이션 */
+  animation: bti-fadeIn 0.35s ease;
+}
+
+/* 질문 전환 페이드인 효과 */
+@keyframes bti-fadeIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* 선택지 2개 나란히 (그리드) */
+.bti-options {
+  max-width: 42rem;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
+  /* 선택지도 페이드인 */
+  animation: bti-fadeIn 0.35s ease;
+}
+
+/* 태블릿 이상에서 2열로 */
+@media (min-width: 768px) {
+  .bti-options {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* 선택지 버튼 하나 */
+.bti-option {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 선택지 마우스 올리면 위로 뜨면서 강조 */
+.bti-option:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  transform: translateY(-8px);
+  border-color: #fbbf24;
+}
+
+/* 선택지 이모지 */
+.bti-emoji {
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
+  display: block;
+  transition: transform 0.3s;
+}
+
+/* 이모지 마우스 올리면 커지기 */
+.bti-option:hover .bti-emoji {
+  transform: scale(1.1);
+}
+
+/* 선택지 제목 */
+.bti-option-title {
+  font-weight: 900;
+  font-size: 1.125rem;
+  color: #1c1917;
+  margin-bottom: 0.25rem;
+}
+
+/* 선택지 설명 */
+.bti-option-desc {
+  font-weight: 700;
+  color: #92400e;
+}
+
+/* ===== 결과 화면 ===== */
+.bti-result {
+  max-width: 42rem;
+  margin: 0 auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  animation: bti-fadeZoomIn 0.5s ease;
+}
+
+/* 결과 나타나는 애니메이션 */
+@keyframes bti-fadeZoomIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* 결과 이모지 */
+.bti-result-emoji {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+}
+
+/* 결과 제목 */
+.bti-result-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #1c1917;
+  margin-bottom: 0.5rem;
+}
+
+/* 결과 강조 텍스트 (바삭장인, 달달마스터 등) */
+.bti-result-highlight {
+  color: #92400e;
+}
+
+/* 결과 설명 */
+.bti-result-desc {
+  color: #57534e;
+  font-weight: 500;
+  margin-bottom: 2rem;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+
+/* ===== 점수 막대그래프 ===== */
+.bti-score-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+/* 점수 한 줄 (이름 + 막대 + 숫자) */
+.bti-score-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* 유형 이름 (이모지 + 텍스트) */
+.bti-score-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1c1917;
+  min-width: 100px;
+  white-space: nowrap;
+}
+
+/* 막대 배경 (회색 트랙) */
+.bti-score-track {
+  flex: 1;
+  height: 10px;
+  background: #f5f5f4;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+/* 막대 채워지는 부분 (유형별 색상) */
+.bti-score-fill {
+  height: 100%;
+  border-radius: 9999px;
+  /* 채워지는 애니메이션 */
+  animation: bti-barGrow 0.6s ease forwards;
+}
+
+/* 막대가 왼쪽에서 오른쪽으로 자라는 효과 */
+@keyframes bti-barGrow {
+  from { width: 0 !important; }
+}
+
+/* 점수 숫자 */
+.bti-score-num {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #78716c;
+  min-width: 16px;
+  text-align: right;
+}
+
+/* ===== 추천 빵집 미리보기 ===== */
+.bti-recommend {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+/* 추천 빵집 섹션 제목 ("바삭장인을 위한 추천 빵집") */
+.bti-recommend-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #1c1917;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+/* 추천 빵집 카드 3개를 가로로 나열 */
+.bti-recommend-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+/* 추천 빵집 카드 한 개 */
+.bti-recommend-card {
+  background: #fafaf9;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #e7e5e4;
+}
+
+/* 카드 마우스 올리면 위로 뜨기 */
+.bti-recommend-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* 추천 빵집 이미지 영역 */
+.bti-recommend-img {
+  width: 100%;
+  height: 80px;
+  overflow: hidden;
+  background: #f5f5f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 빵집 사진 */
+.bti-recommend-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 사진 없을 때 이모지 */
+.bti-recommend-placeholder {
+  font-size: 2rem;
+}
+
+/* 빵집 이름 + 별점 영역 */
+.bti-recommend-info {
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+/* 빵집 이름 */
+.bti-recommend-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1c1917;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 별점 */
+.bti-recommend-rating {
+  font-size: 0.7rem;
+  color: #78716c;
+}
+
+/* 모바일에서 추천 카드 세로로 바꾸기 */
+@media (max-width: 600px) {
+  .bti-recommend-list {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .bti-recommend-img {
+    height: 60px;
+  }
+
+  .bti-recommend-name {
+    font-size: 0.7rem;
+  }
+}
+
+/* 결과 버튼들 (다시하기 + 추천코스) */
+.bti-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+/* 다시하기 버튼 (회색) */
+.bti-btn-retry {
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  background: #f5f5f4;
+  color: #57534e;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.bti-btn-retry:hover {
+  background: #e7e5e4;
+}
+
+/* 추천 코스 보러가기 버튼 (갈색) */
+.bti-btn-explore {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  background: #92400e;
+  color: white;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(146, 64, 14, 0.2);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.bti-btn-explore:hover {
+  background: #78350f;
+  transform: translateY(-2px);
+}
+
+/* ===== 반응형: 모바일 ===== */
+@media (max-width: 600px) {
+  .bti-section {
+    margin: 2rem auto 0;
+  }
+
+  .bti-title {
+    font-size: 1.5rem;
+  }
+
+  .bti-question {
+    font-size: 1.1rem;
+  }
+
+  .bti-score-label {
+    min-width: 80px;
+    font-size: 0.75rem;
+  }
+}

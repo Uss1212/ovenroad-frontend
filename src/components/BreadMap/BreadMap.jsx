@@ -11,9 +11,14 @@
    =================================================== */
 
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { BASE_URL } from '../../api/api';
 import './BreadMap.css';
 
 export default function BreadMap() {
+
+  /* ── 페이지 이동 도구 ── */
+  const navigate = useNavigate();
 
   /* ── 상태(state) 관리 ── */
 
@@ -23,8 +28,6 @@ export default function BreadMap() {
   /* 선택한 지역 필터 (전체, 마포구, 종로구 등) */
   const [activeRegion, setActiveRegion] = useState('전체');
 
-  /* 선택한 카테고리 필터 (전체, 베이커리, 카페 등) */
-  const [activeCategory, setActiveCategory] = useState('전체');
 
   /* 선택한 인증 뱃지 필터 (블루리본, 명장, 미슐랭) */
   /* 여러 개를 동시에 선택할 수 있도록 배열로 관리 */
@@ -35,6 +38,9 @@ export default function BreadMap() {
 
   /* 상세 패널에 보여줄 빵집 정보 (null이면 목록 표시, 값이 있으면 상세 표시) */
   const [detailShop, setDetailShop] = useState(null);
+
+  /* 선택한 빵집의 리뷰 목록 */
+  const [detailReviews, setDetailReviews] = useState([]);
 
   /* ── 지도 관련 참조(ref) ── */
   /* mapRef: 네이버 지도를 그릴 div를 가리키는 참조 */
@@ -60,8 +66,6 @@ export default function BreadMap() {
     '동대문구', '강북구', '구로구', '강동구', '성북구',
   ];
 
-  /* 카테고리 목록 */
-  const categories = ['베이커리'];
 
   /* ── 인증 뱃지 목록 ── */
   /* 블루리본: 블루리본 서베이에서 선정한 맛집 (파란색) */
@@ -77,7 +81,7 @@ export default function BreadMap() {
     async function fetchPlaces() {
       try {
         /* 백엔드 API 호출: 모든 빵집 목록 가져오기 */
-        const res = await fetch('http://localhost:8080/api/places');
+        const res = await fetch(`${BASE_URL}/api/places`);
         const data = await res.json();
 
         /* API 응답 데이터를 프론트엔드 형식으로 변환 */
@@ -103,6 +107,7 @@ export default function BreadMap() {
               signature: '',                           /* 대표메뉴 (추후 추가) */
               tags: [],                                /* 태그 (추후 추가) */
               badges: badgeList,                       /* 인증 뱃지 */
+              thumbnail: p.thumbnailImage || null,     /* 대표 이미지 URL */
               lat: parseFloat(p.LATITUDE),             /* 위도 */
               lng: parseFloat(p.LONGITUDE),            /* 경도 */
             };
@@ -110,12 +115,40 @@ export default function BreadMap() {
 
         /* 변환한 데이터를 상태에 저장 → 화면에 반영됨 */
         setBakeries(mapped);
+
+        /* URL 해시에 #place/ID가 있으면 해당 빵집 상세 패널 자동 열기 */
+        /* 예: /map#place/3 → ID가 3인 빵집의 상세 패널을 바로 보여줌 */
+        const hash = window.location.hash;
+        const placeMatch = hash.match(/#place\/(\d+)/);
+        if (placeMatch) {
+          const placeId = parseInt(placeMatch[1]);
+          const found = mapped.find((b) => b.id === placeId);
+          if (found) {
+            setDetailShop(found);
+            setSelectedShop(placeId);
+          }
+        }
       } catch (err) {
         console.error('빵집 데이터 불러오기 실패:', err);
       }
     }
     fetchPlaces();
   }, []);
+
+  /* ── 빵집 상세 클릭 시 리뷰 가져오기 ── */
+  useEffect(() => {
+    if (!detailShop) { setDetailReviews([]); return; }
+    async function fetchReviews() {
+      try {
+        const res = await fetch(`${BASE_URL}/api/places/${detailShop.id}`);
+        const data = await res.json();
+        setDetailReviews(data.reviews || []);
+      } catch (err) {
+        console.error('리뷰 불러오기 실패:', err);
+      }
+    }
+    fetchReviews();
+  }, [detailShop?.id]);
 
   /* ── 뱃지 토글 함수 ── */
   /* 뱃지 버튼을 클릭하면: 이미 선택된 뱃지면 빼고, 안 선택된 뱃지면 추가 */
@@ -132,9 +165,7 @@ export default function BreadMap() {
   const filteredBakeries = bakeries.filter((shop) => {
     /* 1) 지역 필터: "전체"이면 통과, 아니면 같은 지역만 */
     const regionMatch = activeRegion === '전체' || shop.region === activeRegion;
-    /* 2) 카테고리 필터: "전체"이면 통과, 아니면 같은 카테고리만 */
-    const categoryMatch = activeCategory === '전체' || shop.category === activeCategory;
-    /* 3) 검색어 필터: 빵집 이름이나 주소에 검색어가 포함되면 통과 */
+    /* 2) 검색어 필터: 빵집 이름이나 주소에 검색어가 포함되면 통과 */
     const searchMatch =
       searchKeyword === '' ||
       shop.name.includes(searchKeyword) ||
@@ -143,8 +174,8 @@ export default function BreadMap() {
     const badgeMatch =
       activeBadges.length === 0 ||
       activeBadges.some((badge) => shop.badges?.includes(badge));
-    /* 네 조건 모두 만족하는 빵집만 보여줌 */
-    return regionMatch && categoryMatch && searchMatch && badgeMatch;
+    /* 세 조건 모두 만족하는 빵집만 보여줌 */
+    return regionMatch && searchMatch && badgeMatch;
   });
 
   /* ── 별점을 ★ 문자로 변환하는 함수 ── */
@@ -313,8 +344,61 @@ export default function BreadMap() {
       /* fitBounds: 지정한 영역이 전부 보이도록 지도 확대/축소 자동 조정 */
       map.fitBounds(bounds, { top: 60, right: 60, bottom: 60, left: 60 });
     }
-  }, [filteredBakeries.length, activeRegion, activeCategory, searchKeyword, activeBadges]);
+  }, [filteredBakeries.length, activeRegion, searchKeyword, activeBadges]);
   /* ↑ 필터 조건이 바뀔 때마다 마커를 다시 그림 */
+
+  /* ── URL 해시로 선택된 빵집이 있으면 지도를 그 위치로 이동 ── */
+  /* detailShop이 설정되고 마커가 준비되면 해당 빵집으로 줌인 */
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    /* 지도, 상세 빵집, 마커가 모두 준비됐을 때만 실행 */
+    if (!map || !detailShop || markersRef.current.length === 0) return;
+
+    /* 지도 중심을 선택된 빵집 위치로 이동 */
+    map.panTo(new window.naver.maps.LatLng(detailShop.lat, detailShop.lng));
+    /* 빵집이 잘 보이도록 적당히 확대 */
+    map.setZoom(15);
+
+    /* 해당 빵집의 마커를 찾아서 정보창(말풍선) 열기 */
+    const targetMarker = markersRef.current.find(m => m._shopId === detailShop.id);
+    if (targetMarker) {
+      /* 기존에 열려있는 정보창 닫기 */
+      if (infoWindowRef.current) {
+        infoWindowRef.current.close();
+      }
+      /* 새 정보창 만들어서 열기 */
+      const infoWindow = new window.naver.maps.InfoWindow({
+        content: `
+          <div style="
+            padding: 14px 18px;
+            min-width: 180px;
+            font-family: 'Pretendard', sans-serif;
+            line-height: 1.5;
+          ">
+            <div style="font-size: 15px; font-weight: 800; color: #111; margin-bottom: 4px;">
+              ${detailShop.name}
+            </div>
+            ${detailShop.rating > 0 ? `<div style="font-size: 12px; color: #f59e0b; margin-bottom: 4px;">
+              ★ ${detailShop.rating} <span style="color: #aaa;">(${detailShop.reviewCount})</span>
+            </div>` : ''}
+            ${detailShop.signature ? `<div style="font-size: 12px; color: #666;">
+              ${detailShop.signature}
+            </div>` : ''}
+            <div style="font-size: 11px; color: #999; margin-top: 4px;">
+              ${detailShop.address}
+            </div>
+          </div>
+        `,
+        borderWidth: 0,
+        backgroundColor: '#ffffff',
+        anchorSize: new window.naver.maps.Size(12, 12),
+        pixelOffset: new window.naver.maps.Point(0, -8),
+      });
+      infoWindow.open(map, targetMarker);
+      infoWindowRef.current = infoWindow;
+    }
+  /* location.hash가 바뀔 때 + 마커가 생성된 후에 실행 */
+  }, [detailShop?.id, filteredBakeries.length]);
 
   /* ── 카드 클릭 시 지도 이동 + 마커 정보창 열기 ── */
   /* 왼쪽 목록에서 빵집 카드를 클릭했을 때 실행되는 함수 */
@@ -441,20 +525,6 @@ export default function BreadMap() {
           </div>
         </div>
 
-        {/* 카테고리 필터 태그들 */}
-        <div className="bm-filter-row">
-          <div className="bm-filter-tags">
-            {categories.map((c) => (
-              <button
-                key={c}
-                className={`bm-filter-tag bm-cat-tag ${activeCategory === c ? 'active' : ''}`}
-                onClick={() => setActiveCategory(c)}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* ===== 2. 메인 영역: 목록 + 지도 좌우 분할 ===== */}
@@ -478,18 +548,37 @@ export default function BreadMap() {
                 ← 목록으로
               </button>
 
-              {/* --- 빵집 이미지 영역 (지금은 임시 플레이스홀더) --- */}
+              {/* --- 빵집 이미지 영역 --- */}
               <div className="bm-detail-image">
-                <span className="bm-detail-image-emoji">🍞</span>
-                <span className="bm-detail-image-text">사진 준비중</span>
+                {detailShop.thumbnail ? (
+                  <img
+                    src={detailShop.thumbnail.startsWith('http')
+                      ? detailShop.thumbnail
+                      : `${BASE_URL}${detailShop.thumbnail}`}
+                    alt={detailShop.name}
+                    className="bm-detail-img"
+                  />
+                ) : (
+                  <>
+                    <span className="bm-detail-image-emoji">🍞</span>
+                    <span className="bm-detail-image-text">사진 준비중</span>
+                  </>
+                )}
               </div>
 
               {/* --- 빵집 기본 정보 --- */}
               <div className="bm-detail-body">
 
                 {/* 빵집 이름 + 카테고리 */}
+                {/* 이름을 클릭하면 빵집 상세 페이지(/place/:id)로 이동 */}
                 <div className="bm-detail-title-row">
-                  <h2 className="bm-detail-name">{detailShop.name}</h2>
+                  <h2
+                    className="bm-detail-name"
+                    style={{ cursor: 'pointer', textDecoration: 'underline', textDecorationColor: '#d6d3d1', textUnderlineOffset: '4px' }}
+                    onClick={() => navigate(`/place/${detailShop.id}`)}
+                  >
+                    {detailShop.name}
+                  </h2>
                   <span className="bm-detail-category">{detailShop.category}</span>
                 </div>
 
@@ -575,10 +664,23 @@ export default function BreadMap() {
                 {/* 구분선 */}
                 <hr className="bm-detail-divider" />
 
-                {/* --- 리뷰 영역 (추후 API 연결) --- */}
+                {/* --- 리뷰 영역 --- */}
                 <div className="bm-detail-review-section">
-                  <h3 className="bm-detail-section-title">리뷰</h3>
-                  <p className="bm-detail-no-review">아직 리뷰가 없습니다. 첫 리뷰를 남겨보세요!</p>
+                  <h3 className="bm-detail-section-title">리뷰 {detailReviews.length > 0 && `(${detailReviews.length})`}</h3>
+                  {detailReviews.length > 0 ? (
+                    detailReviews.map((review) => (
+                      <div key={review.REVIEW_NUM} className="bm-review-item">
+                        <div className="bm-review-header">
+                          <span className="bm-review-author">{review.NICKNAME || '익명'}</span>
+                          <span className="bm-review-stars">{'★'.repeat(review.RATING)}{'☆'.repeat(5 - review.RATING)}</span>
+                        </div>
+                        <p className="bm-review-content">{review.CONTENT}</p>
+                        <span className="bm-review-date">{new Date(review.CREATED_TIME).toLocaleDateString('ko-KR')}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="bm-detail-no-review">아직 리뷰가 없습니다. 첫 리뷰를 남겨보세요!</p>
+                  )}
                 </div>
 
               </div>
@@ -602,9 +704,19 @@ export default function BreadMap() {
                       className={`bm-shop-card ${selectedShop === shop.id ? 'selected' : ''}`}
                       onClick={() => handleCardClick(shop)}
                     >
-                      {/* 카드 왼쪽: 빵집 이미지 (임시) */}
+                      {/* 카드 왼쪽: 빵집 이미지 */}
                       <div className="bm-shop-thumb">
-                        <span>🍞</span>
+                        {shop.thumbnail ? (
+                          <img
+                            src={shop.thumbnail.startsWith('http')
+                              ? shop.thumbnail
+                              : `${BASE_URL}${shop.thumbnail}`}
+                            alt={shop.name}
+                            className="bm-shop-thumb-img"
+                          />
+                        ) : (
+                          <span>🍞</span>
+                        )}
                       </div>
 
                       {/* 카드 오른쪽: 빵집 정보 */}

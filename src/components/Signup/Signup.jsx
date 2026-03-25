@@ -13,7 +13,7 @@
      6) 가입 성공 → 로그인 페이지로 이동
    =================================================== */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   signup,
@@ -60,6 +60,30 @@ export default function Signup() {
   const [isEmailSent, setIsEmailSent] = useState(false);       /* 이메일 인증번호 전송됨? */
   const [isVerified, setIsVerified] = useState(false);         /* 이메일 인증 완료? */
   const [isSubmitting, setIsSubmitting] = useState(false);     /* 가입 요청 중? (로딩) */
+
+  /* --- 3분 타이머 상태 --- */
+  const [timeLeft, setTimeLeft] = useState(0);   /* 남은 시간 (초) */
+  const timerRef = useRef(null);                  /* 타이머 ID 저장 (나중에 멈출 때 사용) */
+
+  /* --- 타이머 카운트다운 --- */
+  /* timeLeft가 0보다 크면 1초마다 1씩 줄어듦 */
+  useEffect(() => {
+    /* 남은 시간이 0이면 타이머 안 돌림 */
+    if (timeLeft <= 0) return;
+    /* 1초 뒤에 남은 시간을 1 줄이는 타이머 */
+    timerRef.current = setTimeout(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+    /* 컴포넌트가 사라지면 타이머도 정리 */
+    return () => clearTimeout(timerRef.current);
+  }, [timeLeft]);
+
+  /* --- 남은 시간을 "0:00" 형식으로 바꿔주는 함수 --- */
+  const formatTime = (seconds) => {
+    const min = Math.floor(seconds / 60);  /* 분 */
+    const sec = seconds % 60;              /* 초 */
+    return `${min}:${sec < 10 ? '0' : ''}${sec}`;  /* 예: 2:05 */
+  };
 
   /* ===================================================
      유효성 검사 함수들
@@ -204,6 +228,7 @@ export default function Signup() {
     try {
       await sendEmailVerification(email);
       setIsEmailSent(true);
+      setTimeLeft(180); /* 3분 = 180초 타이머 시작 */
       setErrors((prev) => ({ ...prev, email: '' }));
     } catch (err) {
       /* 서버에서 에러가 오면 에러 메시지 표시 */
@@ -217,14 +242,32 @@ export default function Signup() {
       setErrors((prev) => ({ ...prev, verifyCode: '인증번호를 입력해주세요.' }));
       return;
     }
+    /* 타이머가 만료되었으면 인증 불가 */
+    if (timeLeft <= 0) {
+      setErrors((prev) => ({ ...prev, verifyCode: '인증 시간이 만료되었습니다. 다시 전송해주세요.' }));
+      return;
+    }
 
     try {
       await verifyEmailCode(email, verifyCode);
       setIsVerified(true);
+      clearTimeout(timerRef.current); /* 인증 성공하면 타이머 멈춤 */
       setErrors((prev) => ({ ...prev, verifyCode: '' }));
     } catch (err) {
       /* 인증코드가 틀리면 에러 메시지 표시 */
       setErrors((prev) => ({ ...prev, verifyCode: err.message }));
+    }
+  };
+
+  /* --- 인증번호 재전송 버튼 클릭 --- */
+  const handleResendEmail = async () => {
+    try {
+      await sendEmailVerification(email);
+      setTimeLeft(180); /* 3분 타이머 다시 시작 */
+      setVerifyCode('');
+      setErrors((prev) => ({ ...prev, email: '', verifyCode: '' }));
+    } catch (err) {
+      setErrors((prev) => ({ ...prev, email: err.message }));
     }
   };
 
@@ -292,12 +335,12 @@ export default function Signup() {
   /* --- 소셜 가입 --- */
   const handleNaverSignup = () => {
     /* 나중에 네이버 OAuth API 연동 예정 */
-    console.log('네이버 계정으로 가입');
+    /* TODO: 네이버 OAuth 연동 */
   };
 
   const handleKakaoSignup = () => {
     /* 나중에 카카오 OAuth API 연동 예정 */
-    console.log('카카오 계정으로 가입');
+    /* TODO: 카카오 OAuth 연동 */
   };
 
   return (
@@ -325,17 +368,17 @@ export default function Signup() {
               />
               <button
                 type="button"
-                className={`signup-side-btn ${isEmailSent ? 'done' : ''}`}
+                className={`signup-side-btn ${isEmailSent && timeLeft > 0 ? 'done' : ''}`}
                 onClick={handleSendEmail}
-                disabled={isEmailSent}
+                disabled={isEmailSent && timeLeft > 0}
               >
-                {isEmailSent ? '전송완료' : '전송'}
+                {isEmailSent && timeLeft > 0 ? '전송완료' : isEmailSent ? '재전송' : '전송'}
               </button>
             </div>
             {errors.email && <p className="signup-error">{errors.email}</p>}
           </div>
 
-          {/* ───── 인증번호 입력 + 확인 버튼 ───── */}
+          {/* ───── 인증번호 입력 + 타이머 + 확인/재전송 버튼 ───── */}
           {/* 이메일을 전송한 후에만 보여줌 */}
           {isEmailSent && (
             <div className="signup-input-group">
@@ -352,15 +395,31 @@ export default function Signup() {
                   /* 인증 완료되면 수정 못하게 잠금 */
                   disabled={isVerified}
                 />
-                <button
-                  type="button"
-                  className={`signup-side-btn ${isVerified ? 'done' : ''}`}
-                  onClick={handleVerifyCode}
-                  disabled={isVerified}
-                >
-                  {isVerified ? '인증완료' : '확인'}
-                </button>
+                {/* 타이머 만료 전: 확인 버튼 / 만료 후: 재전송 버튼 */}
+                {!isVerified && timeLeft <= 0 ? (
+                  <button type="button" className="signup-side-btn" onClick={handleResendEmail}>
+                    재전송
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className={`signup-side-btn ${isVerified ? 'done' : ''}`}
+                    onClick={handleVerifyCode}
+                    disabled={isVerified}
+                  >
+                    {isVerified ? '인증완료' : '확인'}
+                  </button>
+                )}
               </div>
+              {/* 타이머: 인증번호 입력칸 아래에 남은 시간 표시 */}
+              {!isVerified && timeLeft > 0 && (
+                <p style={{
+                  fontSize: '13px', fontWeight: 700, margin: '6px 0 0',
+                  color: timeLeft <= 30 ? '#ef4444' : '#c96442',
+                }}>
+                  남은 시간 {formatTime(timeLeft)}
+                </p>
+              )}
               {errors.verifyCode && <p className="signup-error">{errors.verifyCode}</p>}
               {isVerified && (
                 <p className="signup-success">이메일 인증이 완료되었습니다.</p>

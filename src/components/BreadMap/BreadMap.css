@@ -275,7 +275,7 @@
   border-color: #c96442;
 }
 
-/* 빵집 썸네일 이미지 (임시) */
+/* 빵집 썸네일 이미지 */
 .bm-shop-thumb {
   width: 80px;
   height: 80px;
@@ -286,6 +286,14 @@
   justify-content: center;
   font-size: 28px;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* 썸네일 실제 이미지 */
+.bm-shop-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* 빵집 정보 영역 */
@@ -480,6 +488,13 @@
   color: #aaaaaa;
 }
 
+/* 실제 빵집 이미지 */
+.bm-detail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* --- 빵집 상세 정보 본문 --- */
 .bm-detail-body {
   padding: 20px;
@@ -652,6 +667,49 @@
   margin: 0;
   padding: 20px 0;
   text-align: center;
+}
+
+/* 리뷰 아이템 */
+.bm-review-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #f0ede8;
+}
+
+.bm-review-item:last-child {
+  border-bottom: none;
+}
+
+/* 리뷰 헤더 (작성자 + 별점) */
+.bm-review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.bm-review-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.bm-review-stars {
+  font-size: 12px;
+  color: #f59e0b;
+}
+
+/* 리뷰 내용 */
+.bm-review-content {
+  font-size: 13px;
+  color: #555;
+  margin: 0 0 4px;
+  line-height: 1.5;
+}
+
+/* 리뷰 날짜 */
+.bm-review-date {
+  font-size: 11px;
+  color: #aaa;
 }
 
 /* ===== 오른쪽: 지도 패널 ===== */
