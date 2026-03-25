@@ -522,19 +522,6 @@ export default function HeroBanner() {
           ))}
         </div>
 
-        {/* 인기 메뉴 바로가기 태그 */}
-        <div className="hero-menu-tags">
-          <span className="hero-menu-tags-label">인기 메뉴:</span>
-          {['크로와상', '소금빵', '식빵', '바게트', '타르트', '마카롱', '케이크'].map((tag) => (
-            <button
-              key={tag}
-              className="hero-menu-tag"
-              onClick={() => navigate(`/places?menu=${encodeURIComponent(tag)}`)}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* ===== 왼쪽: 빵집 상세 카드 ===== */}
