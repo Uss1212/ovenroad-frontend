@@ -158,11 +158,11 @@ export async function changePassword(userNum, currentPassword, newPassword) {
 }
 
 /* --- 회원탈퇴 --- */
-/* userNum: 사용자 번호, password: 비밀번호 확인용 */
+/* userNum: 사용자 번호, password: 비밀번호 확인용 (소셜 로그인은 없어도 됨) */
 export async function deleteAccount(userNum, password) {
   return request(`/api/user/${userNum}`, {
     method: 'DELETE',
-    body: JSON.stringify({ password }),
+    body: JSON.stringify({ password: password || null }),
   });
 }
 

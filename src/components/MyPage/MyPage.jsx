@@ -250,15 +250,19 @@ export default function MyPage() {
   };
 
   /* --- 회원탈퇴 --- */
+  /* 소셜 로그인 사용자인지 확인 (네이버/카카오는 비밀번호가 없음) */
+  const isSocialUser = user?.SOCIAL_TYPE === 'naver' || user?.SOCIAL_TYPE === 'kakao';
+
   const handleDeleteAccount = async () => {
     setError('');
-    if (!deletePw) {
+    /* 일반 회원만 비밀번호 필요 (소셜 로그인은 비밀번호 없이 탈퇴) */
+    if (!isSocialUser && !deletePw) {
       setError('비밀번호를 입력해주세요.');
       return;
     }
     try {
       const userNum = user.USER_NUM || user.userNum;
-      await deleteAccount(userNum, deletePw);
+      await deleteAccount(userNum, isSocialUser ? null : deletePw);
       localStorage.removeItem('user');
       alert('회원탈퇴가 완료되었습니다.');
       navigate('/');
@@ -409,13 +413,16 @@ export default function MyPage() {
                     <p className="mypage-delete-warning">
                       정말 탈퇴하시겠습니까? 모든 데이터가 삭제되며 복구할 수 없습니다.
                     </p>
-                    <input
-                      type="password"
-                      className="mypage-input"
-                      placeholder="비밀번호를 입력해주세요"
-                      value={deletePw}
-                      onChange={(e) => setDeletePw(e.target.value)}
-                    />
+                    {/* 일반 회원만 비밀번호 입력 (소셜 로그인은 비밀번호 없이 탈퇴) */}
+                    {!isSocialUser && (
+                      <input
+                        type="password"
+                        className="mypage-input"
+                        placeholder="비밀번호를 입력해주세요"
+                        value={deletePw}
+                        onChange={(e) => setDeletePw(e.target.value)}
+                      />
+                    )}
                     <div className="mypage-delete-btns">
                       <button className="mypage-delete-btn" onClick={handleDeleteAccount}>
                         탈퇴하기
