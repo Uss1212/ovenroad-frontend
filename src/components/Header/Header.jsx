@@ -89,12 +89,7 @@ export default function Header() {
         {/* ===== 가운데 영역: 검색 + 네비게이션 메뉴 ===== */}
         <div className="header-center">
 
-          {/* 검색 아이콘 버튼 */}
-          <button className="header-search-btn">
-            🔍 {/* 돋보기 아이콘 (나중에 SVG 아이콘으로 교체 가능) */}
-          </button>
-
-          {/* 네비게이션 메뉴 목록 */}
+{/* 네비게이션 메뉴 목록 */}
           <nav className="header-nav">
             {/* navItems 배열을 하나씩 꺼내서 버튼으로 만듦 */}
             {navItems.map((item) => (
