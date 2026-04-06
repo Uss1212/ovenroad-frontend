@@ -7,7 +7,7 @@
 
 /* --- 백엔드 서버 주소 --- */
 /* .env 파일의 VITE_API_URL에서 가져옴 (없으면 기본값 사용) */
-export const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+export const BASE_URL = import.meta.env.VITE_API_URL || '';
 
 /* --- API 요청을 보내는 공통 함수 --- */
 /* url: 요청할 경로 (예: '/api/user/signup') */
