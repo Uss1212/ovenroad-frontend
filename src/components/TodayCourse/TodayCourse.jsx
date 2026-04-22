@@ -8,7 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCourseList, BASE_URL } from '../../api/api';
+import { getCourseList, BASE_URL } from '../../api/apiAxios';
 import './TodayCourse.css';
 
 export default function TodayCourse() {

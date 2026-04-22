@@ -12,7 +12,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BASE_URL } from '../../api/api';
+import { BASE_URL } from '../../api/apiAxios';
 import './BreadMap.css';
 
 export default function BreadMap() {

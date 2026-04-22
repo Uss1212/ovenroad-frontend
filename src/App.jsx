@@ -19,25 +19,25 @@ import BreadBTI from './components/BreadBTI/BreadBTI'; // 빵BTI 미니게임
 import TodayCourse from './components/TodayCourse/TodayCourse'; // 오늘의 추천 코스
 import RegionCourse from './components/RegionCourse/RegionCourse'; // 지역별 추천 코스
 import Notice from './components/Notice/Notice'; // 공지사항
-import Login from './components/Login/Login'; // 로그인
-import NaverCallback from './components/Login/NaverCallback'; // 네이버 로그인 콜백
-import KakaoCallback from './components/Login/KakaoCallback'; // 카카오 로그인 콜백
-import Signup from './components/Signup/Signup'; // 회원가입
-import FindAccount from './components/FindAccount/FindAccount'; // 아이디/비밀번호 찾기
-import CourseDetail from './components/CourseDetail/CourseDetail'; // 코스 상세
-import MyPage from './components/MyPage/MyPage'; // 마이페이지
-import CreateCourse from './components/CreateCourse/CreateCourse'; // 코스 만들기
-import PlaceDetail from './components/PlaceDetail/PlaceDetail'; // 빵집 상세
-import PlaceList from './components/PlaceList/PlaceList'; // 빵집 목록
+import Login from './pages/Login/Login'; // 로그인
+import NaverCallback from './pages/Login/NaverCallback'; // 네이버 로그인 콜백
+import KakaoCallback from './pages/Login/KakaoCallback'; // 카카오 로그인 콜백
+import Signup from './pages/Signup/Signup'; // 회원가입
+import FindAccount from './pages/FindAccount/FindAccount'; // 아이디/비밀번호 찾기
+import CourseDetail from './pages/CourseDetail/CourseDetail'; // 코스 상세
+import MyPage from './pages/MyPage/MyPage'; // 마이페이지
+import CreateCourse from './pages/CreateCourse/CreateCourse'; // 코스 만들기
+import PlaceDetail from './pages/PlaceDetail/PlaceDetail'; // 빵집 상세
+import PlaceList from './pages/PlaceList/PlaceList'; // 빵집 목록
 /* BreadMap: 빵지도 별도 페이지는 제거 (메인 HeroBanner 지도로 통합) */
-import CourseList from './components/CourseList/CourseList'; // 추천코스 목록
-import Community from './components/Community/Community'; // 커뮤니티
-import CommunityDetail from './components/CommunityDetail/CommunityDetail'; // 커뮤니티 글 상세
-import CommunityWrite from './components/CommunityWrite/CommunityWrite'; // 커뮤니티 글쓰기
-import Events from './components/Events/Events'; // 이벤트
-import NoticeList from './components/NoticeList/NoticeList'; // 공지사항 목록
-import NoticeDetail from './components/NoticeDetail/NoticeDetail'; // 공지사항 상세
-import './App.css';
+import CourseList from './pages/CourseList/CourseList'; // 추천코스 목록
+import Community from './pages/Community/Community'; // 커뮤니티
+import CommunityDetail from './pages/CommunityDetail/CommunityDetail'; // 커뮤니티 글 상세
+import CommunityWrite from './pages/CommunityWrite/CommunityWrite'; // 커뮤니티 글쓰기
+import Events from './pages/Events/Events'; // 이벤트
+import NoticeList from './pages/NoticeList/NoticeList'; // 공지사항 목록
+import NoticeDetail from './pages/NoticeDetail/NoticeDetail'; // 공지사항 상세
+import './css/App.css';
 
 /* --- 메인 페이지 컴포넌트 --- */
 /* 메인 페이지에서만 보여줄 컴포넌트들을 모아둔 것 */

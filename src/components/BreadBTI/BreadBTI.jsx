@@ -8,7 +8,7 @@
    =================================================== */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BASE_URL } from '../../api/api';
+import { BASE_URL } from '../../api/apiAxios';
 import './BreadBTI.css';
 
 function BreadBTI() {

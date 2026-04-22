@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getNoticeList } from '../../api/api';
+import { getNoticeList } from '../../api/apiAxios';
 import './Notice.css';
 
 export default function Notice() {
