@@ -212,15 +212,15 @@ export default function BreadMap() {
     /* 만든 지도 객체를 ref에 저장 → 나중에 다른 곳에서 사용 가능 */
     mapInstanceRef.current = map;
 
-    const removeExtraLogo = () => {
+    const observer = new MutationObserver(() => {
       if (!mapRef.current) return;
       const logos = mapRef.current.querySelectorAll('img[alt="NAVER"]');
       for (let i = 1; i < logos.length; i++) {
-        logos[i].closest('div[style]').style.display = 'none';
+        const container = logos[i].closest('a');
+        if (container) container.style.display = 'none';
       }
-    };
-    setTimeout(removeExtraLogo, 500);
-    window.naver.maps.Event.addListener(map, 'zoom_changed', () => setTimeout(removeExtraLogo, 100));
+    });
+    observer.observe(mapRef.current, { childList: true, subtree: true });
 
   }, []); /* [] → 컴포넌트가 처음 화면에 나타날 때 한 번만 실행 */
 
