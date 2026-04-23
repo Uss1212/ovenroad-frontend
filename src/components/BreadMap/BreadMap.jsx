@@ -207,6 +207,7 @@ export default function BreadMap() {
       },
       /* 지도 타입 컨트롤(일반/위성) 숨기기 */
       mapTypeControl: false,
+      logoControl: false,
     });
 
     /* 만든 지도 객체를 ref에 저장 → 나중에 다른 곳에서 사용 가능 */
