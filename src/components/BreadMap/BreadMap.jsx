@@ -212,10 +212,6 @@ export default function BreadMap() {
     /* 만든 지도 객체를 ref에 저장 → 나중에 다른 곳에서 사용 가능 */
     mapInstanceRef.current = map;
 
-    return () => {
-      map.destroy();
-      mapInstanceRef.current = null;
-    };
   }, []); /* [] → 컴포넌트가 처음 화면에 나타날 때 한 번만 실행 */
 
   /* ── 필터 변경될 때마다 마커 다시 그리기 ── */

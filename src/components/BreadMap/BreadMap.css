@@ -724,6 +724,11 @@
   height: 100%;
 }
 
+/* 네이버 지도 로고 중복 방지 */
+.bm-map-area img[alt="NAVER"] ~ img[alt="NAVER"] {
+  display: none !important;
+}
+
 
 /* ===== 반응형: 작은 화면 ===== */
 @media (max-width: 768px) {
