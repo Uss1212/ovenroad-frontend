@@ -83,7 +83,7 @@ export default function Header() {
           onClick={() => navigate('/')}
           style={{ cursor: 'pointer' }}
         >
-          LOGO
+          <img src="/logo.png" alt="오븐로드" style={{ height: '40px' }} />
         </div>
 
         {/* ===== 가운데 영역: 검색 + 네비게이션 메뉴 ===== */}

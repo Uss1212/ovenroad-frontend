@@ -724,6 +724,7 @@
   height: 100%;
 }
 
+
 /* ===== 반응형: 작은 화면 ===== */
 @media (max-width: 768px) {
   .bread-map {
