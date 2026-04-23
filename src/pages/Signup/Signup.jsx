@@ -17,6 +17,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   signup,
+  checkIdDuplicate,
   checkNicknameDuplicate,
   sendEmailVerification,
   verifyEmailCode,
@@ -37,6 +38,7 @@ export default function Signup() {
      =================================================== */
 
   /* --- 입력값 상태 --- */
+  const [userId, setUserId] = useState('');               /* 아이디 */
   const [password, setPassword] = useState('');           /* 비밀번호 */
   const [passwordConfirm, setPasswordConfirm] = useState(''); /* 비밀번호 재확인 */
   const [name, setName] = useState('');                   /* 이름 (실명) */
@@ -47,6 +49,7 @@ export default function Signup() {
   /* --- 에러 메시지 상태 --- */
   /* 각 입력 필드 아래에 빨간 글씨로 표시할 에러 메시지 */
   const [errors, setErrors] = useState({
+    userId: '',         /* 아이디 에러 */
     password: '',       /* 비밀번호 에러 */
     passwordConfirm: '', /* 비밀번호 재확인 에러 */
     name: '',           /* 이름 에러 */
@@ -57,10 +60,13 @@ export default function Signup() {
   });
 
   /* --- 확인/인증 완료 상태 --- */
+  const [isIdChecked, setIsIdChecked] = useState(false);           /* 아이디 중복확인 완료? */
   const [isNicknameChecked, setIsNicknameChecked] = useState(false); /* 닉네임 중복확인 완료? */
   const [isEmailSent, setIsEmailSent] = useState(false);       /* 이메일 인증번호 전송됨? */
   const [isVerified, setIsVerified] = useState(false);         /* 이메일 인증 완료? */
   const [isSubmitting, setIsSubmitting] = useState(false);     /* 가입 요청 중? (로딩) */
+  const [showPassword, setShowPassword] = useState(false);       /* 비밀번호 보이기/숨기기 */
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false); /* 비밀번호 재확인 보이기/숨기기 */
 
   /* --- 3분 타이머 상태 --- */
   const [timeLeft, setTimeLeft] = useState(0);   /* 남은 시간 (초) */
@@ -91,6 +97,15 @@ export default function Signup() {
      - 사용자가 입력한 값이 올바른 형식인지 확인
      - 틀리면 에러 메시지를 설정
      =================================================== */
+
+  /* --- 아이디 유효성 검사 --- */
+  const validateUserId = (value) => {
+    if (!value) return '아이디를 입력해주세요.';
+    if (value.length < 4) return '아이디는 4자 이상이어야 합니다.';
+    if (value.length > 20) return '아이디는 20자 이하여야 합니다.';
+    if (!/^[a-zA-Z0-9]+$/.test(value)) return '아이디는 영문, 숫자만 사용할 수 있습니다.';
+    return '';
+  };
 
   /* --- 비밀번호 유효성 검사 --- */
   /* 규칙: 영문 + 숫자 + 특수문자 포함, 8~20자 */
@@ -150,6 +165,14 @@ export default function Signup() {
      - 중복확인/인증 상태도 초기화 (값이 바뀌었으니까)
      =================================================== */
 
+  /* --- 아이디 입력 변경 --- */
+  const handleUserIdChange = (e) => {
+    const value = e.target.value;
+    setUserId(value);
+    setIsIdChecked(false);
+    setErrors((prev) => ({ ...prev, userId: value ? validateUserId(value) : '' }));
+  };
+
   /* --- 비밀번호 입력 변경 --- */
   const handlePasswordChange = (e) => {
     const value = e.target.value;
@@ -199,6 +222,22 @@ export default function Signup() {
   /* ===================================================
      버튼 클릭 핸들러들
      =================================================== */
+
+  /* --- 아이디 중복확인 버튼 클릭 --- */
+  const handleCheckId = async () => {
+    const error = validateUserId(userId);
+    if (error) {
+      setErrors((prev) => ({ ...prev, userId: error }));
+      return;
+    }
+    try {
+      await checkIdDuplicate(userId);
+      setIsIdChecked(true);
+      setErrors((prev) => ({ ...prev, userId: '' }));
+    } catch (err) {
+      setErrors((prev) => ({ ...prev, userId: err.message }));
+    }
+  };
 
   /* --- 닉네임 중복확인 버튼 클릭 --- */
   const handleCheckNickname = async () => {
@@ -281,6 +320,7 @@ export default function Signup() {
 
     /* --- 모든 필드 유효성 검사 한번에 실행 --- */
     const newErrors = {
+      userId: validateUserId(userId),
       password: validatePassword(password),
       passwordConfirm: validatePasswordConfirm(passwordConfirm),
       name: validateName(name),
@@ -290,7 +330,12 @@ export default function Signup() {
       general: '',
     };
 
-    /* 중복확인 안 했으면 에러 */
+    /* 아이디 중복확인 안 했으면 에러 */
+    if (!newErrors.userId && !isIdChecked) {
+      newErrors.userId = '아이디 중복확인을 해주세요.';
+    }
+
+    /* 닉네임 중복확인 안 했으면 에러 */
     if (!newErrors.nickname && !isNicknameChecked) {
       newErrors.nickname = '닉네임 중복확인을 해주세요.';
     }
@@ -314,7 +359,7 @@ export default function Signup() {
       /* API 호출: 서버에 회원 정보 전송 */
       /* 이메일 주소가 곧 아이디! */
       await signup({
-        id: email,
+        id: userId,
         password: password,
         name: name,
         nickname: nickname,
@@ -428,27 +473,68 @@ export default function Signup() {
             </div>
           )}
 
-          {/* ───── 비밀번호 입력 ───── */}
+          {/* ───── 아이디 입력 + 중복확인 ───── */}
           <div className="signup-input-group">
+            <div className="signup-input-row">
+              <input
+                type="text"
+                className={`signup-input ${errors.userId ? 'error' : ''}`}
+                placeholder="아이디 (영문, 숫자 4~20자)"
+                value={userId}
+                onChange={handleUserIdChange}
+              />
+              <button
+                type="button"
+                className={`signup-side-btn ${isIdChecked ? 'done' : ''}`}
+                onClick={handleCheckId}
+                disabled={isIdChecked}
+              >
+                {isIdChecked ? '확인완료' : '중복확인'}
+              </button>
+            </div>
+            {errors.userId && <p className="signup-error">{errors.userId}</p>}
+            {isIdChecked && !errors.userId && (
+              <p className="signup-success">사용 가능한 아이디입니다.</p>
+            )}
+          </div>
+
+          {/* ───── 비밀번호 입력 ───── */}
+          <div className="signup-input-group signup-password-group">
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               className={`signup-input ${errors.password ? 'error' : ''}`}
               placeholder="비밀번호 (영문+숫자+특수문자 8~20자)"
               value={password}
               onChange={handlePasswordChange}
             />
+            <button
+              type="button"
+              className="signup-eye-btn"
+              onClick={() => setShowPassword(!showPassword)}
+              tabIndex={-1}
+            >
+              {showPassword ? '🙈' : '👁'}
+            </button>
             {errors.password && <p className="signup-error">{errors.password}</p>}
           </div>
 
           {/* ───── 비밀번호 재확인 입력 ───── */}
-          <div className="signup-input-group">
+          <div className="signup-input-group signup-password-group">
             <input
-              type="password"
+              type={showPasswordConfirm ? 'text' : 'password'}
               className={`signup-input ${errors.passwordConfirm ? 'error' : ''}`}
               placeholder="비밀번호 재확인"
               value={passwordConfirm}
               onChange={handlePasswordConfirmChange}
             />
+            <button
+              type="button"
+              className="signup-eye-btn"
+              onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+              tabIndex={-1}
+            >
+              {showPasswordConfirm ? '🙈' : '👁'}
+            </button>
             {errors.passwordConfirm && <p className="signup-error">{errors.passwordConfirm}</p>}
             {passwordConfirm && !errors.passwordConfirm && (
               <p className="signup-success">비밀번호가 일치합니다.</p>

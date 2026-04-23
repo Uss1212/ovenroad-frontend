@@ -18,10 +18,11 @@ export default function Login() {
   const navigate = useNavigate();
 
   /* --- 상태(state) 관리 --- */
-  const [email, setEmail] = useState('');          /* 이메일 주소 (= 아이디) */
+  const [userId, setUserId] = useState('');          /* 아이디 */
   const [password, setPassword] = useState('');     /* 비밀번호 */
   const [error, setError] = useState('');           /* 에러 메시지 */
   const [isLoading, setIsLoading] = useState(false); /* 로딩 중? */
+  const [showPassword, setShowPassword] = useState(false); /* 비밀번호 보이기/숨기기 */
 
   /* --- 로그인 버튼 클릭 시 실행되는 함수 --- */
   const handleLogin = async (e) => {
@@ -30,16 +31,16 @@ export default function Login() {
     setError('');
 
     /* 입력값 확인 */
-    if (!email || !password) {
-      setError('이메일과 비밀번호를 입력해주세요.');
+    if (!userId || !password) {
+      setError('아이디와 비밀번호를 입력해주세요.');
       return;
     }
 
     setIsLoading(true);
 
     try {
-      /* 서버에 로그인 요청 (이메일 = 아이디) */
-      const data = await login(email, password);
+      /* 서버에 로그인 요청 */
+      const data = await login(userId, password);
 
       /* 로그인 성공 → JWT 토큰과 사용자 정보를 localStorage에 저장 */
       if (data.token) localStorage.setItem('token', data.token);
@@ -80,27 +81,34 @@ export default function Login() {
         {/* form 태그: Enter 키를 눌러도 로그인이 실행됨 */}
         <form className="login-form" onSubmit={handleLogin}>
 
-          {/* 이메일 입력 필드 */}
+          {/* 아이디 입력 필드 */}
           <div className="login-input-group">
             <input
-              type="email"
+              type="text"
               className="login-input"
-              placeholder="이메일"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              // ↑ 사용자가 글자를 입력할 때마다 email 상태가 업데이트됨
+              placeholder="아이디"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
             />
           </div>
 
           {/* 비밀번호 입력 필드 */}
-          <div className="login-input-group">
+          <div className="login-input-group login-password-group">
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               className="login-input"
               placeholder="비밀번호"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            <button
+              type="button"
+              className="login-eye-btn"
+              onClick={() => setShowPassword(!showPassword)}
+              tabIndex={-1}
+            >
+              {showPassword ? '🙈' : '👁'}
+            </button>
           </div>
 
           {/* 에러 메시지 (있을 때만 표시) */}

@@ -93,6 +93,23 @@
   background: #fafafa;
 }
 
+/* --- 비밀번호 눈 아이콘 --- */
+.signup-password-group {
+  position: relative;
+}
+
+.signup-eye-btn {
+  position: absolute;
+  right: 0;
+  top: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 8px;
+  color: #888;
+}
+
 /* --- 에러 메시지 (빨간색) --- */
 /* 각 입력 필드 아래에 표시되는 경고 문구 */
 .signup-error {
