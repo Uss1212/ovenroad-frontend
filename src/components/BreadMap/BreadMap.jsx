@@ -191,7 +191,6 @@ export default function BreadMap() {
   useEffect(() => {
     /* naver 객체가 아직 로딩 안 됐으면 실행하지 않음 */
     if (!window.naver || !window.naver.maps) return;
-    if (mapInstanceRef.current) return;
 
     /* 지도 생성: mapRef가 가리키는 div 안에 지도를 그림 */
     const map = new window.naver.maps.Map(mapRef.current, {
