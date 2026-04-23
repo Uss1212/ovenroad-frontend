@@ -212,6 +212,16 @@ export default function BreadMap() {
     /* 만든 지도 객체를 ref에 저장 → 나중에 다른 곳에서 사용 가능 */
     mapInstanceRef.current = map;
 
+    const removeExtraLogo = () => {
+      if (!mapRef.current) return;
+      const logos = mapRef.current.querySelectorAll('img[alt="NAVER"]');
+      for (let i = 1; i < logos.length; i++) {
+        logos[i].closest('div[style]').style.display = 'none';
+      }
+    };
+    setTimeout(removeExtraLogo, 500);
+    window.naver.maps.Event.addListener(map, 'zoom_changed', () => setTimeout(removeExtraLogo, 100));
+
   }, []); /* [] → 컴포넌트가 처음 화면에 나타날 때 한 번만 실행 */
 
   /* ── 필터 변경될 때마다 마커 다시 그리기 ── */
