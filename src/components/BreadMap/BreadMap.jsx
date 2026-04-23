@@ -191,6 +191,7 @@ export default function BreadMap() {
   useEffect(() => {
     /* naver 객체가 아직 로딩 안 됐으면 실행하지 않음 */
     if (!window.naver || !window.naver.maps) return;
+    if (mapInstanceRef.current) return;
 
     /* 지도 생성: mapRef가 가리키는 div 안에 지도를 그림 */
     const map = new window.naver.maps.Map(mapRef.current, {
@@ -211,16 +212,6 @@ export default function BreadMap() {
 
     /* 만든 지도 객체를 ref에 저장 → 나중에 다른 곳에서 사용 가능 */
     mapInstanceRef.current = map;
-
-    const observer = new MutationObserver(() => {
-      if (!mapRef.current) return;
-      const logos = mapRef.current.querySelectorAll('img[alt="NAVER"]');
-      for (let i = 1; i < logos.length; i++) {
-        const container = logos[i].closest('a');
-        if (container) container.style.display = 'none';
-      }
-    });
-    observer.observe(mapRef.current, { childList: true, subtree: true });
 
   }, []); /* [] → 컴포넌트가 처음 화면에 나타날 때 한 번만 실행 */
 
