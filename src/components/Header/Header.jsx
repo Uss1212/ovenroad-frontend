@@ -66,7 +66,6 @@ export default function Header() {
     { name: '추천코스',   path: '/courses' },    // 추천 빵집 코스를 모아보는 페이지
     { name: '코스만들기', path: '/create' },     // 나만의 빵집 코스를 만드는 페이지
     { name: '커뮤니티',   path: '/community' },  // 사용자들끼리 소통하는 게시판
-    { name: '이벤트',     path: '/events' },     // 진행 중인 이벤트 페이지
   ];
 
   return (

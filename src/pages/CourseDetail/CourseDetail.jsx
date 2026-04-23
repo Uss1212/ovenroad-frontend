@@ -12,9 +12,6 @@ import {
   getCourseDetail,
   toggleCourseLike,
   toggleCourseScrap,
-  getCourseComments,
-  createCourseComment,
-  deleteCourseComment,
   deleteCourse,
   BASE_URL,
 } from '../../api/apiAxios';
@@ -45,14 +42,6 @@ export default function CourseDetail() {
   const [likeCount, setLikeCount] = useState(0);
   /* scrapCount: 스크랩 개수 */
   const [scrapCount, setScrapCount] = useState(0);
-  /* comments: 댓글 목록 */
-  const [comments, setComments] = useState([]);
-  /* commentText: 댓글 입력창에 적은 글 */
-  const [commentText, setCommentText] = useState('');
-  /* replyTo: 지금 답글 쓰고 있는 댓글 번호 (null이면 안 쓰는 중) */
-  const [replyTo, setReplyTo] = useState(null);
-  /* replyText: 답글 입력창에 적은 글 */
-  const [replyText, setReplyText] = useState('');
   /* lightbox: 이미지 크게 보기 인덱스 (-1이면 안 보임) */
   const [lightbox, setLightbox] = useState(-1);
 
@@ -71,19 +60,7 @@ export default function CourseDetail() {
   const imgUrl = (url) =>
     url?.startsWith('http') ? url : BASE_URL + url;
 
-  /* --- 댓글 목록 가져오기 --- */
-  /* 서버에서 이 코스의 댓글들을 불러오는 함수 */
-  const fetchComments = async () => {
-    try {
-      const data = await getCourseComments(id);
-      setComments(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('댓글 불러오기 실패:', err);
-    }
-  };
-
   /* --- 페이지 처음 열릴 때 데이터 불러오기 --- */
-  /* id가 바뀔 때마다 코스 정보 + 댓글을 새로 가져옴 */
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -109,8 +86,6 @@ export default function CourseDetail() {
     };
 
     fetchData();
-    fetchComments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   /* --- 좋아요 버튼 클릭 --- */
@@ -136,47 +111,6 @@ export default function CourseDetail() {
       setScrapCount(res.scrapCount);
     } catch (err) {
       console.error('스크랩 실패:', err);
-    }
-  };
-
-  /* --- 댓글 등록 --- */
-  /* 입력한 텍스트를 서버에 보내서 댓글을 등록 */
-  const handleCommentSubmit = async () => {
-    if (!commentText.trim()) return;
-    if (!currentUser) return alert('로그인이 필요합니다!');
-    try {
-      await createCourseComment(id, currentUser.userNum, commentText);
-      setCommentText('');
-      fetchComments();
-    } catch (err) {
-      console.error('댓글 등록 실패:', err);
-    }
-  };
-
-  /* --- 답글 등록 --- */
-  /* 특정 댓글에 대한 답글을 서버에 보내서 등록 */
-  const handleReplySubmit = async (parentNum) => {
-    if (!replyText.trim()) return;
-    if (!currentUser) return alert('로그인이 필요합니다!');
-    try {
-      await createCourseComment(id, currentUser.userNum, replyText, parentNum);
-      setReplyTo(null);
-      setReplyText('');
-      fetchComments();
-    } catch (err) {
-      console.error('답글 등록 실패:', err);
-    }
-  };
-
-  /* --- 댓글 삭제 --- */
-  /* 내가 쓴 댓글을 삭제 */
-  const handleDeleteComment = async (commentNum) => {
-    if (!window.confirm('댓글을 삭제할까요?')) return;
-    try {
-      await deleteCourseComment(id, commentNum, currentUser.userNum);
-      fetchComments();
-    } catch (err) {
-      console.error('댓글 삭제 실패:', err);
     }
   };
 
@@ -243,21 +177,6 @@ export default function CourseDetail() {
 
     window.open(url, '_blank');
   };
-
-  /* --- 댓글을 부모-자식 구조로 묶기 --- */
-  /* 서버에서 댓글이 flat하게 오면, 부모 댓글 아래에 답글을 넣어줌 */
-  const organizeComments = (rawComments) => {
-    /* 부모가 없는 댓글(최상위 댓글) 찾기 */
-    const topLevel = rawComments.filter((c) => !c.PARENT_NUM);
-    /* 각 최상위 댓글에 답글 붙이기 */
-    return topLevel.map((parent) => ({
-      ...parent,
-      replies: rawComments.filter((c) => c.PARENT_NUM === parent.COMMENT_NUM),
-    }));
-  };
-
-  /* 정리된 댓글 목록 */
-  const organizedComments = organizeComments(comments);
 
   /* --- 로딩 중이면 로딩 화면 표시 --- */
   if (loading) {
@@ -422,164 +341,6 @@ export default function CourseDetail() {
             </div>
           </section>
         )}
-
-        {/* ===== 6. 댓글 ===== */}
-        {/* 댓글을 쓰고, 읽고, 답글도 달 수 있는 영역 */}
-        <section className="cd-comments">
-          <h2 className="cd-section-title">댓글 ({comments.length})</h2>
-
-          {/* --- 댓글 입력 영역 --- */}
-          <div className="cd-comment-input-wrap">
-            <div className="cd-comment-avatar">
-              {currentUser?.nickname?.[0] || '나'}
-            </div>
-            <div className="cd-comment-input-box">
-              <textarea
-                className="cd-comment-input"
-                placeholder="댓글을 남겨보세요..."
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                /* Enter 키로 댓글 등록 (Shift+Enter는 줄바꿈) */
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleCommentSubmit();
-                  }
-                }}
-              />
-              <div className="cd-comment-input-actions">
-                <button className="cd-comment-submit-btn" onClick={handleCommentSubmit}>
-                  등록
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* --- 댓글 목록 --- */}
-          {organizedComments.map((comment) => (
-            <div key={comment.COMMENT_NUM} className="cd-comment-group">
-
-              {/* 댓글 본체 */}
-              <div className="cd-comment-item">
-                {/* 댓글 작성자 아바타 */}
-                <div className="cd-comment-item-avatar">
-                  {comment.NICKNAME?.[0] || '?'}
-                </div>
-                {/* 댓글 내용 */}
-                <div className="cd-comment-item-body">
-                  <div className="cd-comment-item-header">
-                    <span className="cd-comment-author">{comment.NICKNAME}</span>
-                    <span className="cd-comment-date">{formatDate(comment.CREATED_TIME)}</span>
-                  </div>
-                  <p className="cd-comment-text">{comment.CONTENT}</p>
-                  {/* 답글 버튼 + 삭제 버튼 */}
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <button
-                      className={`cd-comment-reply-btn ${replyTo === comment.COMMENT_NUM ? 'active' : ''}`}
-                      onClick={() => {
-                        if (replyTo === comment.COMMENT_NUM) {
-                          setReplyTo(null);
-                          setReplyText('');
-                        } else {
-                          setReplyTo(comment.COMMENT_NUM);
-                          setReplyText('');
-                        }
-                      }}
-                    >
-                      💬 답글
-                    </button>
-                    {/* 내가 쓴 댓글이면 삭제 버튼 표시 */}
-                    {currentUser && comment.USER_NUM === currentUser.userNum && (
-                      <button
-                        className="cd-comment-reply-btn"
-                        onClick={() => handleDeleteComment(comment.COMMENT_NUM)}
-                        style={{ color: '#e74c3c' }}
-                      >
-                        삭제
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* --- 답글 목록 --- */}
-              {comment.replies && comment.replies.length > 0 && (
-                <div className="cd-reply-list">
-                  {comment.replies.map((reply) => (
-                    <div key={reply.COMMENT_NUM} className="cd-reply-item">
-                      {/* 답글 작성자 아바타 */}
-                      <div className="cd-comment-item-avatar">
-                        {reply.NICKNAME?.[0] || '?'}
-                      </div>
-                      {/* 답글 내용 */}
-                      <div className="cd-comment-item-body">
-                        <div className="cd-comment-item-header">
-                          <span className="cd-comment-author">{reply.NICKNAME}</span>
-                          <span className="cd-comment-date">{formatDate(reply.CREATED_TIME)}</span>
-                        </div>
-                        <p className="cd-comment-text">{reply.CONTENT}</p>
-                        {/* 내가 쓴 답글이면 삭제 버튼 표시 */}
-                        {currentUser && reply.USER_NUM === currentUser.userNum && (
-                          <button
-                            className="cd-comment-reply-btn"
-                            onClick={() => handleDeleteComment(reply.COMMENT_NUM)}
-                            style={{ color: '#e74c3c' }}
-                          >
-                            삭제
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* --- 답글 입력창 (해당 댓글의 답글 버튼 클릭 시 표시) --- */}
-              {replyTo === comment.COMMENT_NUM && (
-                <div className="cd-reply-input-wrap">
-                  <div className="cd-comment-avatar">
-                    {currentUser?.nickname?.[0] || '나'}
-                  </div>
-                  <div className="cd-comment-input-box">
-                    <textarea
-                      className="cd-comment-input cd-reply-input"
-                      placeholder={`${comment.NICKNAME}님에게 답글 작성...`}
-                      value={replyText}
-                      onChange={(e) => setReplyText(e.target.value)}
-                      /* Enter 키로 답글 등록 */
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleReplySubmit(comment.COMMENT_NUM);
-                        }
-                      }}
-                      autoFocus
-                    />
-                    <div className="cd-comment-input-actions">
-                      {/* 취소 버튼 */}
-                      <button
-                        className="cd-reply-cancel-btn"
-                        onClick={() => {
-                          setReplyTo(null);
-                          setReplyText('');
-                        }}
-                      >
-                        취소
-                      </button>
-                      {/* 등록 버튼 */}
-                      <button
-                        className="cd-comment-submit-btn"
-                        onClick={() => handleReplySubmit(comment.COMMENT_NUM)}
-                      >
-                        등록
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </section>
 
       </div>
 
