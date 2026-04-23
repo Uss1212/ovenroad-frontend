@@ -305,7 +305,11 @@ export default function PlaceDetail() {
         <div className="pd-section">
           <div className="pd-section-header">
             <h2 className="pd-section-title">리뷰</h2>
-            <button className="pd-review-write-btn" onClick={() => setShowReviewModal(true)}>
+            <button className="pd-review-write-btn" onClick={() => {
+              const user = localStorage.getItem('user');
+              if (!user) { alert('로그인이 필요합니다.'); navigate('/login'); return; }
+              setShowReviewModal(true);
+            }}>
               ✏️ 리뷰 작성
             </button>
           </div>

@@ -75,6 +75,15 @@ export default function CreateCourse() {
   /* 이미지 업로드 input 참조 (숨겨진 input을 클릭하기 위해) */
   const fileInputRef = useRef(null);
 
+  /* 비로그인 시 접근 차단 */
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
+    }
+  }, [navigate]);
+
   /* ============================================
      마이페이지에서 "이어서 작성" 클릭 시 임시저장 데이터 복원
      ============================================ */

@@ -130,7 +130,11 @@ export default function Community() {
             </button>
           ))}
         </div>
-        <button className="cm-write-btn" onClick={() => navigate('/community/write')}>✏️ 글쓰기</button>
+        <button className="cm-write-btn" onClick={() => {
+          const user = localStorage.getItem('user');
+          if (!user) { alert('로그인이 필요합니다.'); navigate('/login'); return; }
+          navigate('/community/write');
+        }}>✏️ 글쓰기</button>
       </div>
 
       {/* ===== 3. 메인 영역: 게시글 목록 + 사이드바 ===== */}
