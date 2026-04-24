@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { createCourse, saveDraft, updateDraft, uploadCourseImage, BASE_URL } from '../../api/apiAxios'; /* 코스 만들기 + 임시저장 + 수정 + 이미지 업로드 API + 서버 주소 */
+import { createCourse, saveDraft, updateDraft, deleteDraft, uploadCourseImage, BASE_URL } from '../../api/apiAxios'; /* 코스 만들기 + 임시저장 + 수정 + 삭제 + 이미지 업로드 API + 서버 주소 */
 import { createMarkerClustering } from '../../utils/MarkerClustering'; /* 마커 클러스터링 (가까운 마커끼리 묶어서 표시) */
 import './CreateCourse.css';
 
@@ -101,8 +101,7 @@ export default function CreateCourse() {
       if (s.coverImages && s.coverImages.length > 0) {
         uploadedImageUrlsRef.current = s.coverImages;
         setUploadedImageUrls(s.coverImages);
-        /* 서버 이미지 URL을 미리보기용으로도 설정 (BASE_URL 붙여서) */
-        setCoverImages(s.coverImages.map(url => `${BASE_URL}${url}`));
+        setCoverImages(s.coverImages.map(url => url.startsWith('http') ? url : `${BASE_URL}${url}`));
       }
     }
   }, []);
@@ -278,6 +277,11 @@ export default function CreateCourse() {
           isThumbnail: index === 0,
         })),
       });
+
+      /* 임시저장에서 발행한 경우 임시저장 삭제 */
+      if (draftNum) {
+        try { await deleteDraft(draftNum); } catch {}
+      }
 
       /* 만든 코스 상세 페이지로 바로 이동 */
       navigate(`/courses/${result.courseNum}`);
