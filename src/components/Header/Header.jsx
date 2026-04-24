@@ -65,7 +65,7 @@ export default function Header() {
     { name: '빵집탐색',   path: '/places' },     // 인기 빵집 목록을 볼 수 있는 페이지
     { name: '추천코스',   path: '/courses' },    // 추천 빵집 코스를 모아보는 페이지
     { name: '코스만들기', path: '/create' },     // 나만의 빵집 코스를 만드는 페이지
-    { name: '커뮤니티',   path: '/community' },  // 사용자들끼리 소통하는 게시판
+    { name: '공지사항',   path: '/notice' },     // 공지사항 / FAQ / 문의하기
   ];
 
   return (

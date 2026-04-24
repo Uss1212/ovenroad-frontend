@@ -31,11 +31,7 @@ import PlaceDetail from './pages/PlaceDetail/PlaceDetail'; // 빵집 상세
 import PlaceList from './pages/PlaceList/PlaceList'; // 빵집 목록
 /* BreadMap: 빵지도 별도 페이지는 제거 (메인 HeroBanner 지도로 통합) */
 import CourseList from './pages/CourseList/CourseList'; // 추천코스 목록
-import Community from './pages/Community/Community'; // 커뮤니티
-import CommunityDetail from './pages/CommunityDetail/CommunityDetail'; // 커뮤니티 글 상세
-import CommunityWrite from './pages/CommunityWrite/CommunityWrite'; // 커뮤니티 글쓰기
-import Events from './pages/Events/Events'; // 이벤트
-import NoticeList from './pages/NoticeList/NoticeList'; // 공지사항 목록
+import NoticeList from './pages/NoticeList/NoticeList'; // 고객지원 (공지사항/FAQ/문의)
 import NoticeDetail from './pages/NoticeDetail/NoticeDetail'; // 공지사항 상세
 import './css/App.css';
 
@@ -94,17 +90,7 @@ function App() {
             {/* /map 라우트 제거 → 메인 HeroBanner 지도로 통합 */}
             {/* "/courses" → 추천코스 목록 */}
             <Route path="/courses" element={<CourseList />} />
-            {/* "/community" → 커뮤니티 */}
-            <Route path="/community" element={<Community />} />
-            {/* "/community/write" → 커뮤니티 글쓰기 (반드시 :id보다 위에 있어야 함!) */}
-            <Route path="/community/write" element={<CommunityWrite />} />
-            {/* "/community/edit/:boardNum" → 커뮤니티 글 수정 */}
-            <Route path="/community/edit/:boardNum" element={<CommunityWrite />} />
-            {/* "/community/:id" → 커뮤니티 글 상세 (:id는 글 번호) */}
-            <Route path="/community/:id" element={<CommunityDetail />} />
-            {/* "/events" → 이벤트 */}
-            <Route path="/events" element={<Events />} />
-            {/* "/notice" → 공지사항 목록 */}
+            {/* "/notice" → 고객지원 (공지사항/FAQ/문의하기) */}
             <Route path="/notice" element={<NoticeList />} />
             {/* "/notice/:id" → 공지사항 상세 */}
             <Route path="/notice/:id" element={<NoticeDetail />} />
