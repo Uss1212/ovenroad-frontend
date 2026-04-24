@@ -131,6 +131,29 @@
   opacity: 1;
 }
 
+.cc-cover-star {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  border: none;
+  background: rgba(0, 0, 0, 0.4);
+  color: #999;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.cc-cover-star-active {
+  background: rgba(255, 200, 0, 0.9);
+  color: #fff;
+}
+
 /* + 추가 버튼 */
 .cc-cover-upload {
   width: 200px;

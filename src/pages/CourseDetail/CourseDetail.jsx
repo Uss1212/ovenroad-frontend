@@ -136,13 +136,18 @@ export default function CourseDetail() {
       : 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=900';
 
   /* --- 이미지 갤러리 만들기 --- */
-  /* 커버 이미지 + 장소 이미지들을 모아서 최대 6개까지 보여줌 */
+  /* 사용자가 등록한 커버 이미지만 보여줌 */
   const galleryImages = (() => {
     const imgs = [];
-    if (course?.COVER_IMAGE) imgs.push(imgUrl(course.COVER_IMAGE));
-    places.forEach((p) => {
-      if (p.images) p.images.forEach((img) => imgs.push(imgUrl(img)));
-    });
+    if (course?.COVER_IMAGES) {
+      try {
+        const parsed = JSON.parse(course.COVER_IMAGES);
+        if (Array.isArray(parsed)) parsed.forEach(img => imgs.push(imgUrl(img)));
+      } catch {}
+    }
+    if (imgs.length === 0 && course?.COVER_IMAGE) {
+      imgs.push(imgUrl(course.COVER_IMAGE));
+    }
     return imgs.slice(0, 6);
   })();
 

@@ -43,6 +43,8 @@ export default function CreateCourse() {
   const uploadedImageUrlsRef = useRef([]);
   /* 현재 업로드 진행 중인 개수 */
   const pendingUploadsRef = useRef(0);
+  /* 대표이미지 인덱스 (기본값: 첫 번째 이미지) */
+  const [mainImageIndex, setMainImageIndex] = useState(0);
 
   /* 장소 검색어 */
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -269,7 +271,8 @@ export default function CreateCourse() {
         subtitle: description.trim() || title.trim(),
         content: description.trim(),
         /* 업로드된 이미지 전체를 JSON 배열로 전달 */
-        coverImage: uploadedImageUrls.length > 0 ? JSON.stringify(uploadedImageUrls) : null,
+        coverImage: uploadedImageUrls.length > 0 ? uploadedImageUrls[mainImageIndex] || uploadedImageUrls[0] : null,
+        coverImages: uploadedImageUrls,
         places: places.map((place, index) => ({
           placeNum: place.id,
           order: index + 1,
@@ -518,10 +521,20 @@ export default function CreateCourse() {
           {coverImages.map((img, index) => (
             <div key={index} className="cc-cover-item">
               <img src={img} alt={`이미지 ${index + 1}`} className="cc-cover-preview" />
-              {/* 이미지 삭제 버튼 (X) */}
+              <button
+                className={`cc-cover-star ${mainImageIndex === index ? 'cc-cover-star-active' : ''}`}
+                onClick={() => setMainImageIndex(index)}
+                title="대표이미지로 설정"
+              >
+                ★
+              </button>
               <button
                 className="cc-cover-remove"
-                onClick={() => handleRemoveImage(index)}
+                onClick={() => {
+                  handleRemoveImage(index);
+                  if (mainImageIndex === index) setMainImageIndex(0);
+                  else if (mainImageIndex > index) setMainImageIndex(prev => prev - 1);
+                }}
               >
                 ✕
               </button>
