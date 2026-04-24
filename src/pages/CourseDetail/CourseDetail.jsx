@@ -66,7 +66,7 @@ export default function CourseDetail() {
       try {
         setLoading(true);
         /* 코스 상세 정보 가져오기 */
-        const data = await getCourseDetail(id);
+        const data = await getCourseDetail(id, currentUser?.userNum);
         setCourse(data);
         /* 장소의 images가 문자열이면 배열로 변환 (쉼표로 나뉜 URL) */
         const parsedPlaces = (data.places || []).map(p => ({
@@ -107,8 +107,8 @@ export default function CourseDetail() {
     if (!currentUser) return alert('로그인이 필요합니다!');
     try {
       const res = await toggleCourseScrap(id, currentUser.userNum);
-      setIsSaved(res.scrapped);
-      setScrapCount(res.scrapCount);
+      setIsSaved(res.scraped);
+      setScrapCount(prev => res.scraped ? prev + 1 : prev - 1);
     } catch (err) {
       console.error('스크랩 실패:', err);
     }
@@ -349,7 +349,6 @@ export default function CourseDetail() {
       <div className="cd-bottom-bar">
         <div className="cd-bottom-stats">
           <span>♡ {likeCount}</span>
-          <span>🔖 {scrapCount}</span>
         </div>
         <button className="cd-bottom-cta" onClick={openNaverDirections}>
           코스 탐방하기

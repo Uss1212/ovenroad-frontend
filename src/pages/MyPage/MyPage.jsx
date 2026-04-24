@@ -55,7 +55,7 @@ export default function MyPage() {
   const [myCourses, setMyCourses] = useState([]);       /* 내가 만든 코스 */
   const [myReviews, setMyReviews] = useState([]);       /* 내가 남긴 리뷰 */
   const [likedCourses, setLikedCourses] = useState([]); /* 좋아요한 코스 */
-  const [scrapedCourses, setScrapedCourses] = useState([]); /* 스크랩한 코스 */
+  const [scrapedCourses, setScrapedCourses] = useState([]); /* 저장된 코스 */
   const [myDrafts, setMyDrafts] = useState([]);         /* 임시저장한 코스 */
   const [myPosts, setMyPosts] = useState([]);           /* 내가 작성한 질문 */
   const [tabLoading, setTabLoading] = useState(false);  /* 탭 데이터 로딩 중? */
@@ -68,7 +68,7 @@ export default function MyPage() {
     { id: 'drafts', label: '임시저장', icon: '📝' },
     { id: 'reviews', label: '내가 남긴 리뷰', icon: '⭐' },
     { id: 'liked', label: '좋아요한 코스', icon: '❤️' },
-    { id: 'scraped', label: '스크랩한 코스', icon: '🔖' },
+    { id: 'scraped', label: '저장된 코스', icon: '🔖' },
     { id: 'qna', label: '내가 작성한 질문', icon: '💬' },
   ];
 
@@ -609,7 +609,7 @@ export default function MyPage() {
               </div>
             )}
 
-            {/* --- 스크랩한 코스 탭 --- */}
+            {/* --- 저장된 코스 탭 --- */}
             {activeMenu === 'scraped' && (
               <div>
                 {tabLoading ? (
@@ -643,7 +643,7 @@ export default function MyPage() {
                 ) : (
                   <div className="mypage-empty">
                     <span className="mypage-empty-icon">🔖</span>
-                    <p className="mypage-empty-title">스크랩한 코스가 없어요</p>
+                    <p className="mypage-empty-title">저장된 코스가 없어요</p>
                     <p className="mypage-empty-desc">나중에 보고 싶은 코스를 스크랩해보세요!</p>
                     <button className="mypage-empty-btn" onClick={() => navigate('/courses')}>
                       코스 둘러보기

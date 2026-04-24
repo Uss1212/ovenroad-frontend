@@ -309,6 +309,7 @@ export default function CreateCourse() {
       }
 
       /* ref에서 최신 이미지 URL 읽기 (state보다 확실) */
+      console.log('임시저장 coverImages:', uploadedImageUrlsRef.current);
       const result = await saveDraft({
         userNum: user.userNum,
         draftNum: draftNum || null,
