@@ -262,8 +262,9 @@ export async function getCourseList(sort = 'latest', region = '') {
 }
 
 /* --- 코스 상세 조회 --- */
-export async function getCourseDetail(courseNum) {
-  return request(`/api/courses/${courseNum}`);
+export async function getCourseDetail(courseNum, userNum) {
+  const query = userNum ? `?userNum=${userNum}` : '';
+  return request(`/api/courses/${courseNum}${query}`);
 }
 
 /* --- 코스 커버 이미지 업로드 --- */
@@ -271,9 +272,12 @@ export async function getCourseDetail(courseNum) {
 export async function uploadCourseImage(file) {
   const formData = new FormData();
   formData.append('image', file);
-  /* 이미지 업로드는 Content-Type을 직접 설정하지 않음 (브라우저가 자동 설정) */
+  const token = localStorage.getItem('token');
   const response = await fetch(`${BASE_URL}/api/courses/upload-image`, {
     method: 'POST',
+    headers: {
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
     body: formData,
   });
   if (!response.ok) {
