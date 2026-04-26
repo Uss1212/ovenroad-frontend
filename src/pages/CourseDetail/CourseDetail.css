@@ -98,6 +98,7 @@
   height: 32px;
   border-radius: 50%;
   background: linear-gradient(135deg, #c96442, #e8956a);
+  object-fit: cover;
 }
 
 /* 작성자 이름 */

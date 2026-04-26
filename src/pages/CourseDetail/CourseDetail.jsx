@@ -238,8 +238,12 @@ export default function CourseDetail() {
           )}
           {/* 작성자 */}
           <div className="cd-info-author">
-            <div className="cd-author-avatar" />
-            <span>{course.NICKNAME || '작성자'}</span>
+            {course.authorImage ? (
+              <img src={imgUrl(course.authorImage)} alt="" className="cd-author-avatar" />
+            ) : (
+              <div className="cd-author-avatar" />
+            )}
+            <span>{course.author || '작성자'}</span>
           </div>
 
           {/* 태그 칩들: 장소 수 */}
