@@ -6,7 +6,7 @@
           → 장소 타임라인 → 이미지 갤러리 → 댓글(답글) → 하단바
    =================================================== */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   getCourseDetail,
@@ -44,6 +44,9 @@ export default function CourseDetail() {
   const [scrapCount, setScrapCount] = useState(0);
   /* lightbox: 이미지 크게 보기 인덱스 (-1이면 안 보임) */
   const [lightbox, setLightbox] = useState(-1);
+  /* showMap: 코스 탐방 지도 표시 여부 */
+  const [showMap, setShowMap] = useState(false);
+  const courseMapRef = useRef(null);
 
   /* --- 현재 로그인한 사용자 정보 가져오기 --- */
   /* localStorage에 저장해둔 유저 정보를 꺼냄 */
@@ -160,28 +163,70 @@ export default function CourseDetail() {
   };
 
   /* --- "코스 탐방하기" 버튼 클릭 --- */
-  /* 네이버 지도에서 장소들을 경유하는 길찾기를 열어줌 */
-  const openNaverDirections = () => {
-    if (places.length === 0) return;
-    /* 출발지: 첫 번째 장소 */
-    const start = places[0];
-    /* 도착지: 마지막 장소 */
-    const end = places[places.length - 1];
-    /* 경유지: 중간 장소들 */
-    const waypoints = places.slice(1, -1);
+  const toggleCourseMap = () => {
+    setShowMap(prev => !prev);
+  };
 
-    let url = `https://map.naver.com/v5/directions/`;
-    url += `${start.LONGITUDE},${start.LATITUDE},${encodeURIComponent(start.PLACE_NAME)}/`;
-    if (waypoints.length > 0) {
-      waypoints.forEach((wp) => {
-        url += `${wp.LONGITUDE},${wp.LATITUDE},${encodeURIComponent(wp.PLACE_NAME)}/`;
+  useEffect(() => {
+    if (!showMap || places.length === 0 || !courseMapRef.current) return;
+    if (!window.naver || !window.naver.maps) return;
+
+    const map = new window.naver.maps.Map(courseMapRef.current, {
+      zoom: 15,
+      center: new window.naver.maps.LatLng(places[0].LATITUDE, places[0].LONGITUDE),
+      zoomControl: true,
+      zoomControlOptions: { position: window.naver.maps.Position.TOP_RIGHT, style: window.naver.maps.ZoomControlStyle.SMALL },
+    });
+
+    const path = [];
+    places.forEach((place, idx) => {
+      const pos = new window.naver.maps.LatLng(place.LATITUDE, place.LONGITUDE);
+      path.push(pos);
+
+      const marker = new window.naver.maps.Marker({
+        map,
+        position: pos,
+        icon: {
+          content: `<div style="background:#c96442;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3)">${idx + 1}</div>`,
+          anchor: new window.naver.maps.Point(14, 14),
+        },
+      });
+
+      const infoWindow = new window.naver.maps.InfoWindow({
+        content: `<div style="padding:10px;min-width:150px">
+          <b>${place.PLACE_NAME}</b><br/>
+          <span style="font-size:12px;color:#666">${place.ADDRESS || ''}</span><br/>
+          <a href="https://map.kakao.com/link/to/${encodeURIComponent(place.PLACE_NAME)},${place.LATITUDE},${place.LONGITUDE}" target="_blank" style="display:inline-block;margin-top:6px;padding:4px 10px;background:#c96442;color:#fff;border-radius:4px;font-size:12px;text-decoration:none">길찾기</a>
+        </div>`,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        backgroundColor: '#fff',
+      });
+
+      window.naver.maps.Event.addListener(marker, 'click', () => {
+        infoWindow.open(map, marker);
+      });
+    });
+
+    if (path.length >= 2) {
+      new window.naver.maps.Polyline({
+        map,
+        path,
+        strokeColor: '#c96442',
+        strokeWeight: 3,
+        strokeOpacity: 0.8,
+        strokeStyle: 'shortdash',
       });
     }
-    url += `${end.LONGITUDE},${end.LATITUDE},${encodeURIComponent(end.PLACE_NAME)}`;
-    url += '/-/walk';
 
-    window.open(url, '_blank');
-  };
+    if (places.length > 1) {
+      const bounds = new window.naver.maps.LatLngBounds(
+        new window.naver.maps.LatLng(Math.min(...places.map(p => p.LATITUDE)), Math.min(...places.map(p => p.LONGITUDE))),
+        new window.naver.maps.LatLng(Math.max(...places.map(p => p.LATITUDE)), Math.max(...places.map(p => p.LONGITUDE)))
+      );
+      map.fitBounds(bounds, { top: 50, right: 50, bottom: 50, left: 50 });
+    }
+  }, [showMap, places]);
 
   /* --- 로딩 중이면 로딩 화면 표시 --- */
   if (loading) {
@@ -353,14 +398,21 @@ export default function CourseDetail() {
 
       </div>
 
+      {/* ===== 코스 탐방 지도 ===== */}
+      {showMap && (
+        <div className="cd-course-map-wrap">
+          <div ref={courseMapRef} className="cd-course-map" />
+        </div>
+      )}
+
       {/* ===== 7. 하단 고정바 ===== */}
       {/* 스크롤해도 항상 화면 아래에 보이는 바 */}
       <div className="cd-bottom-bar">
         <div className="cd-bottom-stats">
           <span>♡ {likeCount}</span>
         </div>
-        <button className="cd-bottom-cta" onClick={openNaverDirections}>
-          코스 탐방하기
+        <button className="cd-bottom-cta" onClick={toggleCourseMap}>
+          {showMap ? '지도 닫기' : '코스 탐방하기'}
         </button>
       </div>
 
