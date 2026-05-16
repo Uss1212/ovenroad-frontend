@@ -302,13 +302,13 @@ export default function CourseDetail() {
               className={`cd-action-btn ${isLiked ? 'active' : ''}`}
               onClick={handleLike}
             >
-              {isLiked ? '❤️' : '♡'} 좋아요
+              {isLiked ? <i className="fi fi-ss-heart"></i> : <i className="fi fi-rs-heart"></i>} 좋아요
             </button>
             <button
               className={`cd-action-btn ${isSaved ? 'active' : ''}`}
               onClick={handleScrap}
             >
-              {isSaved ? '🔖' : '☆'} 저장
+              {isSaved ? <i className="fi fi-sr-bookmark"></i> : <i className="fi fi-rr-bookmark"></i>} 저장
             </button>
             {/* 내가 만든 코스면 삭제 버튼도 보여줌 */}
             {currentUser && course.USER_NUM === currentUser.userNum && (
