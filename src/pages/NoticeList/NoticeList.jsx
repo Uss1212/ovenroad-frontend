@@ -102,7 +102,7 @@ export default function NoticeList() {
     if (currentTab === 'notice') fetchNotices();
     else if (currentTab === 'faq') fetchFaqs();
     else if (currentTab === 'question') fetchQuestions();
-  }, [currentTab]); /* currentTab이 바뀔 때마다 실행됨 */
+  }, [currentTab, user]);
 
   useEffect(() => {
     const questionNum = searchParams.get('questionNum');
