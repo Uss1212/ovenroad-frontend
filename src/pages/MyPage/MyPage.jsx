@@ -1,11 +1,3 @@
-/* ===================================================
-   MyPage 컴포넌트 (마이페이지)
-   - Oven 디자인: 사이드바(프로필+메뉴) + 콘텐츠 영역
-   - 왼쪽: 프로필 카드 + 메뉴 버튼 목록
-   - 오른쪽: 선택한 메뉴의 내용 (회원정보, 내 코스 등)
-   - 백엔드 API 연동 (닉네임 수정, 비밀번호 변경, 회원탈퇴)
-   =================================================== */
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -23,45 +15,39 @@ import {
   deleteReview,
   getMyDrafts,
   deleteDraft,
+  checkEmail,
+  sendEmailVerification,
+  verifyEmailCode,
 } from '../../api/apiAxios';
 import './MyPage.css';
 
 export default function MyPage() {
 
-  /* --- 페이지 이동 도구 --- */
   const navigate = useNavigate();
 
-  /* --- 상태(state) 관리 --- */
-  /* 현재 선택된 메뉴 (사이드바에서 클릭한 메뉴) */
   const [activeMenu, setActiveMenu] = useState('courses');
-  /* 사용자 정보 (서버에서 가져옴) */
   const [user, setUser] = useState(null);
-  /* 닉네임 수정용 */
   const [nickname, setNickname] = useState('');
-  /* 현재 비밀번호 */
   const [currentPw, setCurrentPw] = useState('');
-  /* 새 비밀번호 */
   const [newPw, setNewPw] = useState('');
-  /* 탈퇴용 비밀번호 */
   const [deletePw, setDeletePw] = useState('');
-  /* 탈퇴 확인창 표시 여부 */
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  /* 성공 메시지 */
+  const [newEmail, setNewEmail] = useState('');
+  const [emailCode, setEmailCode] = useState('');
+  const [emailCodeSent, setEmailCodeSent] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
   const [message, setMessage] = useState('');
-  /* 에러 메시지 */
   const [error, setError] = useState('');
+  const [nicknameMsg, setNicknameMsg] = useState('');
 
-  /* --- 각 탭의 데이터 --- */
-  const [myCourses, setMyCourses] = useState([]);       /* 내가 만든 코스 */
-  const [myReviews, setMyReviews] = useState([]);       /* 내가 남긴 리뷰 */
-  const [likedCourses, setLikedCourses] = useState([]); /* 좋아요한 코스 */
-  const [scrapedCourses, setScrapedCourses] = useState([]); /* 저장된 코스 */
-  const [myDrafts, setMyDrafts] = useState([]);         /* 임시저장한 코스 */
-  const [myPosts, setMyPosts] = useState([]);           /* 내가 작성한 질문 */
-  const [tabLoading, setTabLoading] = useState(false);  /* 탭 데이터 로딩 중? */
+  const [myCourses, setMyCourses] = useState([]);
+  const [myReviews, setMyReviews] = useState([]);
+  const [likedCourses, setLikedCourses] = useState([]);
+  const [scrapedCourses, setScrapedCourses] = useState([]);
+  const [myDrafts, setMyDrafts] = useState([]);
+  const [myPosts, setMyPosts] = useState([]);
+  const [tabLoading, setTabLoading] = useState(false);
 
-  /* --- 사이드바 메뉴 목록 --- */
-  /* id: 내부 식별자, label: 화면에 보이는 텍스트, icon: 아이콘 이모지 */
   const menuItems = [
     { id: 'profile', label: '회원 정보 관리', icon: '👤' },
     { id: 'courses', label: '내가 만든 코스', icon: '🗺️' },
@@ -72,12 +58,9 @@ export default function MyPage() {
     { id: 'qna', label: '내가 작성한 질문', icon: '💬' },
   ];
 
-  /* --- 페이지 로딩 시 사용자 정보 가져오기 --- */
   useEffect(() => {
-    /* localStorage에서 로그인한 사용자 정보 가져오기 */
     const savedUser = localStorage.getItem('user');
     if (!savedUser) {
-      /* 로그인 안 한 상태면 로그인 페이지로 보냄 */
       alert('로그인이 필요합니다.');
       navigate('/login');
       return;
@@ -85,23 +68,19 @@ export default function MyPage() {
 
     const parsed = JSON.parse(savedUser);
 
-    /* 서버에서 최신 사용자 정보 가져오기 */
     getUserInfo(parsed.userNum)
       .then((data) => {
         setUser(data);
         setNickname(data.NICKNAME || '');
       })
       .catch(() => {
-        /* 서버에서 정보를 못 가져오면 localStorage 데이터 사용 */
         setUser(parsed);
         setNickname(parsed.nickname || '');
       });
   }, [navigate]);
 
-  /* --- 탭 변경 시 데이터 불러오기 --- */
-  /* 메뉴를 클릭하면 해당 탭에 맞는 데이터를 서버에서 가져옴 */
   useEffect(() => {
-    if (!user) return; /* 사용자 정보가 없으면 아직 로딩 중 */
+    if (!user) return;
     const userNum = user.USER_NUM || user.userNum;
     if (!userNum) return;
 
@@ -136,45 +115,37 @@ export default function MyPage() {
     fetchTabData();
   }, [activeMenu, user]);
 
-  /* --- 좋아요 취소 --- */
   const handleUnlike = async (courseNum) => {
     const userNum = user.USER_NUM || user.userNum;
     try {
       await toggleCourseLike(courseNum, userNum);
-      /* 목록에서 제거 */
       setLikedCourses(prev => prev.filter(c => c.COURSE_NUM !== courseNum));
     } catch (err) {
       console.error('좋아요 취소 실패:', err);
     }
   };
 
-  /* --- 스크랩 취소 --- */
   const handleUnscrap = async (courseNum) => {
     const userNum = user.USER_NUM || user.userNum;
     try {
       await toggleCourseScrap(courseNum, userNum);
-      /* 목록에서 제거 */
       setScrapedCourses(prev => prev.filter(c => c.COURSE_NUM !== courseNum));
     } catch (err) {
       console.error('스크랩 취소 실패:', err);
     }
   };
 
-  /* --- 임시저장 삭제 --- */
   const handleDeleteDraft = async (draftNum) => {
     if (!window.confirm('임시저장을 삭제하시겠습니까?')) return;
     try {
       await deleteDraft(draftNum);
-      /* 목록에서 제거 */
       setMyDrafts(prev => prev.filter(d => d.DRAFT_NUM !== draftNum));
     } catch (err) {
       console.error('임시저장 삭제 실패:', err);
     }
   };
 
-  /* --- 임시저장 이어서 작성하기 (코스 만들기 페이지로 데이터 전달) --- */
   const handleEditDraft = (draft) => {
-    /* 임시저장된 커버 이미지 URL도 함께 넘김 */
     let coverImages = [];
     try {
       coverImages = typeof draft.COVER_IMAGES === 'string' ? JSON.parse(draft.COVER_IMAGES) : (draft.COVER_IMAGES || []);
@@ -193,25 +164,76 @@ export default function MyPage() {
     });
   };
 
-  /* --- 리뷰 삭제 --- */
   const handleDeleteReview = async (reviewNum) => {
     if (!window.confirm('리뷰를 삭제하시겠습니까?')) return;
     const userNum = user.USER_NUM || user.userNum;
     try {
       await deleteReview(reviewNum, userNum);
-      /* 목록에서 제거 */
       setMyReviews(prev => prev.filter(r => r.REVIEW_NUM !== reviewNum));
     } catch (err) {
       console.error('리뷰 삭제 실패:', err);
     }
   };
 
-  /* --- 닉네임 저장하기 --- */
-  const handleSave = async () => {
+  const handleSendEmailCode = async () => {
     setMessage('');
     setError('');
+    if (!newEmail) { setError('새 이메일을 입력해주세요.'); return; }
+    try {
+      await checkEmail(newEmail);
+    } catch (err) {
+      if (err.status === 409) {
+        alert('이미 다른 계정에서 사용 중인 이메일입니다.');
+        return;
+      }
+    }
+    try {
+      await sendEmailVerification(newEmail);
+      setEmailCodeSent(true);
+      setMessage('인증코드가 이메일로 전송되었습니다.');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleVerifyEmailCode = async () => {
+    setMessage('');
+    setError('');
+    if (!emailCode) { setError('인증코드를 입력해주세요.'); return; }
+    try {
+      await verifyEmailCode(newEmail, emailCode);
+      setEmailVerified(true);
+      setMessage('이메일이 인증되었습니다.');
+    } catch {
+      setError('인증코드가 올바르지 않습니다.');
+    }
+  };
+
+  const handleSaveEmail = async () => {
+    setMessage('');
+    setError('');
+    if (!emailVerified) { setError('이메일 인증을 완료해주세요.'); return; }
+    try {
+      const userNum = user.USER_NUM || user.userNum;
+      await updateUserInfo(userNum, { email: newEmail });
+      const savedUser = JSON.parse(localStorage.getItem('user'));
+      savedUser.email = newEmail;
+      localStorage.setItem('user', JSON.stringify(savedUser));
+      setUser(prev => ({ ...prev, EMAIL: newEmail }));
+      setNewEmail('');
+      setEmailCode('');
+      setEmailCodeSent(false);
+      setEmailVerified(false);
+      setMessage('이메일이 수정되었습니다.');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleSave = async () => {
+    setNicknameMsg('');
     if (!nickname || nickname.length < 2) {
-      setError('닉네임은 2자 이상이어야 합니다.');
+      setNicknameMsg('error:닉네임은 2자 이상이어야 합니다.');
       return;
     }
     try {
@@ -220,13 +242,13 @@ export default function MyPage() {
       const savedUser = JSON.parse(localStorage.getItem('user'));
       savedUser.nickname = nickname;
       localStorage.setItem('user', JSON.stringify(savedUser));
-      setMessage('닉네임이 수정되었습니다.');
+      setUser(prev => ({ ...prev, NICKNAME: nickname, nickname }));
+      setNicknameMsg('success:닉네임이 수정되었습니다.');
     } catch (err) {
-      setError(err.message);
+      setNicknameMsg('error:' + err.message);
     }
   };
 
-  /* --- 비밀번호 변경 --- */
   const handleChangePassword = async () => {
     setMessage('');
     setError('');
@@ -249,13 +271,10 @@ export default function MyPage() {
     }
   };
 
-  /* --- 회원탈퇴 --- */
-  /* 소셜 로그인 사용자인지 확인 (네이버/카카오는 비밀번호가 없음) */
   const isSocialUser = user?.SOCIAL_TYPE === 'naver' || user?.SOCIAL_TYPE === 'kakao' || user?.socialType === 'naver' || user?.socialType === 'kakao';
 
   const handleDeleteAccount = async () => {
     setError('');
-    /* 일반 회원만 비밀번호 필요 (소셜 로그인은 비밀번호 없이 탈퇴) */
     if (!isSocialUser && !deletePw) {
       setError('비밀번호를 입력해주세요.');
       return;
@@ -271,24 +290,19 @@ export default function MyPage() {
     }
   };
 
-  /* --- 로그아웃 --- */
   const handleLogout = () => {
     localStorage.removeItem('user');
     alert('로그아웃 되었습니다.');
     navigate('/');
   };
 
-  /* --- 로딩 중 --- */
   if (!user) {
     return <div className="mypage"><p>로딩 중...</p></div>;
   }
 
-  /* --- 사용자 이름/이메일 가져오기 --- */
   const userName = user.NAME || user.name || '사용자';
   const userEmail = user.EMAIL || user.email || '';
   const userNickname = user.NICKNAME || user.nickname || userName;
-
-  /* --- 현재 선택된 메뉴의 라벨 가져오기 --- */
   const currentLabel = menuItems.find((m) => m.id === activeMenu)?.label || '';
 
   return (
@@ -296,19 +310,13 @@ export default function MyPage() {
       <div className="mypage-container">
         <div className="mypage-layout">
 
-          {/* ===== 왼쪽 사이드바 ===== */}
           <div className="mypage-sidebar">
-
-            {/* --- 프로필 카드 --- */}
             <div className="mypage-profile">
-              {/* 프로필 아바타 (닉네임 첫 글자) */}
               <div className="mypage-avatar">
                 <span>{userNickname[0]}</span>
               </div>
-              {/* 이름 + 이메일 */}
               <h2 className="mypage-name">{userNickname}</h2>
               <p className="mypage-email">{userEmail}</p>
-              {/* 프로필 수정 버튼 (회원정보 탭으로 이동) */}
               <button
                 className="mypage-profile-edit-btn"
                 onClick={() => setActiveMenu('profile')}
@@ -317,41 +325,32 @@ export default function MyPage() {
               </button>
             </div>
 
-            {/* --- 메뉴 목록 --- */}
             <div className="mypage-menu">
-              {/* 각 메뉴 버튼 */}
               {menuItems.map((item) => (
                 <button
                   key={item.id}
                   className={`mypage-menu-item ${activeMenu === item.id ? 'active' : ''}`}
-                  onClick={() => { setActiveMenu(item.id); setMessage(''); setError(''); }}
+                  onClick={() => { setActiveMenu(item.id); setMessage(''); setError(''); setNicknameMsg(''); }}
                 >
                   <span className="mypage-menu-label">
                     <span className="mypage-menu-icon">{item.icon}</span>
                     {item.label}
                   </span>
-                  {/* 선택된 메뉴에만 화살표 표시 */}
                   {activeMenu === item.id && <span className="mypage-menu-arrow">→</span>}
                 </button>
               ))}
-              {/* 구분선 */}
               <div className="mypage-menu-divider" />
-              {/* 로그아웃 버튼 */}
               <button className="mypage-logout-btn" onClick={handleLogout}>
                 🚪 로그아웃
               </button>
             </div>
           </div>
 
-          {/* ===== 오른쪽 콘텐츠 영역 ===== */}
           <div className="mypage-content">
-            {/* 콘텐츠 제목 (선택한 메뉴 이름) */}
             <h2 className="mypage-content-title">{currentLabel}</h2>
 
-            {/* --- 회원 정보 관리 탭 --- */}
             {activeMenu === 'profile' && (
               <div className="mypage-info-section">
-                {/* 닉네임 수정 */}
                 <h3 className="mypage-section-title">닉네임 수정</h3>
                 <div className="mypage-field">
                   <label className="mypage-label">닉네임</label>
@@ -365,10 +364,67 @@ export default function MyPage() {
                 <button className="mypage-save-btn" onClick={handleSave}>
                   닉네임 저장
                 </button>
+                {nicknameMsg && (
+                  <p className={`mypage-message ${nicknameMsg.startsWith('success') ? 'success' : 'error'}`}>
+                    {nicknameMsg.replace(/^(success|error):/, '')}
+                  </p>
+                )}
 
                 <hr className="mypage-divider" />
 
-                {/* 비밀번호 변경 */}
+                <h3 className="mypage-section-title">이메일 수정</h3>
+                <div className="mypage-field">
+                  <label className="mypage-label">현재 이메일</label>
+                  <input
+                    type="text"
+                    className="mypage-input"
+                    value={userEmail}
+                    disabled
+                  />
+                </div>
+                <div className="mypage-field">
+                  <label className="mypage-label">새 이메일</label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="email"
+                      className="mypage-input"
+                      placeholder="새 이메일 입력"
+                      value={newEmail}
+                      onChange={(e) => { setNewEmail(e.target.value); setEmailCodeSent(false); setEmailVerified(false); }}
+                      style={{ flex: 1 }}
+                    />
+                    <button className="mypage-save-btn" style={{ whiteSpace: 'nowrap', flexShrink: 0, width: 'auto' }} onClick={handleSendEmailCode}>
+                      인증코드 발송
+                    </button>
+                  </div>
+                </div>
+                {emailCodeSent && (
+                  <div className="mypage-field">
+                    <label className="mypage-label">인증코드</label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input
+                        type="text"
+                        className="mypage-input"
+                        placeholder="인증코드 6자리 입력"
+                        value={emailCode}
+                        onChange={(e) => setEmailCode(e.target.value)}
+                        style={{ flex: 1 }}
+                        disabled={emailVerified}
+                      />
+                      <button className="mypage-save-btn" style={{ whiteSpace: 'nowrap', flexShrink: 0, width: 'auto' }} onClick={handleVerifyEmailCode} disabled={emailVerified}>
+                        {emailVerified ? '인증완료' : '인증 확인'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {emailVerified && (
+                  <button className="mypage-save-btn" onClick={handleSaveEmail}>
+                    이메일 저장
+                  </button>
+                )}
+
+                <hr className="mypage-divider" />
+
                 <h3 className="mypage-section-title">비밀번호 변경</h3>
                 <div className="mypage-field">
                   <label className="mypage-label">현재 비밀번호</label>
@@ -394,13 +450,11 @@ export default function MyPage() {
                   비밀번호 변경
                 </button>
 
-                {/* 성공/에러 메시지 */}
                 {message && <p className="mypage-message success">{message}</p>}
                 {error && <p className="mypage-message error">{error}</p>}
 
                 <hr className="mypage-divider" />
 
-                {/* 회원 탈퇴 */}
                 {!showDeleteConfirm ? (
                   <p
                     className="mypage-delete-account"
@@ -413,7 +467,6 @@ export default function MyPage() {
                     <p className="mypage-delete-warning">
                       정말 탈퇴하시겠습니까? 모든 데이터가 삭제되며 복구할 수 없습니다.
                     </p>
-                    {/* 일반 회원만 비밀번호 입력 (소셜 로그인은 비밀번호 없이 탈퇴) */}
                     {!isSocialUser && (
                       <input
                         type="password"
@@ -439,16 +492,12 @@ export default function MyPage() {
               </div>
             )}
 
-            {/* --- 내가 만든 코스 탭 --- */}
-            {/* 그리드 레이아웃: 새 코스 만들기 카드 + 코스 카드들 */}
             {activeMenu === 'courses' && (
               <div className="my-card-grid">
-                {/* 새 코스 만들기 카드 (항상 맨 앞에 표시) */}
                 <div className="my-card-create" onClick={() => navigate('/create')}>
                   <span className="my-card-create-icon">🗺️</span>
                   <span className="my-card-create-text">새 코스 만들기</span>
                 </div>
-                {/* DB에서 가져온 내 코스 카드들 */}
                 {tabLoading && <p style={{ color: '#999', padding: '20px' }}>불러오는 중...</p>}
                 {myCourses.map((course) => (
                   <div
@@ -456,15 +505,12 @@ export default function MyPage() {
                     className="my-course-card"
                     onClick={() => navigate(`/courses/${course.COURSE_NUM}`)}
                   >
-                    {/* 코스 이미지 */}
                     <div className="my-course-card-img">
                       <div style={{ width: '100%', height: '100%', background: '#e7e5e4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>
                         🍞
                       </div>
-                      {/* 공개 뱃지 */}
                       <span className="my-course-card-badge">공개</span>
                     </div>
-                    {/* 코스 정보 */}
                     <div className="my-course-card-info">
                       <h3 className="my-course-card-title">{course.TITLE}</h3>
                       <p className="my-course-card-meta">
@@ -476,7 +522,6 @@ export default function MyPage() {
               </div>
             )}
 
-            {/* --- 임시저장 탭 --- */}
             {activeMenu === 'drafts' && (
               <div>
                 {tabLoading ? (
@@ -484,7 +529,6 @@ export default function MyPage() {
                 ) : myDrafts.length > 0 ? (
                   <div className="my-card-list">
                     {myDrafts.map((draft) => {
-                      /* JSON 문자열이면 파싱, 이미 객체면 그대로 사용 */
                       const draftPlaces = typeof draft.PLACES === 'string' ? JSON.parse(draft.PLACES) : (draft.PLACES || []);
                       return (
                         <div key={draft.DRAFT_NUM} className="my-card">
@@ -529,7 +573,6 @@ export default function MyPage() {
               </div>
             )}
 
-            {/* --- 내가 남긴 리뷰 탭 --- */}
             {activeMenu === 'reviews' && (
               <div>
                 {tabLoading ? (
@@ -565,7 +608,6 @@ export default function MyPage() {
               </div>
             )}
 
-            {/* --- 좋아요한 코스 탭 --- */}
             {activeMenu === 'liked' && (
               <div>
                 {tabLoading ? (
@@ -609,7 +651,6 @@ export default function MyPage() {
               </div>
             )}
 
-            {/* --- 저장된 코스 탭 --- */}
             {activeMenu === 'scraped' && (
               <div>
                 {tabLoading ? (
@@ -653,7 +694,6 @@ export default function MyPage() {
               </div>
             )}
 
-            {/* --- 내가 작성한 질문 탭 --- */}
             {activeMenu === 'qna' && (
               <div>
                 {tabLoading ? (

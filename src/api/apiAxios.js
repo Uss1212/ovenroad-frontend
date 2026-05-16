@@ -83,6 +83,10 @@ export async function checkNicknameDuplicate(nickname) {
 
 /* --- 이메일 인증코드 전송 --- */
 /* 입력한 이메일 주소로 인증번호를 보냄 */
+export async function checkEmail(email) {
+  return request(`/api/user/check-email?email=${encodeURIComponent(email)}`);
+}
+
 export async function sendEmailVerification(email) {
   return request('/api/user/send-email', {
     method: 'POST',
