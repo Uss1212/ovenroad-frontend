@@ -559,9 +559,15 @@ export default function CreateCourse() {
           onChange={(e) => setTitle(e.target.value)}
         />
 
-        {/* --- 3. 작성자 정보 (로그인한 사용자 닉네임) --- */}
         <div className="cc-author-row">
-          <div className="cc-author-avatar"></div>
+          <div className="cc-author-avatar">
+            {(() => {
+              try {
+                const u = JSON.parse(localStorage.getItem('user'));
+                return (u?.nickname || u?.name || '작')[0];
+              } catch { return '작'; }
+            })()}
+          </div>
           <span className="cc-author-name">
             {(() => {
               try {

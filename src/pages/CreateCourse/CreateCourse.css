@@ -10,19 +10,24 @@
 .create-course {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px 60px;
+  padding: 80px 24px 100px;
 }
 
 /* ===== 상단 버튼 바 ===== */
 /* 오른쪽 정렬: 임시저장 + 발행하기 */
 .cc-top-bar {
+  position: fixed;
+  top: 52px;
+  right: 0;
+  left: 0;
   display: flex;
   justify-content: flex-end;
   align-items: center;
   gap: 10px;
-  padding: 14px 0;
+  padding: 12px 40px;
+  background: #ffffff;
   border-bottom: 1px solid #eeeeee;
-  margin-bottom: 32px;
+  z-index: 100;
 }
 
 /* 임시저장 버튼 */
@@ -218,8 +223,14 @@
   width: 32px;
   height: 32px;
   border-radius: 16px;
-  background: #dddddd;
+  background: #92400e;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 작성자 이름 */
