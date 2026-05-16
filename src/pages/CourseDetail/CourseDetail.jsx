@@ -291,9 +291,17 @@ export default function CourseDetail() {
             <span>{course.author || '작성자'}</span>
           </div>
 
-          {/* 태그 칩들: 장소 수 */}
           <div className="cd-info-chips">
             <span className="cd-chip">📍 {places.length}곳</span>
+            {(() => {
+              try {
+                const t = course.TAGS;
+                const tagArr = Array.isArray(t) ? t : (typeof t === 'string' ? JSON.parse(t) : []);
+                return tagArr.map((tag, i) => (
+                  <span key={i} className="cd-chip">#{tag}</span>
+                ));
+              } catch { return null; }
+            })()}
           </div>
 
           {/* 좋아요 + 저장 + 삭제 버튼 */}
