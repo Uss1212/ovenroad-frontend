@@ -731,10 +731,6 @@ export default function MyPage() {
                   <div className="mypage-empty">
                     <span className="mypage-empty-icon">💬</span>
                     <p className="mypage-empty-title">아직 작성한 질문이 없어요</p>
-                    <p className="mypage-empty-desc">궁금한 점이 있으면 커뮤니티에 질문해보세요!</p>
-                    <button className="mypage-empty-btn" onClick={() => navigate('/community')}>
-                      커뮤니티 가기
-                    </button>
                   </div>
                 )}
               </div>
