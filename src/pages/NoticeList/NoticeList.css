@@ -646,3 +646,73 @@
     font-size: 13px;
   }
 }
+
+.nl-detail-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.nl-detail-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.nl-edit-btn {
+  padding: 6px 14px;
+  border: 1px solid #c96442;
+  color: #c96442;
+  background: #fff;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.nl-delete-btn {
+  padding: 6px 14px;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  background: #fff;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.nl-privacy-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.nl-privacy-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid #d1d5db;
+  font-size: 13px;
+  cursor: pointer;
+  background: #f9fafb;
+}
+
+.nl-privacy-btn.private {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+
+.nl-privacy-btn.public {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+}
+
+.nl-privacy-desc {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.nl-privacy-badge-sm {
+  font-size: 12px;
+  color: #6b7280;
+}

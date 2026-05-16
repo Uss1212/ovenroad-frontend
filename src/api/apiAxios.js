@@ -437,10 +437,25 @@ export async function getQuestionDetail(questionNum) {
 }
 
 /* --- 문의 작성 --- */
-export async function createQuestion(userNum, title, content) {
+export async function createQuestion(userNum, title, content, isPrivate = false) {
   return request('/api/notice/question', {
     method: 'POST',
-    body: JSON.stringify({ userNum, title, content }),
+    body: JSON.stringify({ userNum, title, content, isPrivate }),
+  });
+}
+
+/* --- 문의 수정 --- */
+export async function updateQuestion(questionNum, data) {
+  return request(`/api/notice/question/${questionNum}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+/* --- 문의 삭제 --- */
+export async function deleteQuestion(questionNum) {
+  return request(`/api/notice/question/${questionNum}`, {
+    method: 'DELETE',
   });
 }
 
