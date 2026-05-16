@@ -267,6 +267,7 @@ export default function CreateCourse() {
       title: title.trim(),
       subtitle: description.trim() || title.trim(),
       content: description.trim(),
+      tags,
       coverImage: uploadedImageUrls.length > 0 ? uploadedImageUrls[mainImageIndex] || uploadedImageUrls[0] : null,
       coverImages: uploadedImageUrls,
       places: places.map((place, index) => ({

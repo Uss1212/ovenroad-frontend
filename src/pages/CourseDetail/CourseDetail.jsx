@@ -329,7 +329,14 @@ export default function CourseDetail() {
                         courseNum: course.COURSE_NUM,
                         title: course.TITLE || '',
                         description: course.CONTENT || '',
-                        tags: [],
+                        tags: (() => {
+                          try {
+                            const t = course.TAGS;
+                            if (Array.isArray(t)) return t;
+                            if (typeof t === 'string') return JSON.parse(t);
+                          } catch {}
+                          return [];
+                        })(),
                         places: places.map(p => ({
                           id: p.PLACE_NUM,
                           name: p.PLACE_NAME,
