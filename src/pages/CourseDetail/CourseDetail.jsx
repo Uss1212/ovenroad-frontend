@@ -312,13 +312,50 @@ export default function CourseDetail() {
             </button>
             {/* 내가 만든 코스면 삭제 버튼도 보여줌 */}
             {currentUser && course.USER_NUM === currentUser.userNum && (
-              <button
-                className="cd-action-btn"
-                onClick={handleDeleteCourse}
-                style={{ color: '#e74c3c', borderColor: '#e74c3c' }}
-              >
-                🗑️ 삭제
-              </button>
+              <>
+                <button
+                  className="cd-action-btn"
+                  onClick={() => {
+                    const coverImages = (() => {
+                      try {
+                        const imgs = course.COVER_IMAGES;
+                        if (Array.isArray(imgs)) return imgs;
+                        if (typeof imgs === 'string') return JSON.parse(imgs);
+                      } catch {}
+                      return course.COVER_IMAGE ? [course.COVER_IMAGE] : [];
+                    })();
+                    navigate('/create', {
+                      state: {
+                        courseNum: course.COURSE_NUM,
+                        title: course.TITLE || '',
+                        description: course.CONTENT || '',
+                        tags: [],
+                        places: places.map(p => ({
+                          id: p.PLACE_NUM,
+                          name: p.PLACE_NAME,
+                          address: p.ADDRESS,
+                          lat: parseFloat(p.LATITUDE),
+                          lng: parseFloat(p.LONGITUDE),
+                        })),
+                        placeComments: places.reduce((acc, p) => {
+                          if (p.MEMO) acc[p.PLACE_NUM] = p.MEMO;
+                          return acc;
+                        }, {}),
+                        coverImages,
+                      }
+                    });
+                  }}
+                >
+                  ✏️ 수정
+                </button>
+                <button
+                  className="cd-action-btn"
+                  onClick={handleDeleteCourse}
+                  style={{ color: '#e74c3c', borderColor: '#e74c3c' }}
+                >
+                  🗑️ 삭제
+                </button>
+              </>
             )}
           </div>
         </section>

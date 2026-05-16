@@ -329,8 +329,14 @@ export async function createCourse(data) {
   });
 }
 
+export async function updateCourse(courseNum, data) {
+  return request(`/api/courses/${courseNum}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
 /* --- 코스 삭제 --- */
-/* courseNum: 코스 번호 → 해당 코스를 삭제 */
 export async function deleteCourse(courseNum) {
   return request(`/api/courses/${courseNum}`, {
     method: 'DELETE',
