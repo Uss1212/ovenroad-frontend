@@ -104,6 +104,13 @@ export default function NoticeList() {
     else if (currentTab === 'question') fetchQuestions();
   }, [currentTab]); /* currentTab이 바뀔 때마다 실행됨 */
 
+  useEffect(() => {
+    const questionNum = searchParams.get('questionNum');
+    if (questionNum && questions.length > 0 && !selectedQuestion) {
+      handleViewQuestion(Number(questionNum));
+    }
+  }, [questions]);
+
   /* --- 공지사항 목록을 서버에서 가져오는 함수 --- */
   async function fetchNotices() {
     setNoticeLoading(true); /* 로딩 시작 */

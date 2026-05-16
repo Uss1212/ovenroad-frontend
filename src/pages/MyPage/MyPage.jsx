@@ -764,7 +764,7 @@ export default function MyPage() {
                       <div
                         key={post.BOARD_NUM}
                         className="my-card"
-                        onClick={() => navigate(`/community/${post.BOARD_NUM}`)}
+                        onClick={() => navigate(`/notice?tab=question&questionNum=${post.QUESTION_NUM || post.BOARD_NUM}`)}
                       >
                         <div className="my-card-thumb my-card-thumb-question">💬</div>
                         <div className="my-card-info">
