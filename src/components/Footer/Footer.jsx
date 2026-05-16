@@ -29,7 +29,7 @@ export default function Footer() {
             <div className="footer-info">
               <p>서울 빵투어 큐레이션 서비스</p>
               <p>이메일 : contact@ovenroad.com</p>
-              <p>주소 : 서울특별시 마포구 와우산로 94</p>
+              <p>주소 : 인천광역시 미추홀구 숙골로 113</p>
             </div>
           </div>
 
@@ -41,7 +41,6 @@ export default function Footer() {
             <ul className="footer-links">
               <li><Link to="/places">빵집 목록</Link></li>
               <li><Link to="/courses">추천코스</Link></li>
-              <li><Link to="/community">커뮤니티</Link></li>
             </ul>
           </div>
 
@@ -50,7 +49,6 @@ export default function Footer() {
             <div className="footer-link-title">고객지원</div>
             <ul className="footer-links">
               <li><Link to="/notice">공지사항</Link></li>
-              <li><Link to="/events">이벤트</Link></li>
             </ul>
           </div>
 
@@ -74,7 +72,7 @@ export default function Footer() {
 
         {/* ---- 하단 영역: 저작권 문구 ---- */}
         <div className="footer-copyright">
-          © 2025 오븐로드(OvenRoad). All rights reserved. | 캡스톤디자인 프로젝트
+          © 2026 오븐로드(OvenRoad). All rights reserved. | 캡스톤디자인 프로젝트
         </div>
 
       </div>
