@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  BASE_URL,
   getUserInfo,
   updateUserInfo,
   changePassword,
@@ -506,9 +507,14 @@ export default function MyPage() {
                     onClick={() => navigate(`/courses/${course.COURSE_NUM}`)}
                   >
                     <div className="my-course-card-img">
-                      <div style={{ width: '100%', height: '100%', background: '#e7e5e4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>
-                        🍞
-                      </div>
+                      {(() => {
+                        const src = course.COVER_IMAGE || course.thumbnailImage;
+                        if (src) {
+                          const imgUrl = src.startsWith('http') ? src : `${BASE_URL}${src}`;
+                          return <img src={imgUrl} alt={course.TITLE} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />;
+                        }
+                        return <div style={{ width: '100%', height: '100%', background: '#e7e5e4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>🍞</div>;
+                      })()}
                       <span className="my-course-card-badge">공개</span>
                     </div>
                     <div className="my-course-card-info">
