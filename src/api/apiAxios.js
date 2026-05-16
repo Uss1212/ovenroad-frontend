@@ -157,6 +157,28 @@ export async function updateUserInfo(userNum, data) {
   });
 }
 
+/* --- 프로필 이미지 업로드 --- */
+export async function uploadProfileImage(userNum, file) {
+  const formData = new FormData();
+  formData.append('image', file);
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${BASE_URL}/api/user/${userNum}/profile-image`, {
+    method: 'POST',
+    headers: { ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
+    body: formData,
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => null);
+    throw new Error(err?.message || '이미지 업로드에 실패했습니다.');
+  }
+  return response.json();
+}
+
+/* --- 프로필 이미지 삭제 --- */
+export async function deleteProfileImage(userNum) {
+  return request(`/api/user/${userNum}/profile-image`, { method: 'DELETE' });
+}
+
 /* --- 비밀번호 변경 --- */
 /* userNum: 사용자 번호, currentPassword: 현재 비밀번호, newPassword: 새 비밀번호 */
 export async function changePassword(userNum, currentPassword, newPassword) {

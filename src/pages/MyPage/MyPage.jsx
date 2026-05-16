@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   BASE_URL,
@@ -19,6 +19,8 @@ import {
   checkEmail,
   sendEmailVerification,
   verifyEmailCode,
+  uploadProfileImage,
+  deleteProfileImage,
 } from '../../api/apiAxios';
 import './MyPage.css';
 
@@ -48,6 +50,7 @@ export default function MyPage() {
   const [myDrafts, setMyDrafts] = useState([]);
   const [myPosts, setMyPosts] = useState([]);
   const [tabLoading, setTabLoading] = useState(false);
+  const profileImageRef = useRef(null);
 
   const menuItems = [
     { id: 'profile', label: '회원 정보 관리', icon: '👤' },
@@ -291,6 +294,38 @@ export default function MyPage() {
     }
   };
 
+  const handleProfileImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const userNum = user.USER_NUM || user.userNum;
+      const result = await uploadProfileImage(userNum, file);
+      const savedUser = JSON.parse(localStorage.getItem('user'));
+      savedUser.profileImage = result.imageUrl;
+      localStorage.setItem('user', JSON.stringify(savedUser));
+      setUser(prev => ({ ...prev, PROFILE_IMAGE: result.imageUrl }));
+      window.dispatchEvent(new Event('userUpdated'));
+    } catch (err) {
+      alert('프로필 이미지 업로드에 실패했습니다: ' + err.message);
+    }
+    e.target.value = '';
+  };
+
+  const handleDeleteProfileImage = async () => {
+    if (!window.confirm('프로필 사진을 삭제하시겠습니까?')) return;
+    try {
+      const userNum = user.USER_NUM || user.userNum;
+      await deleteProfileImage(userNum);
+      const savedUser = JSON.parse(localStorage.getItem('user'));
+      savedUser.profileImage = null;
+      localStorage.setItem('user', JSON.stringify(savedUser));
+      setUser(prev => ({ ...prev, PROFILE_IMAGE: null }));
+      window.dispatchEvent(new Event('userUpdated'));
+    } catch (err) {
+      alert('프로필 이미지 삭제에 실패했습니다: ' + err.message);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('user');
     alert('로그아웃 되었습니다.');
@@ -313,16 +348,35 @@ export default function MyPage() {
 
           <div className="mypage-sidebar">
             <div className="mypage-profile">
-              <div className="mypage-avatar">
-                <span>{userNickname[0]}</span>
+              <div className="mypage-avatar-wrap">
+                <div className="mypage-avatar" onClick={() => profileImageRef.current?.click()}>
+                  {user?.PROFILE_IMAGE ? (
+                    <img src={user.PROFILE_IMAGE} alt="프로필" className="mypage-avatar-img" />
+                  ) : (
+                    <span>{userNickname[0]}</span>
+                  )}
+                  <div className="mypage-avatar-overlay">
+                    <i className="fi fi-rs-camera"></i>
+                  </div>
+                </div>
+                {user?.PROFILE_IMAGE && (
+                  <button className="mypage-avatar-delete-btn" onClick={handleDeleteProfileImage}>✕</button>
+                )}
+                <input
+                  ref={profileImageRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={handleProfileImageUpload}
+                />
               </div>
               <h2 className="mypage-name">{userNickname}</h2>
               <p className="mypage-email">{userEmail}</p>
               <button
                 className="mypage-profile-edit-btn"
-                onClick={() => setActiveMenu('profile')}
+                onClick={() => profileImageRef.current?.click()}
               >
-                프로필 수정
+                프로필 사진 수정
               </button>
             </div>
 

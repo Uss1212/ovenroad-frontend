@@ -569,6 +569,9 @@ export default function CreateCourse() {
             {(() => {
               try {
                 const u = JSON.parse(localStorage.getItem('user'));
+                if (u?.profileImage) {
+                  return <img src={u.profileImage} alt="프로필" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />;
+                }
                 return (u?.nickname || u?.name || '작')[0];
               } catch { return '작'; }
             })()}
