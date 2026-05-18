@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { createCourse, saveDraft, updateDraft, deleteDraft, uploadCourseImage, BASE_URL } from '../../api/apiAxios'; /* 코스 만들기 + 임시저장 + 수정 + 삭제 + 이미지 업로드 API + 서버 주소 */
+import { createCourse, updateCourse, saveDraft, updateDraft, deleteDraft, uploadCourseImage, BASE_URL } from '../../api/apiAxios';
 import { createMarkerClustering } from '../../utils/MarkerClustering'; /* 마커 클러스터링 (가까운 마커끼리 묶어서 표시) */
 import './CreateCourse.css';
 
@@ -58,8 +58,8 @@ export default function CreateCourse() {
   /* 각 장소별 코멘트 (장소 id → 코멘트 텍스트) */
   const [placeComments, setPlaceComments] = useState({});
 
-  /* 임시저장 번호 (이어서 작성 시 기존 임시저장을 수정하기 위해) */
   const [draftNum, setDraftNum] = useState(null);
+  const [editCourseNum, setEditCourseNum] = useState(null);
 
   /* 지도에서 클릭한 빵집 (정보창 표시용) */
   const [selectedMapShop, setSelectedMapShop] = useState(null);
@@ -97,9 +97,8 @@ export default function CreateCourse() {
       if (s.tags) setTags(s.tags);
       if (s.places) setPlaces(s.places);
       if (s.placeComments) setPlaceComments(s.placeComments);
-      /* 임시저장 번호 기억 (다시 임시저장 시 덮어쓰기 위해) */
       if (s.draftNum) setDraftNum(s.draftNum);
-      /* 임시저장된 이미지 URL 복원 */
+      if (s.courseNum) setEditCourseNum(s.courseNum);
       if (s.coverImages && s.coverImages.length > 0) {
         uploadedImageUrlsRef.current = s.coverImages;
         setUploadedImageUrls(s.coverImages);
@@ -263,33 +262,37 @@ export default function CreateCourse() {
       return;
     }
 
+    const payload = {
+      userNum: user.userNum,
+      title: title.trim(),
+      subtitle: description.trim() || title.trim(),
+      content: description.trim(),
+      tags,
+      coverImage: uploadedImageUrls.length > 0 ? uploadedImageUrls[mainImageIndex] || uploadedImageUrls[0] : null,
+      coverImages: uploadedImageUrls,
+      places: places.map((place, index) => ({
+        placeNum: place.id,
+        order: index + 1,
+        memo: placeComments[place.id] || '',
+        isThumbnail: index === 0,
+      })),
+    };
+
     try {
-      /* 서버에 코스 저장 요청 */
-      const result = await createCourse({
-        userNum: user.userNum,
-        title: title.trim(),
-        subtitle: description.trim() || title.trim(),
-        content: description.trim(),
-        /* 업로드된 이미지 전체를 JSON 배열로 전달 */
-        coverImage: uploadedImageUrls.length > 0 ? uploadedImageUrls[mainImageIndex] || uploadedImageUrls[0] : null,
-        coverImages: uploadedImageUrls,
-        places: places.map((place, index) => ({
-          placeNum: place.id,
-          order: index + 1,
-          memo: placeComments[place.id] || '',
-          isThumbnail: index === 0,
-        })),
-      });
-
-      /* 임시저장에서 발행한 경우 임시저장 삭제 */
-      if (draftNum) {
-        try { await deleteDraft(draftNum); } catch {}
+      let courseNum;
+      if (editCourseNum) {
+        await updateCourse(editCourseNum, payload);
+        courseNum = editCourseNum;
+      } else {
+        const result = await createCourse(payload);
+        courseNum = result.courseNum;
+        if (draftNum) {
+          try { await deleteDraft(draftNum); } catch {}
+        }
       }
-
-      /* 만든 코스 상세 페이지로 바로 이동 */
-      navigate(`/courses/${result.courseNum}`);
+      navigate(`/courses/${courseNum}`);
     } catch (err) {
-      alert('코스 발행에 실패했습니다: ' + err.message);
+      alert((editCourseNum ? '코스 수정에 실패했습니다: ' : '코스 발행에 실패했습니다: ') + err.message);
     }
   };
 
@@ -494,11 +497,13 @@ export default function CreateCourse() {
       {/* ===== 상단 버튼 바 ===== */}
       {/* 오른쪽 정렬: 임시저장 + 발행하기 */}
       <div className="cc-top-bar">
-        <button className="cc-draft-btn" onClick={handleDraft}>
-          임시저장
-        </button>
+        {!editCourseNum && (
+          <button className="cc-draft-btn" onClick={handleDraft}>
+            임시저장
+          </button>
+        )}
         <button className="cc-publish-btn" onClick={handlePublish}>
-          발행하기
+          {editCourseNum ? '수정 완료' : '발행하기'}
         </button>
       </div>
 
@@ -559,9 +564,18 @@ export default function CreateCourse() {
           onChange={(e) => setTitle(e.target.value)}
         />
 
-        {/* --- 3. 작성자 정보 (로그인한 사용자 닉네임) --- */}
         <div className="cc-author-row">
-          <div className="cc-author-avatar"></div>
+          <div className="cc-author-avatar">
+            {(() => {
+              try {
+                const u = JSON.parse(localStorage.getItem('user'));
+                if (u?.profileImage) {
+                  return <img src={u.profileImage} alt="프로필" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />;
+                }
+                return (u?.nickname || u?.name || '작')[0];
+              } catch { return '작'; }
+            })()}
+          </div>
           <span className="cc-author-name">
             {(() => {
               try {

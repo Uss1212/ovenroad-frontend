@@ -47,20 +47,70 @@
   text-align: center;
 }
 
+.mypage-avatar-wrap {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
 /* 프로필 사진 (원형, 빵 느낌 배경) */
 .mypage-avatar {
-  width: 80px;
-  height: 80px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
   background: #fef3c7;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2.5rem;
-  margin-bottom: 1rem;
   border: 4px solid white;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+}
+
+.mypage-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mypage-avatar-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  color: #fff;
+  font-size: 22px;
+}
+
+.mypage-avatar:hover .mypage-avatar-overlay {
+  opacity: 1;
+}
+
+.mypage-avatar-delete-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 /* 아바타 안 이니셜 글자 */

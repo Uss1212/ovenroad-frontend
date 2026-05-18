@@ -22,7 +22,7 @@ export default function Login() {
   const [password, setPassword] = useState('');     /* 비밀번호 */
   const [error, setError] = useState('');           /* 에러 메시지 */
   const [isLoading, setIsLoading] = useState(false); /* 로딩 중? */
-  const [showPassword, setShowPassword] = useState(false); /* 비밀번호 보이기/숨기기 */
+  const [showPassword, setShowPassword] = useState(false);
 
   /* --- 로그인 버튼 클릭 시 실행되는 함수 --- */
   const handleLogin = async (e) => {
@@ -107,7 +107,7 @@ export default function Login() {
               onClick={() => setShowPassword(!showPassword)}
               tabIndex={-1}
             >
-              {showPassword ? '🙈' : '👁'}
+              {showPassword ? <i className="fi fi-rs-eye"></i> : <i className="fi fi-rs-crossed-eye"></i>}
             </button>
           </div>
 

@@ -30,6 +30,8 @@ import {
   getQuestionList,
   getQuestionDetail,
   createQuestion,
+  updateQuestion,
+  deleteQuestion,
 } from '../../api/apiAxios';
 
 /* --- 이 페이지 전용 CSS 스타일 --- */
@@ -85,14 +87,15 @@ export default function NoticeList() {
   const [questionLoading, setQuestionLoading] = useState(false);
   /* showForm: 문의 작성 폼(입력 양식)이 보이는 중이면 true */
   const [showForm, setShowForm] = useState(false);
-  /* qTitle: 문의 제목 입력값 */
   const [qTitle, setQTitle] = useState('');
-  /* qContent: 문의 내용 입력값 */
   const [qContent, setQContent] = useState('');
-  /* submitting: 문의를 서버에 보내는 중이면 true (버튼 비활성화용) */
+  const [qPrivate, setQPrivate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  /* selectedQuestion: 클릭해서 상세를 보고 있는 문의 (null이면 상세를 안 보는 상태) */
   const [selectedQuestion, setSelectedQuestion] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editPrivate, setEditPrivate] = useState(false);
 
   /* ===== 탭이 바뀔 때마다 해당 탭의 데이터를 서버에서 가져옴 ===== */
   /* 예: 공지사항 탭을 누르면 → fetchNotices() 실행 → 서버에서 공지 목록을 가져옴 */
@@ -102,7 +105,14 @@ export default function NoticeList() {
     if (currentTab === 'notice') fetchNotices();
     else if (currentTab === 'faq') fetchFaqs();
     else if (currentTab === 'question') fetchQuestions();
-  }, [currentTab]); /* currentTab이 바뀔 때마다 실행됨 */
+  }, [currentTab, user]);
+
+  useEffect(() => {
+    const questionNum = searchParams.get('questionNum');
+    if (questionNum && questions.length > 0 && !selectedQuestion) {
+      handleViewQuestion(Number(questionNum));
+    }
+  }, [questions]);
 
   /* --- 공지사항 목록을 서버에서 가져오는 함수 --- */
   async function fetchNotices() {
@@ -172,12 +182,12 @@ export default function NoticeList() {
     setSubmitting(true); /* 등록 버튼을 "등록 중..."으로 바꿈 (중복 클릭 방지) */
     try {
       /* 서버에 문의 등록 요청 (회원번호, 제목, 내용) */
-      await createQuestion(user.userNum, qTitle.trim(), qContent.trim());
+      await createQuestion(user.userNum, qTitle.trim(), qContent.trim(), qPrivate);
       alert('문의가 등록되었습니다.');
 
-      /* 입력한 내용 초기화 + 폼 닫기 + 문의 목록 새로고침 */
       setQTitle('');
       setQContent('');
+      setQPrivate(false);
       setShowForm(false);
       fetchQuestions(); /* 방금 등록한 문의가 목록에 나타나도록 다시 가져옴 */
     } catch (err) {
@@ -202,6 +212,42 @@ export default function NoticeList() {
       setSelectedQuestion(data);
     } catch (err) {
       alert(err.message || '문의 상세를 불러올 수 없습니다.');
+    }
+  }
+
+  function handleStartEdit() {
+    setEditTitle(selectedQuestion.TITLE);
+    setEditContent(selectedQuestion.CONTENT || '');
+    setEditPrivate(selectedQuestion.IS_PRIVATE === 1);
+    setEditMode(true);
+  }
+
+  async function handleUpdateQuestion(e) {
+    e.preventDefault();
+    if (!editTitle.trim()) { alert('제목을 입력해주세요.'); return; }
+    try {
+      await updateQuestion(selectedQuestion.QUESTION_NUM, {
+        title: editTitle.trim(),
+        content: editContent.trim(),
+        isPrivate: editPrivate,
+      });
+      const updated = await getQuestionDetail(selectedQuestion.QUESTION_NUM);
+      setSelectedQuestion(updated);
+      setEditMode(false);
+      fetchQuestions();
+    } catch (err) {
+      alert(err.message || '수정에 실패했습니다.');
+    }
+  }
+
+  async function handleDeleteQuestion() {
+    if (!window.confirm('문의를 삭제하시겠습니까?')) return;
+    try {
+      await deleteQuestion(selectedQuestion.QUESTION_NUM);
+      setSelectedQuestion(null);
+      fetchQuestions();
+    } catch (err) {
+      alert(err.message || '삭제에 실패했습니다.');
     }
   }
 
@@ -393,16 +439,27 @@ export default function NoticeList() {
                     placeholder="문의 내용을 입력하세요"
                     value={qContent}
                     onChange={(e) => setQContent(e.target.value)}
-                    rows={6} /* 기본 6줄 높이 */
+                    rows={6}
                   />
 
-                  {/* 취소 / 등록 버튼 */}
+                  <div className="nl-privacy-toggle">
+                    <button
+                      type="button"
+                      className={`nl-privacy-btn ${qPrivate ? 'private' : 'public'}`}
+                      onClick={() => setQPrivate(prev => !prev)}
+                    >
+                      {qPrivate ? '🔒 비공개' : '🌐 공개'}
+                    </button>
+                    <span className="nl-privacy-desc">
+                      {qPrivate ? '본인과 관리자만 볼 수 있습니다.' : '모든 사용자에게 공개됩니다.'}
+                    </span>
+                  </div>
+
                   <div className="nl-form-actions">
-                    {/* 취소 버튼: 입력 내용 지우고 폼 닫기 */}
                     <button
                       type="button"
                       className="nl-form-cancel"
-                      onClick={() => { setShowForm(false); setQTitle(''); setQContent(''); }}
+                      onClick={() => { setShowForm(false); setQTitle(''); setQContent(''); setQPrivate(false); }}
                     >
                       취소
                     </button>
@@ -424,28 +481,63 @@ export default function NoticeList() {
               {/* 제목, 작성일, 답변상태, 내용, 관리자 답변을 보여줌 */}
               {selectedQuestion && (
                 <div className="nl-question-detail">
-                  {/* "← 목록으로" 버튼: 클릭하면 상세를 닫고 목록으로 돌아감 */}
-                  <button
-                    className="nl-detail-back"
-                    onClick={() => setSelectedQuestion(null)}
-                  >
-                    ← 목록으로
-                  </button>
+                  <div className="nl-detail-top">
+                    <button className="nl-detail-back" onClick={() => { setSelectedQuestion(null); setEditMode(false); }}>
+                      ← 목록으로
+                    </button>
+                    {Number(selectedQuestion.USER_NUM) === Number(user.userNum) && selectedQuestion.STATUS !== 1 && !editMode && (
+                      <div className="nl-detail-actions">
+                        <button className="nl-edit-btn" onClick={handleStartEdit}>수정</button>
+                        <button className="nl-delete-btn" onClick={handleDeleteQuestion}>삭제</button>
+                      </div>
+                    )}
+                  </div>
 
-                  {/* 문의 제목 + 날짜 + 상태 */}
+                  {editMode ? (
+                    <form className="nl-question-form" onSubmit={handleUpdateQuestion}>
+                      <h3 className="nl-form-title">문의 수정</h3>
+                      <input
+                        type="text"
+                        className="nl-form-input"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        maxLength={100}
+                      />
+                      <textarea
+                        className="nl-form-textarea"
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        rows={6}
+                      />
+                      <div className="nl-privacy-toggle">
+                        <button
+                          type="button"
+                          className={`nl-privacy-btn ${editPrivate ? 'private' : 'public'}`}
+                          onClick={() => setEditPrivate(prev => !prev)}
+                        >
+                          {editPrivate ? '🔒 비공개' : '🌐 공개'}
+                        </button>
+                      </div>
+                      <div className="nl-form-actions">
+                        <button type="button" className="nl-form-cancel" onClick={() => setEditMode(false)}>취소</button>
+                        <button type="submit" className="nl-form-submit">수정 완료</button>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
                   <div className="nl-detail-header">
                     <h3 className="nl-detail-title">{selectedQuestion.TITLE}</h3>
                     <div className="nl-detail-meta">
-                      {/* 작성 날짜 */}
                       <span>{new Date(selectedQuestion.CREATED_TIME).toLocaleDateString('ko-KR')}</span>
-                      {/* 답변 상태: STATUS가 1이면 "답변완료"(초록), 0이면 "답변대기"(주황) */}
                       <span className={`nl-status ${selectedQuestion.STATUS === 1 ? 'answered' : ''}`}>
                         {selectedQuestion.STATUS === 1 ? '답변완료' : '답변대기'}
+                      </span>
+                      <span className="nl-privacy-badge-sm">
+                        {selectedQuestion.IS_PRIVATE === 1 ? '🔒 비공개' : '🌐 공개'}
                       </span>
                     </div>
                   </div>
 
-                  {/* 내가 작성한 문의 내용 */}
                   <div className="nl-detail-content">
                     {selectedQuestion.CONTENT || '(내용 없음)'}
                   </div>
@@ -455,21 +547,20 @@ export default function NoticeList() {
                   {selectedQuestion.answers && selectedQuestion.answers.length > 0 && (
                     <div className="nl-answers">
                       <h4 className="nl-answers-title">관리자 답변</h4>
-                      {/* 답변을 하나씩 꺼내서 카드로 만듦 */}
                       {selectedQuestion.answers.map((ans) => (
                         <div key={ans.ANSWER_NUM} className="nl-answer-item">
-                          {/* 답변 작성자 + 날짜 */}
                           <div className="nl-answer-meta">
                             <span className="nl-answer-author">{ans.author}</span>
                             <span className="nl-answer-date">
                               {new Date(ans.CREATED_TIME).toLocaleDateString('ko-KR')}
                             </span>
                           </div>
-                          {/* 답변 내용 */}
                           <div className="nl-answer-content">{ans.CONTENT}</div>
                         </div>
                       ))}
                     </div>
+                  )}
+                    </>
                   )}
                 </div>
               )}
@@ -495,7 +586,7 @@ export default function NoticeList() {
                         {/* 왼쪽: "비공개" 뱃지 (본인과 관리자만 볼 수 있다는 표시) */}
                         <div className="nl-item-left">
                           <span className="nl-category nl-private-badge">
-                            비공개
+                            {q.IS_PRIVATE === 1 ? '🔒 비공개' : '🌐 공개'}
                           </span>
                         </div>
                         {/* 가운데: 문의 제목 + 작성자 닉네임 */}

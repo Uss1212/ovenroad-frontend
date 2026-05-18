@@ -65,8 +65,8 @@ export default function Signup() {
   const [isEmailSent, setIsEmailSent] = useState(false);       /* 이메일 인증번호 전송됨? */
   const [isVerified, setIsVerified] = useState(false);         /* 이메일 인증 완료? */
   const [isSubmitting, setIsSubmitting] = useState(false);     /* 가입 요청 중? (로딩) */
-  const [showPassword, setShowPassword] = useState(false);       /* 비밀번호 보이기/숨기기 */
-  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false); /* 비밀번호 재확인 보이기/숨기기 */
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
   /* --- 3분 타이머 상태 --- */
   const [timeLeft, setTimeLeft] = useState(0);   /* 남은 시간 (초) */
@@ -513,7 +513,7 @@ export default function Signup() {
               onClick={() => setShowPassword(!showPassword)}
               tabIndex={-1}
             >
-              {showPassword ? '🙈' : '👁'}
+              {showPassword ? <i className="fi fi-rs-eye"></i> : <i className="fi fi-rs-crossed-eye"></i>}
             </button>
             {errors.password && <p className="signup-error">{errors.password}</p>}
           </div>
@@ -533,7 +533,7 @@ export default function Signup() {
               onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
               tabIndex={-1}
             >
-              {showPasswordConfirm ? '🙈' : '👁'}
+              {showPasswordConfirm ? <i className="fi fi-rs-eye"></i> : <i className="fi fi-rs-crossed-eye"></i>}
             </button>
             {errors.passwordConfirm && <p className="signup-error">{errors.passwordConfirm}</p>}
             {passwordConfirm && !errors.passwordConfirm && (

@@ -83,6 +83,10 @@ export async function checkNicknameDuplicate(nickname) {
 
 /* --- 이메일 인증코드 전송 --- */
 /* 입력한 이메일 주소로 인증번호를 보냄 */
+export async function checkEmail(email) {
+  return request(`/api/user/check-email?email=${encodeURIComponent(email)}`);
+}
+
 export async function sendEmailVerification(email) {
   return request('/api/user/send-email', {
     method: 'POST',
@@ -151,6 +155,28 @@ export async function updateUserInfo(userNum, data) {
     method: 'PUT',
     body: JSON.stringify(data),
   });
+}
+
+/* --- 프로필 이미지 업로드 --- */
+export async function uploadProfileImage(userNum, file) {
+  const formData = new FormData();
+  formData.append('image', file);
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${BASE_URL}/api/user/${userNum}/profile-image`, {
+    method: 'POST',
+    headers: { ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
+    body: formData,
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => null);
+    throw new Error(err?.message || '이미지 업로드에 실패했습니다.');
+  }
+  return response.json();
+}
+
+/* --- 프로필 이미지 삭제 --- */
+export async function deleteProfileImage(userNum) {
+  return request(`/api/user/${userNum}/profile-image`, { method: 'DELETE' });
 }
 
 /* --- 비밀번호 변경 --- */
@@ -325,8 +351,14 @@ export async function createCourse(data) {
   });
 }
 
+export async function updateCourse(courseNum, data) {
+  return request(`/api/courses/${courseNum}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
 /* --- 코스 삭제 --- */
-/* courseNum: 코스 번호 → 해당 코스를 삭제 */
 export async function deleteCourse(courseNum) {
   return request(`/api/courses/${courseNum}`, {
     method: 'DELETE',
@@ -405,10 +437,25 @@ export async function getQuestionDetail(questionNum) {
 }
 
 /* --- 문의 작성 --- */
-export async function createQuestion(userNum, title, content) {
+export async function createQuestion(userNum, title, content, isPrivate = false) {
   return request('/api/notice/question', {
     method: 'POST',
-    body: JSON.stringify({ userNum, title, content }),
+    body: JSON.stringify({ userNum, title, content, isPrivate }),
+  });
+}
+
+/* --- 문의 수정 --- */
+export async function updateQuestion(questionNum, data) {
+  return request(`/api/notice/question/${questionNum}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+/* --- 문의 삭제 --- */
+export async function deleteQuestion(questionNum) {
+  return request(`/api/notice/question/${questionNum}`, {
+    method: 'DELETE',
   });
 }
 

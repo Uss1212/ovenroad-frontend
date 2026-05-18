@@ -139,6 +139,9 @@ export default function TodayCourse() {
               {/* 카드 하단: 그라데이션 + 제목 + 작성자 */}
               <div className="course-card-overlay">
                 <p className="course-card-title">{course.TITLE}</p>
+                {course.SUBTITLE && (
+                  <p className="course-card-subtitle">{course.SUBTITLE}</p>
+                )}
                 <div className="course-card-author">
                   <div className="author-avatar" />
                   <span>{course.author || course.NICKNAME || '작성자'}</span>

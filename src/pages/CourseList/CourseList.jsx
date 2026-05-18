@@ -119,14 +119,15 @@ export default function CourseList() {
                 {(course.COVER_IMAGE || course.thumbnailImage) ? (
                   <img
                     src={(() => {
+                      const toUrl = (s) => s?.startsWith('http') ? s : `${BASE_URL}${s}`;
                       if (course.COVER_IMAGE) {
                         try {
                           const parsed = JSON.parse(course.COVER_IMAGE);
                           const first = Array.isArray(parsed) ? parsed[0] : course.COVER_IMAGE;
-                          return `${BASE_URL}${first}`;
-                        } catch { return `${BASE_URL}${course.COVER_IMAGE}`; }
+                          return toUrl(first);
+                        } catch { return toUrl(course.COVER_IMAGE); }
                       }
-                      return course.thumbnailImage;
+                      return toUrl(course.thumbnailImage);
                     })()}
                     alt={course.TITLE}
                     className="explore-card-photo"

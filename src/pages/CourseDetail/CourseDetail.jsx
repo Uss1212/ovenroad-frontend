@@ -291,9 +291,17 @@ export default function CourseDetail() {
             <span>{course.author || '작성자'}</span>
           </div>
 
-          {/* 태그 칩들: 장소 수 */}
           <div className="cd-info-chips">
             <span className="cd-chip">📍 {places.length}곳</span>
+            {(() => {
+              try {
+                const t = course.TAGS;
+                const tagArr = Array.isArray(t) ? t : (typeof t === 'string' ? JSON.parse(t) : []);
+                return tagArr.map((tag, i) => (
+                  <span key={i} className="cd-chip">#{tag}</span>
+                ));
+              } catch { return null; }
+            })()}
           </div>
 
           {/* 좋아요 + 저장 + 삭제 버튼 */}
@@ -302,23 +310,67 @@ export default function CourseDetail() {
               className={`cd-action-btn ${isLiked ? 'active' : ''}`}
               onClick={handleLike}
             >
-              {isLiked ? '❤️' : '♡'} 좋아요
+              {isLiked ? <i className="fi fi-ss-heart"></i> : <i className="fi fi-rs-heart"></i>} 좋아요
             </button>
             <button
               className={`cd-action-btn ${isSaved ? 'active' : ''}`}
               onClick={handleScrap}
             >
-              {isSaved ? '🔖' : '☆'} 저장
+              {isSaved ? <i className="fi fi-sr-bookmark"></i> : <i className="fi fi-rr-bookmark"></i>} 저장
             </button>
             {/* 내가 만든 코스면 삭제 버튼도 보여줌 */}
             {currentUser && course.USER_NUM === currentUser.userNum && (
-              <button
-                className="cd-action-btn"
-                onClick={handleDeleteCourse}
-                style={{ color: '#e74c3c', borderColor: '#e74c3c' }}
-              >
-                🗑️ 삭제
-              </button>
+              <>
+                <button
+                  className="cd-action-btn"
+                  onClick={() => {
+                    const coverImages = (() => {
+                      try {
+                        const imgs = course.COVER_IMAGES;
+                        if (Array.isArray(imgs)) return imgs;
+                        if (typeof imgs === 'string') return JSON.parse(imgs);
+                      } catch {}
+                      return course.COVER_IMAGE ? [course.COVER_IMAGE] : [];
+                    })();
+                    navigate('/create', {
+                      state: {
+                        courseNum: course.COURSE_NUM,
+                        title: course.TITLE || '',
+                        description: course.CONTENT || '',
+                        tags: (() => {
+                          try {
+                            const t = course.TAGS;
+                            if (Array.isArray(t)) return t;
+                            if (typeof t === 'string') return JSON.parse(t);
+                          } catch {}
+                          return [];
+                        })(),
+                        places: places.map(p => ({
+                          id: p.PLACE_NUM,
+                          name: p.PLACE_NAME,
+                          address: p.ADDRESS,
+                          lat: parseFloat(p.LATITUDE),
+                          lng: parseFloat(p.LONGITUDE),
+                        })),
+                        placeComments: places.reduce((acc, p) => {
+                          if (p.MEMO) acc[p.PLACE_NUM] = p.MEMO;
+                          return acc;
+                        }, {}),
+                        coverImages,
+                      }
+                    });
+                  }}
+                >
+                  ✏️ 수정
+                </button>
+                <button
+                  className="cd-action-btn"
+                  onClick={handleDeleteCourse}
+                  style={{ color: '#e74c3c', borderColor: '#e74c3c' }}
+                >
+                  🗑️ 삭제
+                </button>
+              </>
             )}
           </div>
         </section>

@@ -38,6 +38,15 @@ export default function Header() {
     }
   }, [location]); /* location이 바뀔 때마다 (= 페이지 이동할 때마다) 실행 */
 
+  useEffect(() => {
+    const syncUser = () => {
+      const savedUser = localStorage.getItem('user');
+      setUser(savedUser ? JSON.parse(savedUser) : null);
+    };
+    window.addEventListener('userUpdated', syncUser);
+    return () => window.removeEventListener('userUpdated', syncUser);
+  }, []);
+
   /* --- 드롭다운 바깥을 클릭하면 메뉴 닫기 --- */
   useEffect(() => {
     function handleClickOutside(e) {
