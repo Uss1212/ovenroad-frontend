@@ -52,6 +52,7 @@ export default function HeroBanner() {
     { id: 'all',        name: '전체',       color: '#c96442', icon: '🍞' },
     { id: 'blueribbon', name: '블루리본',   color: '#1a73e8', icon: '🎀' },
     { id: 'cheonha',    name: '천하제빵',   color: '#16a34a', icon: '🏆' },
+    { id: 'myungjang',  name: '명장빵집',   color: '#9333ea', icon: '👨‍🍳' },
   ];
 
   /* ── DB에서 불러온 빵집 데이터를 저장하는 상태 ── */
@@ -74,6 +75,8 @@ export default function HeroBanner() {
             /* 뱃지 결정: 블루리본 개수가 있으면 블루리본 뱃지 추가 */
             const badgeList = [];
             if (p.ribbonCount && p.ribbonCount > 0) badgeList.push('blueribbon');
+            if (p.certification === 'cheonha') badgeList.push('cheonha');
+            if (p.certification === 'myungjang') badgeList.push('myungjang');
 
             return {
               id: p.PLACE_NUM,                         /* 빵집 고유 번호 */
