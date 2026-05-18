@@ -25,7 +25,7 @@ export default function HeroBanner() {
   const [searchKeyword, setSearchKeyword] = useState('');
 
   /* activeBadge: 현재 선택한 인증 뱃지 (null이면 아무것도 안 선택된 상태) */
-  const [activeBadge, setActiveBadge] = useState(null);
+  const [activeBadge, setActiveBadge] = useState('all');
 
   /* selectedBakery: 지도에서 마커를 클릭했을 때 선택된 빵집 데이터 */
   /* null이면 아무 빵집도 선택 안 된 상태 → 카드가 안 보임 */
@@ -362,7 +362,8 @@ export default function HeroBanner() {
       const bakery = marker._bakeryData;
       if (!bakery) return false;
       /* 전체 또는 미선택 → 모든 마커 포함 */
-      if (activeBadge === null || activeBadge === 'all') return true;
+      if (activeBadge === 'all') return true;
+      if (activeBadge === null) return false;
       /* 선택된 뱃지가 있는 빵집만 포함 */
       return bakery.badges.includes(activeBadge);
     });
@@ -510,7 +511,6 @@ export default function HeroBanner() {
               /* 선택된 뱃지면 'active' 클래스 추가 → 배경색이 바뀜 */
               className={`hero-badge-btn ${activeBadge === badge.id ? 'active' : ''}`}
               onClick={() => {
-                /* 같은 뱃지를 다시 클릭하면 선택 해제, 아니면 선택 */
                 setActiveBadge(activeBadge === badge.id ? null : badge.id);
               }}
               /* 뱃지마다 고유 색상을 CSS 변수로 전달 (CSS에서 이 색상 사용) */

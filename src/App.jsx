@@ -33,6 +33,7 @@ import PlaceList from './pages/PlaceList/PlaceList'; // 빵집 목록
 import CourseList from './pages/CourseList/CourseList'; // 추천코스 목록
 import NoticeList from './pages/NoticeList/NoticeList'; // 고객지원 (공지사항/FAQ/문의)
 import NoticeDetail from './pages/NoticeDetail/NoticeDetail'; // 공지사항 상세
+import Admin from './pages/Admin/Admin'; // 관리자 페이지
 import './css/App.css';
 
 /* --- 메인 페이지 컴포넌트 --- */
@@ -94,6 +95,8 @@ function App() {
             <Route path="/notice" element={<NoticeList />} />
             {/* "/notice/:id" → 공지사항 상세 */}
             <Route path="/notice/:id" element={<NoticeDetail />} />
+            {/* "/admin" → 관리자 페이지 */}
+            <Route path="/admin" element={<Admin />} />
           </Routes>
         </main>
 

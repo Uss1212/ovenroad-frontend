@@ -219,6 +219,62 @@ export default function CreateCourse() {
     setShowResults(false);
   };
 
+  /* 드래그앤드롭 순서 변경 */
+  const dragIndexRef = useRef(null);
+  const dragOverIndexRef = useRef(null);
+
+  const handleDragStart = (index) => {
+    dragIndexRef.current = index;
+  };
+
+  const handleDragEnter = (index) => {
+    dragOverIndexRef.current = index;
+  };
+
+  const handleDragEnd = () => {
+    const from = dragIndexRef.current;
+    const to = dragOverIndexRef.current;
+    if (from === null || to === null || from === to) {
+      dragIndexRef.current = null;
+      dragOverIndexRef.current = null;
+      return;
+    }
+    const updated = [...places];
+    const [moved] = updated.splice(from, 1);
+    updated.splice(to, 0, moved);
+    setPlaces(updated);
+    dragIndexRef.current = null;
+    dragOverIndexRef.current = null;
+  };
+
+  /* 코스 최적화 (최근접 이웃 알고리즘) */
+  const optimizeCourseOrder = () => {
+    if (places.length < 3) return;
+
+    const toRad = (deg) => deg * Math.PI / 180;
+    const getDistance = (a, b) => {
+      const R = 6371;
+      const dLat = toRad(b.lat - a.lat);
+      const dLng = toRad(b.lng - a.lng);
+      const x = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+    };
+
+    const remaining = [...places];
+    const result = [remaining.shift()];
+    while (remaining.length > 0) {
+      const last = result[result.length - 1];
+      let nearest = 0;
+      let minDist = Infinity;
+      remaining.forEach((p, i) => {
+        const d = getDistance(last, p);
+        if (d < minDist) { minDist = d; nearest = i; }
+      });
+      result.push(remaining.splice(nearest, 1)[0]);
+    }
+    setPlaces(result);
+  };
+
   /* 코스에서 장소 삭제 */
   const handleRemovePlace = (placeId) => {
     setPlaces(places.filter((p) => p.id !== placeId));
@@ -715,10 +771,27 @@ export default function CreateCourse() {
             ) : (
               /* 추가된 장소 목록 */
               <div className="cc-place-list">
+                {places.length >= 3 && (
+                  <div className="cc-optimize-bar">
+                    <button className="cc-optimize-btn" onClick={optimizeCourseOrder}>
+                      📍 코스 순서 최적화
+                    </button>
+                    <span className="cc-optimize-hint">가까운 장소끼리 순서를 자동 정렬합니다</span>
+                  </div>
+                )}
                 {places.map((place, index) => (
-                  <div key={place.id} className="cc-place-card">
-                    {/* 장소 정보 행: 번호 + 이름 + 삭제 */}
+                  <div
+                    key={place.id}
+                    className="cc-place-card"
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragEnter={() => handleDragEnter(index)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={(e) => e.preventDefault()}
+                  >
+                    {/* 장소 정보 행: 드래그핸들 + 번호 + 이름 + 삭제 */}
                     <div className="cc-place-card-header">
+                      <span className="cc-place-drag-handle">☰</span>
                       <div className="cc-place-num">{index + 1}</div>
                       <span className="cc-place-name">{place.name}</span>
                       <span className="cc-place-addr">{place.address}</span>

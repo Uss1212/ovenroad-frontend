@@ -443,9 +443,13 @@ export default function PlaceDetail() {
                 onClick={async () => {
                   if (!currentUser) { alert('로그인이 필요합니다!'); return; }
                   try {
+                    const token = localStorage.getItem('token');
                     const res = await fetch(`${BASE_URL}/api/places/${id}/reviews`, {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                      },
                       body: JSON.stringify({
                         userNum: currentUser.userNum,
                         rating: reviewRating,

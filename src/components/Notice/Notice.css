@@ -40,6 +40,33 @@
   color: #111111;
 }
 
+.notice-header-links {
+  display: flex;
+  gap: 8px;
+}
+
+.notice-tab-link {
+  background: none;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 13px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.notice-tab-link:hover {
+  border-color: #c96442;
+  color: #c96442;
+}
+
+.notice-tab-link.active {
+  background: #c96442;
+  color: #fff;
+  border-color: #c96442;
+}
+
 /* --- 공지사항 목록 --- */
 /* list-style: none → 기본 점(·) 마크 제거 */
 .notice-list {

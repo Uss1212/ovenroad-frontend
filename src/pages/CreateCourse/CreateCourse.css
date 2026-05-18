@@ -573,6 +573,37 @@
   width: 100%;
 }
 
+/* 코스 최적화 버튼 */
+.cc-optimize-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cc-optimize-btn {
+  background: #c96442;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.cc-optimize-btn:hover {
+  background: #92400e;
+}
+
+.cc-optimize-hint {
+  font-size: 12px;
+  color: #999;
+}
+
 /* 장소 목록 */
 .cc-place-list {
   display: flex;
@@ -583,6 +614,29 @@
 .cc-place-card {
   padding: 16px 20px;
   border-bottom: 1px solid #f0f0f0;
+  cursor: grab;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.cc-place-card:active {
+  cursor: grabbing;
+}
+
+.cc-place-card[draggable="true"]:hover {
+  background: #fef7f3;
+}
+
+/* 드래그 핸들 */
+.cc-place-drag-handle {
+  cursor: grab;
+  color: #bbb;
+  font-size: 14px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.cc-place-drag-handle:active {
+  cursor: grabbing;
 }
 
 .cc-place-card:last-child {

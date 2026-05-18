@@ -160,6 +160,18 @@ export default function Header() {
                   >
                     📢 공지사항
                   </button>
+                  {/* 관리자 메뉴 (관리자만 보임) */}
+                  {(user.grade === 'admin' || user.grade === 1 || user.grade === '1') && (
+                    <button
+                      className="header-dropdown-item"
+                      onClick={() => {
+                        navigate('/admin');
+                        setShowDropdown(false);
+                      }}
+                    >
+                      ⚙️ 관리자
+                    </button>
+                  )}
                   {/* 로그아웃 버튼 */}
                   <button
                     className="header-dropdown-item logout"

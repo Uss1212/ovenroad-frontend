@@ -363,7 +363,7 @@ export default function NoticeList() {
                   {/* 파란색 Q 동그라미 */}
                   <span className="nl-faq-q-label">Q</span>
                   {/* 질문 내용 */}
-                  <span className="nl-faq-q-text">{faq.QUESTION}</span>
+                  <span className="nl-faq-q-text">{faq.FAQ_QUESTION || faq.QUESTION}</span>
                   {/* 화살표 (펼쳐졌으면 ▲, 접혀있으면 ▼) */}
                   <span className="nl-faq-arrow">{openFaq === faq.FAQ_NUM ? '▲' : '▼'}</span>
                 </button>
@@ -374,7 +374,7 @@ export default function NoticeList() {
                     {/* 주황색 A 동그라미 */}
                     <span className="nl-faq-a-label">A</span>
                     {/* 답변 내용 */}
-                    <span className="nl-faq-a-text">{faq.ANSWER}</span>
+                    <span className="nl-faq-a-text">{faq.FAQ_ANSWER || faq.ANSWER}</span>
                   </div>
                 )}
               </div>

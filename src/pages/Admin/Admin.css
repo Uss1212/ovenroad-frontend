@@ -1,0 +1,264 @@
+.admin {
+  background: #faf8f5;
+  min-height: 100vh;
+  padding-bottom: 5rem;
+}
+
+.admin-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 3rem 1rem 0;
+}
+
+.admin-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 2rem;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #f5f5f4;
+  padding-bottom: 0;
+}
+
+.admin-tab {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  background: none;
+  font-size: 1rem;
+  color: #78716c;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+}
+
+.admin-tab:hover {
+  color: #92400e;
+}
+
+.admin-tab.active {
+  color: #92400e;
+  font-weight: 600;
+  border-bottom-color: #92400e;
+}
+
+.admin-content {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f5f5f4;
+}
+
+.admin-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.admin-section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1c1917;
+}
+
+.admin-btn {
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-btn-primary {
+  background: #92400e;
+  color: white;
+}
+
+.admin-btn-primary:hover {
+  background: #78350f;
+}
+
+.admin-btn-danger {
+  background: #dc2626;
+  color: white;
+}
+
+.admin-btn-danger:hover {
+  background: #b91c1c;
+}
+
+.admin-btn-sm {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+}
+
+.admin-btn-outline {
+  background: white;
+  color: #92400e;
+  border: 1px solid #92400e;
+}
+
+.admin-btn-outline:hover {
+  background: #fef3c7;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #f5f5f4;
+  font-size: 0.9rem;
+}
+
+.admin-table th {
+  background: #faf8f5;
+  font-weight: 600;
+  color: #57534e;
+}
+
+.admin-table tr:hover {
+  background: #fefce8;
+}
+
+.admin-table-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.admin-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.admin-modal {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.admin-modal-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #1c1917;
+}
+
+.admin-form-group {
+  margin-bottom: 1rem;
+}
+
+.admin-form-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #57534e;
+  margin-bottom: 0.4rem;
+}
+
+.admin-form-group input,
+.admin-form-group textarea {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #d6d3d1;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+}
+
+.admin-form-group textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.admin-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.admin-empty {
+  text-align: center;
+  padding: 3rem;
+  color: #a8a29e;
+  font-size: 0.95rem;
+}
+
+.admin-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.admin-badge-waiting {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.admin-badge-done {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.admin-answer-box {
+  background: #faf8f5;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 0.5rem;
+}
+
+.admin-answer-input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #d6d3d1;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  min-height: 80px;
+  resize: vertical;
+  box-sizing: border-box;
+  margin-bottom: 0.5rem;
+}
+
+.admin-msg {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.admin-msg-success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.admin-msg-error {
+  background: #fee2e2;
+  color: #991b1b;
+}

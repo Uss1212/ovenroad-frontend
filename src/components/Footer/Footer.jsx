@@ -49,6 +49,8 @@ export default function Footer() {
             <div className="footer-link-title">고객지원</div>
             <ul className="footer-links">
               <li><Link to="/notice">공지사항</Link></li>
+              <li><Link to="/notice?tab=faq">FAQ</Link></li>
+              <li><Link to="/notice?tab=qna">문의하기</Link></li>
             </ul>
           </div>
 
