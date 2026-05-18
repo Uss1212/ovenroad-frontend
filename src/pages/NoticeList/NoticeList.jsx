@@ -210,8 +210,8 @@ export default function NoticeList() {
       /* 서버에서 해당 문의의 상세 내용 + 관리자 답변을 가져옴 */
       const data = await getQuestionDetail(questionNum);
       setSelectedQuestion(data);
-    } catch (err) {
-      alert(err.message || '문의 상세를 불러올 수 없습니다.');
+    } catch {
+      setSelectedQuestion(null);
     }
   }
 
