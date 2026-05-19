@@ -507,6 +507,11 @@ export async function getMyPosts(userNum) {
   return request(`/api/user/${userNum}/my-posts`);
 }
 
+/* --- Google Places 상세 정보 (영업시간, 전화, 웹사이트) --- */
+export async function getPlaceGoogleDetails(placeNum) {
+  return request(`/api/places/${placeNum}/google-details`);
+}
+
 /* --- 리뷰 삭제 --- */
 /* reviewNum: 리뷰 번호, userNum: 작성자 번호 */
 export async function deleteReview(reviewNum, userNum) {

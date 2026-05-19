@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { BASE_URL } from '../../api/apiAxios';
+import { BASE_URL, getPlaceGoogleDetails } from '../../api/apiAxios';
 import './PlaceDetail.css';
 
 export default function PlaceDetail() {
@@ -19,6 +19,7 @@ export default function PlaceDetail() {
   const [place, setPlace] = useState(null);
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState([]);
+  const [googleInfo, setGoogleInfo] = useState(null);
 
   /* 리뷰 작성 모달 */
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -80,6 +81,9 @@ export default function PlaceDetail() {
 
   useEffect(() => {
     fetchPlace();
+    getPlaceGoogleDetails(id)
+      .then(data => { if (data?.found) setGoogleInfo(data); })
+      .catch(() => {});
   }, [id]);
 
   /* 주소 클릭 → 네이버 지도 열기 */
@@ -193,10 +197,42 @@ export default function PlaceDetail() {
             <div className="pd-info-row">
               <div className="pd-info-icon">🕐</div>
               <div className="pd-info-text">
-                <h4 className="pd-info-label">영업시간</h4>
-                <p className="pd-info-value">매장에 직접 문의해주세요</p>
+                <h4 className="pd-info-label">
+                  영업시간
+                  {googleInfo?.isOpenNow === true && <span className="pd-open-badge">영업중</span>}
+                  {googleInfo?.isOpenNow === false && <span className="pd-closed-badge">영업종료</span>}
+                </h4>
+                {googleInfo?.openingHours ? (
+                  <ul className="pd-hours-list">
+                    {googleInfo.openingHours.map((line, i) => (
+                      <li key={i} className="pd-hours-item">{line}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="pd-info-value">매장에 직접 문의해주세요</p>
+                )}
               </div>
             </div>
+            {googleInfo?.phone && (
+              <div className="pd-info-row">
+                <div className="pd-info-icon">📞</div>
+                <div className="pd-info-text">
+                  <h4 className="pd-info-label">전화번호</h4>
+                  <a href={`tel:${googleInfo.phone}`} className="pd-info-link">{googleInfo.phone}</a>
+                </div>
+              </div>
+            )}
+            {googleInfo?.website && (
+              <div className="pd-info-row">
+                <div className="pd-info-icon">🌐</div>
+                <div className="pd-info-text">
+                  <h4 className="pd-info-label">웹사이트</h4>
+                  <a href={googleInfo.website} target="_blank" rel="noreferrer" className="pd-info-link pd-info-link-external">
+                    {googleInfo.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
