@@ -59,6 +59,9 @@ export default function HeroBanner() {
   /* DB에 없는 일반 베이커리들 (현재 위치 기반, 최대 60개) */
   const [externalBakeries, setExternalBakeries] = useState([]);
 
+  /* ── 주변 베이커리 로딩 중 여부 ── */
+  const [externalLoading, setExternalLoading] = useState(true);
+
   /* ── 백엔드 API에서 빵집 데이터 가져오기 ── */
   /* 컴포넌트가 처음 화면에 나타날 때 한 번 실행 */
   useEffect(() => {
@@ -185,11 +188,14 @@ export default function HeroBanner() {
     /* Google Places에서 주변 베이커리를 가져오는 함수 */
     async function fetchExternalBakeries(lat, lng) {
       try {
+        setExternalLoading(true);
         const res = await fetch(`${BASE_URL}/api/places/nearby-bakeries?lat=${lat}&lng=${lng}&radius=5000`);
         const data = await res.json();
         setExternalBakeries(Array.isArray(data) ? data : []);
       } catch {
         /* 실패해도 DB 빵집은 계속 표시 */
+      } finally {
+        setExternalLoading(false);
       }
     }
 
@@ -709,11 +715,20 @@ export default function HeroBanner() {
       )}
 
       {/* ===== 마커를 아직 클릭 안 했을 때 안내 문구 ===== */}
-      {/* 카드가 안 보일 때 사용자에게 마커를 클릭하라고 알려줌 */}
+      {/* 로딩 중이면 "불러오는 중", 완료되면 "마커 클릭" 안내 */}
       {!selectedBakery && (
         <div className="hero-guide-msg">
-          <span className="hero-guide-icon">👆</span>
-          <p className="hero-guide-text">마커를 클릭하면 빵집 정보를 볼 수 있어요</p>
+          {externalLoading ? (
+            <>
+              <span className="hero-guide-icon hero-guide-spin">🍞</span>
+              <p className="hero-guide-text">빵집 불러오는 중 ...</p>
+            </>
+          ) : (
+            <>
+              <span className="hero-guide-icon">👆</span>
+              <p className="hero-guide-text">마커를 클릭하면 빵집 정보를 볼 수 있어요</p>
+            </>
+          )}
         </div>
       )}
     </div>
