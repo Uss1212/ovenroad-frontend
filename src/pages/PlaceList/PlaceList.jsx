@@ -40,8 +40,11 @@ export default function PlaceList() {
   /* 주변 베이커리 로딩 상태 */
   const [externalLoading, setExternalLoading] = useState(true);
 
+  /* 사용자 위치 (거리순 정렬에 사용) */
+  const [userCoords, setUserCoords] = useState(null);
+
   /* 현재 선택한 정렬 방식 */
-  const [activeSort, setActiveSort] = useState('인기순');
+  const [activeSort, setActiveSort] = useState('거리순');
 
   /* 보여줄 빵집 개수 */
   const [visibleCount, setVisibleCount] = useState(12);
@@ -57,7 +60,20 @@ export default function PlaceList() {
   }, [urlMenu]);
 
   /* 정렬 옵션 */
-  const sortOptions = ['인기순', '최신순', '별점순'];
+  const sortOptions = ['거리순', '인기순', '최신순', '별점순'];
+
+  /* 두 좌표 간 거리 계산 (Haversine, km 단위) */
+  function calcDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371;
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLng = ((lng2 - lng1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
 
 
   /* --- 현재 위치 기반 주변 베이커리 가져오기 (Google Places) --- */
@@ -77,6 +93,7 @@ export default function PlaceList() {
 
     async function initLocation() {
       if (!navigator.geolocation) {
+        setUserCoords({ lat: 37.5622, lng: 126.9086 });
         fetchExternal(37.5622, 126.9086);
         return;
       }
@@ -84,8 +101,12 @@ export default function PlaceList() {
         const pos = await new Promise((resolve, reject) =>
           navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 })
         );
-        fetchExternal(pos.coords.latitude, pos.coords.longitude);
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setUserCoords({ lat, lng });
+        fetchExternal(lat, lng);
       } catch {
+        setUserCoords({ lat: 37.5622, lng: 126.9086 });
         fetchExternal(37.5622, 126.9086); /* 위치 거부 시 마포구 기본값 */
       }
     }
@@ -145,6 +166,8 @@ export default function PlaceList() {
               hasRibbon: p.ribbonCount && p.ribbonCount > 0,
               image: p.thumbnailImage || null,
               menuTags: tags,
+              lat: parseFloat(p.LATITUDE),
+              lng: parseFloat(p.LONGITUDE),
             };
           });
 
@@ -177,6 +200,8 @@ export default function PlaceList() {
           image: ext.photoUrl || null,
           menuTags: [],
           isExternal: true,
+          lat: ext.lat,
+          lng: ext.lng,
         };
       }),
   ];
@@ -197,9 +222,22 @@ export default function PlaceList() {
       if (b.isExternal) return false;
       return b.menuTags.some(t => t === activeMenuTag);
     })
-    /* 3) 정렬 (인기순/최신순은 DB 빵집 우선, 외부는 뒤로) */
+    /* 3) 정렬 */
     .sort((a, b) => {
+      /* 거리순: 사용자 위치 기준 가까운 순 (위도/경도 없으면 맨 뒤) */
+      if (activeSort === '거리순') {
+        if (!userCoords) return 0;
+        const hasA = a.lat != null && a.lng != null;
+        const hasB = b.lat != null && b.lng != null;
+        if (!hasA && !hasB) return 0;
+        if (!hasA) return 1;
+        if (!hasB) return -1;
+        const dA = calcDistance(userCoords.lat, userCoords.lng, a.lat, a.lng);
+        const dB = calcDistance(userCoords.lat, userCoords.lng, b.lat, b.lng);
+        return dA - dB;
+      }
       if (activeSort === '별점순') return parseFloat(b.rating) - parseFloat(a.rating);
+      /* 인기순/최신순: DB 빵집 우선, 외부는 뒤로 */
       if (a.isExternal && !b.isExternal) return 1;
       if (!a.isExternal && b.isExternal) return -1;
       if (activeSort === '인기순') return b.reviewCount - a.reviewCount;
