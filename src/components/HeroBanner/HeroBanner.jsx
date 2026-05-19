@@ -32,11 +32,6 @@ export default function HeroBanner() {
   /* null이면 아무 빵집도 선택 안 된 상태 → 카드가 안 보임 */
   const [selectedBakery, setSelectedBakery] = useState(null);
 
-  /* isLiked: 좋아요 버튼을 눌렀는지 안 눌렀는지 기억 */
-  const [isLiked, setIsLiked] = useState(false);
-
-  /* isScraped: 스크랩(저장) 버튼을 눌렀는지 기억 */
-  const [isScraped, setIsScraped] = useState(false);
 
   /* userLocation: 사용자의 현재 위치 (위도, 경도) */
   /* 기본값은 서울 연남동 근처 (위치를 못 가져올 때 사용) */
@@ -332,9 +327,6 @@ export default function HeroBanner() {
       window.naver.maps.Event.addListener(marker, 'click', () => {
         /* 선택된 빵집 데이터를 상태에 저장 → 카드가 표시됨 */
         setSelectedBakery(bakery);
-        /* 좋아요/스크랩 초기화 (빵집이 바뀌었으니까) */
-        setIsLiked(false);
-        setIsScraped(false);
         /* 지도 중심을 클릭한 빵집으로 부드럽게 이동 */
         map.panTo(new window.naver.maps.LatLng(bakery.lat, bakery.lng));
       });
@@ -688,26 +680,8 @@ export default function HeroBanner() {
             )}
           </div>
 
-          {/* --- 액션 버튼 모음 (좋아요, 스크랩, 공유 등) --- */}
+          {/* --- 액션 버튼 모음 --- */}
           <div className="place-card-actions">
-            {/* 좋아요 버튼: 누르면 빨간 하트로 바뀜 */}
-            <button
-              className={`action-btn ${isLiked ? 'active' : ''}`}
-              onClick={() => setIsLiked(!isLiked)}
-            >
-              {isLiked ? '❤️' : '🤍'}
-              <span>좋아요</span>
-            </button>
-
-            {/* 스크랩(저장) 버튼: 누르면 노란 별로 바뀜 */}
-            <button
-              className={`action-btn ${isScraped ? 'active' : ''}`}
-              onClick={() => setIsScraped(!isScraped)}
-            >
-              {isScraped ? '⭐' : '☆'}
-              <span>스크랩</span>
-            </button>
-
             {/* 공유 버튼 */}
             <button className="action-btn">
               ↗️

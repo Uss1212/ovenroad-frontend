@@ -30,8 +30,7 @@ export default function PlaceDetail() {
   const userData = localStorage.getItem('user');
   const currentUser = userData ? JSON.parse(userData) : null;
 
-  /* 좋아요 + 공유 상태 */
-  const [liked, setLiked] = useState(false);
+  /* 공유 상태 */
   const [copied, setCopied] = useState(false);
 
   /* 사진 갤러리 라이트박스 (클릭하면 크게 보기) */
@@ -182,7 +181,7 @@ export default function PlaceDetail() {
         </div>
       </div>
 
-      {/* ===== 2. 액션 바 (공유 + 좋아요 버튼) ===== */}
+      {/* ===== 2. 액션 바 (공유 + 지도보기 버튼) ===== */}
       <div className="pd-action-bar">
         <button
           className="pd-action-btn"
@@ -198,16 +197,6 @@ export default function PlaceDetail() {
         >
           <span className="pd-action-icon">{copied ? '✅' : '📤'}</span>
           <span>{copied ? '복사완료!' : '공유하기'}</span>
-        </button>
-        <button
-          className={`pd-action-btn ${liked ? 'liked' : ''}`}
-          onClick={() => {
-            if (!currentUser) { alert('로그인이 필요합니다!'); return; }
-            setLiked(!liked);
-          }}
-        >
-          <span className="pd-action-icon">{liked ? '❤️' : '🤍'}</span>
-          <span>{liked ? '좋아요!' : '좋아요'}</span>
         </button>
         <button className="pd-action-btn" onClick={openNaverMap}>
           <span className="pd-action-icon">📍</span>
