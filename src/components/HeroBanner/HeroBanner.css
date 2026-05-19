@@ -504,6 +504,36 @@
   margin: 0;
 }
 
+/* ===== 현재 위치로 이동 버튼 ===== */
+.hero-locate-btn {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #c96442;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.hero-locate-btn:hover {
+  background: #fff5f0;
+  transform: scale(1.08);
+}
+
+.hero-locate-btn:active {
+  transform: scale(0.96);
+}
+
 /* ===== 반응형: 작은 화면 ===== */
 @media (max-width: 900px) {
   /* 모바일: 검색바를 가운데 배치 */
