@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { BASE_URL, getPlaceGoogleDetails, getExternalPlaceDetails } from '../../api/apiAxios';
+import { BASE_URL, getPlaceGoogleDetails, getExternalPlaceDetails, saveExternalPlace } from '../../api/apiAxios';
 import './PlaceDetail.css';
 
 export default function PlaceDetail() {
@@ -82,36 +82,34 @@ export default function PlaceDetail() {
     const isExternal = String(id).startsWith('ext_');
 
     if (isExternal) {
-      /* 외부(Google Places) 빵집: Google API에서 직접 데이터 가져오기 */
+      /* 외부(Google Places) 빵집: DB에 저장 후 진짜 상세 페이지로 이동 */
       const placeId = id.replace('ext_', '');
       setLoading(true);
-      getExternalPlaceDetails(placeId)
-        .then(data => {
-          setPlace({
-            id,
-            name: data.name,
-            address: data.address || '주소 정보 없음',
-            rating: data.rating ? Number(data.rating).toFixed(1) : '0.0',
-            reviewCount: data.ratingCount || 0,
-            lat: data.lat,
-            lng: data.lng,
-            hasRibbon: false,
-            images: data.photos.map(url => ({ IMAGE_URL: url })),
-            courses: [],
-            menus: [],
-            isExternal: true,
-          });
-          /* googleInfo 구조 재사용 → 영업시간/전화/웹사이트 그대로 표시됨 */
-          setGoogleInfo({
-            found: true,
-            openingHours: data.openingHours,
-            isOpenNow: data.isOpenNow,
-            phone: data.phone,
-            website: data.website,
-          });
+      saveExternalPlace(placeId)
+        .then(({ placeNum }) => {
+          /* DB에 저장 완료 → 실제 placeNum으로 리다이렉트 */
+          navigate(`/place/${placeNum}`, { replace: true });
         })
-        .catch(() => setPlace(null))
-        .finally(() => setLoading(false));
+        .catch(() => {
+          /* 저장 실패 시 Google 데이터로 임시 표시 */
+          getExternalPlaceDetails(placeId)
+            .then(data => {
+              setPlace({
+                id,
+                name: data.name,
+                address: data.address || '주소 정보 없음',
+                rating: data.rating ? Number(data.rating).toFixed(1) : '0.0',
+                reviewCount: data.ratingCount || 0,
+                lat: data.lat, lng: data.lng,
+                hasRibbon: false,
+                images: data.photos.map(url => ({ IMAGE_URL: url })),
+                courses: [], menus: [], isExternal: true,
+              });
+              setGoogleInfo({ found: true, openingHours: data.openingHours, isOpenNow: data.isOpenNow, phone: data.phone, website: data.website });
+            })
+            .catch(() => setPlace(null))
+            .finally(() => setLoading(false));
+        });
     } else {
       /* DB 빵집: 기존 로직 */
       fetchPlace();
@@ -281,11 +279,36 @@ export default function PlaceDetail() {
 
         {/* --- 메뉴 --- */}
         <div className="pd-section">
-          <h2 className="pd-section-title">메뉴</h2>
+          <div className="pd-section-title-row">
+            <h2 className="pd-section-title">메뉴</h2>
+            {/* 네이버 플레이스에서 전체 메뉴 보기 */}
+            <a
+              className="pd-naver-menu-btn"
+              href={`https://map.naver.com/v5/search/${encodeURIComponent((place.name || ''))}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src="https://ssl.pstatic.net/static/maps/mantle/resources/maps-icon-10.png"
+                alt="네이버"
+                className="pd-naver-icon"
+                onError={e => { e.target.style.display = 'none'; }}
+              />
+              네이버 플레이스에서 보기
+            </a>
+          </div>
           {(!place.menus || place.menus.length === 0) ? (
             <div className="pd-empty-box">
               <span>🍞</span>
               <p>아직 등록된 메뉴 정보가 없습니다</p>
+              <a
+                className="pd-naver-menu-fallback"
+                href={`https://map.naver.com/v5/search/${encodeURIComponent((place.name || '') + ' ' + (place.address || ''))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                네이버 플레이스에서 메뉴 확인하기 →
+              </a>
             </div>
           ) : (
             <>
