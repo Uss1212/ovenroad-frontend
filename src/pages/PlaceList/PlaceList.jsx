@@ -325,17 +325,7 @@ export default function PlaceList() {
               <div
                 key={bakery.id}
                 className={`pl-card ${bakery.isExternal ? 'pl-card-external' : ''}`}
-                onClick={() => {
-                  if (bakery.isExternal) {
-                    /* 외부 빵집: 네이버 지도에서 검색 */
-                    window.open(
-                      `https://map.naver.com/v5/search/${encodeURIComponent(bakery.name + ' ' + bakery.address)}`,
-                      '_blank'
-                    );
-                  } else {
-                    navigate(`/place/${bakery.id}`);
-                  }
-                }}
+                onClick={() => navigate(`/place/${bakery.id}`)}
               >
                 {/* 카드 이미지 */}
                 <div className="pl-card-img">

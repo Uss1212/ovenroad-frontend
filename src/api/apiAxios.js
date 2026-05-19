@@ -512,6 +512,12 @@ export async function getPlaceGoogleDetails(placeNum) {
   return request(`/api/places/${placeNum}/google-details`);
 }
 
+/* --- 외부(Google Places) 베이커리 상세 조회 --- */
+/* placeId: Google Places place_id */
+export async function getExternalPlaceDetails(placeId) {
+  return request(`/api/places/external/${placeId}`);
+}
+
 /* --- 리뷰 삭제 --- */
 /* reviewNum: 리뷰 번호, userNum: 작성자 번호 */
 export async function deleteReview(reviewNum, userNum) {

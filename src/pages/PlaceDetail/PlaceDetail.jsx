@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { BASE_URL, getPlaceGoogleDetails } from '../../api/apiAxios';
+import { BASE_URL, getPlaceGoogleDetails, getExternalPlaceDetails } from '../../api/apiAxios';
 import './PlaceDetail.css';
 
 export default function PlaceDetail() {
@@ -80,10 +80,46 @@ export default function PlaceDetail() {
   };
 
   useEffect(() => {
-    fetchPlace();
-    getPlaceGoogleDetails(id)
-      .then(data => { if (data?.found) setGoogleInfo(data); })
-      .catch(() => {});
+    const isExternal = String(id).startsWith('ext_');
+
+    if (isExternal) {
+      /* 외부(Google Places) 빵집: Google API에서 직접 데이터 가져오기 */
+      const placeId = id.replace('ext_', '');
+      setLoading(true);
+      getExternalPlaceDetails(placeId)
+        .then(data => {
+          setPlace({
+            id,
+            name: data.name,
+            address: data.address || '주소 정보 없음',
+            rating: data.rating ? Number(data.rating).toFixed(1) : '0.0',
+            reviewCount: data.ratingCount || 0,
+            lat: data.lat,
+            lng: data.lng,
+            hasRibbon: false,
+            images: data.photos.map(url => ({ IMAGE_URL: url })),
+            courses: [],
+            menus: [],
+            isExternal: true,
+          });
+          /* googleInfo 구조 재사용 → 영업시간/전화/웹사이트 그대로 표시됨 */
+          setGoogleInfo({
+            found: true,
+            openingHours: data.openingHours,
+            isOpenNow: data.isOpenNow,
+            phone: data.phone,
+            website: data.website,
+          });
+        })
+        .catch(() => setPlace(null))
+        .finally(() => setLoading(false));
+    } else {
+      /* DB 빵집: 기존 로직 */
+      fetchPlace();
+      getPlaceGoogleDetails(id)
+        .then(data => { if (data?.found) setGoogleInfo(data); })
+        .catch(() => {});
+    }
   }, [id]);
 
   /* 주소 클릭 → 네이버 지도 열기 */
@@ -341,16 +377,47 @@ export default function PlaceDetail() {
         <div className="pd-section">
           <div className="pd-section-header">
             <h2 className="pd-section-title">리뷰</h2>
-            <button className="pd-review-write-btn" onClick={() => {
-              const user = localStorage.getItem('user');
-              if (!user) { alert('로그인이 필요합니다.'); navigate('/login'); return; }
-              setShowReviewModal(true);
-            }}>
-              ✏️ 리뷰 작성
-            </button>
+            {!place.isExternal && (
+              <button className="pd-review-write-btn" onClick={() => {
+                const user = localStorage.getItem('user');
+                if (!user) { alert('로그인이 필요합니다.'); navigate('/login'); return; }
+                setShowReviewModal(true);
+              }}>
+                ✏️ 리뷰 작성
+              </button>
+            )}
           </div>
 
-          {/* 리뷰 요약 */}
+          {/* 외부 빵집: Google 별점 안내 */}
+          {place.isExternal ? (
+            <div className="pd-review-summary">
+              <div className="pd-review-big-score">
+                <span className="pd-review-num">{place.rating}</span>
+                <span className="pd-review-max">/ 5.0</span>
+              </div>
+              <div className="pd-review-stars-row">
+                {[1, 2, 3, 4, 5].map(s => (
+                  <span key={s} className={`pd-star ${s <= Math.round(Number(place.rating)) ? 'filled' : ''}`}>★</span>
+                ))}
+              </div>
+              <p className="pd-review-total">Google 리뷰 {place.reviewCount}개</p>
+              <div className="pd-empty-box" style={{ marginTop: '1rem' }}>
+                <span>🌐</span>
+                <p>오븐로드에 등록되지 않은 빵집이에요.<br />리뷰는 Google 지도에서 확인하세요.</p>
+                <a
+                  href={`https://www.google.com/maps/search/${encodeURIComponent(place.name + ' ' + place.address)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="pd-info-link pd-info-link-external"
+                  style={{ marginTop: '0.5rem', display: 'inline-block' }}
+                >
+                  Google 지도에서 보기 →
+                </a>
+              </div>
+            </div>
+          ) : (
+            <>
+          {/* DB 빵집 리뷰 요약 */}
           <div className="pd-review-summary">
             <div className="pd-review-big-score">
               <span className="pd-review-num">{place.rating}</span>
@@ -408,6 +475,8 @@ export default function PlaceDetail() {
                 </div>
               ))}
             </div>
+          )}
+            </>
           )}
         </div>
       </div>
