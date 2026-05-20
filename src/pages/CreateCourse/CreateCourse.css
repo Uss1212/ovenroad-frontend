@@ -10,14 +10,14 @@
 .create-course {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 80px 24px 100px;
+  padding: 152px 24px 100px;
 }
 
 /* ===== 상단 버튼 바 ===== */
 /* 오른쪽 정렬: 임시저장 + 발행하기 */
 .cc-top-bar {
   position: fixed;
-  top: 52px;
+  top: 84px;
   right: 0;
   left: 0;
   display: flex;
