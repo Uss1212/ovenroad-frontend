@@ -1,110 +1,39 @@
 /* global MarkerClustering */
-/* ===================================================
-   HeroBanner 컴포넌트 (히어로 배너)
-   - 메인 페이지 맨 위, 헤더 바로 아래에 보이는 큰 영역
-   - 배경: 네이버 지도 API (실제 지도!)
-   - 내 위치(또는 기본 위치) 기준으로 추천 빵집 5개 마커 표시
-   - 각 빵집에 블루리본/천하제빵/제빵명장 뱃지가 있는지 표시
-   - 마커를 클릭하면 왼쪽에 빵집 상세 카드가 뜸
-   - 지도 위에 검색바 + 뱃지 필터 버튼도 있음
-   =================================================== */
-
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BASE_URL } from '../../api/apiAxios';
 import './HeroBanner.css';
 
 export default function HeroBanner() {
-
-  /* --- 페이지 이동 도구 --- */
-  /* useNavigate: 다른 페이지로 이동할 때 사용하는 함수 */
   const navigate = useNavigate();
 
-  /* --- 상태(state) 관리 --- */
-
-  /* searchKeyword: 검색창에 입력한 검색어를 기억하는 변수 */
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [activeBadge, setActiveBadge] = useState(null);
+  const [userLocation, setUserLocation] = useState({ lat: 37.5565, lng: 126.9225 });
+  const [recommendedBakeries, setRecommendedBakeries] = useState([]);
+  const [externalBakeries, setExternalBakeries] = useState([]);
+  const [externalLoading, setExternalLoading] = useState(true);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  /* activeBadge: 현재 선택한 인증 뱃지 (null이면 아무것도 안 선택된 상태) */
-  const [activeBadge, setActiveBadge] = useState('all');
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const markersRef = useRef([]);
+  const clusterRef = useRef(null);
+  const myLocationMarkerRef = useRef(null);
+  const searchWrapRef = useRef(null);
 
-  /* selectedBakery: 지도에서 마커를 클릭했을 때 선택된 빵집 데이터 */
-  /* null이면 아무 빵집도 선택 안 된 상태 → 카드가 안 보임 */
-  const [selectedBakery, setSelectedBakery] = useState(null);
-
-
-  /* userLocation: 사용자의 현재 위치 (위도, 경도) */
-  /* 기본값은 서울 연남동 근처 (위치를 못 가져올 때 사용) */
-  const [userLocation, setUserLocation] = useState({
-    lat: 37.5565,
-    lng: 126.9225,
-  });
-
-  /* ── 인증 뱃지 목록 ── */
-  /* 전체: 모든 빵집을 다 보여주는 버튼 (주황색) */
-  /* 블루리본: 블루리본 서베이에서 선정한 맛집 (파란색) */
-  /* 천하제빵: 천하제빵 인증을 받은 빵집 (초록색) */
   const badges = [
-    { id: 'all',        name: '전체',       color: '#c96442', icon: '🍞' },
-    { id: 'blueribbon', name: '블루리본',   color: '#1a73e8', icon: '🎀' },
-    { id: 'cheonha',    name: '천하제빵',   color: '#16a34a', icon: '🏆' },
-    { id: 'myungjang',  name: '명장빵집',   color: '#9333ea', icon: '👨‍🍳' },
+    { id: 'blueribbon', name: '블루리본',    color: '#1a73e8', img: '/badge-blueribbon.png' },
+    { id: 'cheonha',    name: '천하제빵',    color: '#16a34a', img: '/badge-cheonha.png' },
+    { id: 'myungjang',  name: '제과제빵명장', color: '#f59e0b', img: '/badge-myungjang.png' },
   ];
 
-  /* ── DB에서 불러온 빵집 데이터를 저장하는 상태 ── */
-  /* 처음에는 빈 배열 → API 호출 후 채워짐 */
-  const [recommendedBakeries, setRecommendedBakeries] = useState([]);
+  /* 지금 뜨는 빵집: 평점 높은 순 상위 5개 */
+  const topBakeries = [...recommendedBakeries]
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+    .slice(0, 5);
 
-  /* ── Google Places API로 가져온 주변 베이커리 ── */
-  /* DB에 없는 일반 베이커리들 (현재 위치 기반, 최대 60개) */
-  const [externalBakeries, setExternalBakeries] = useState([]);
-
-  /* ── 주변 베이커리 로딩 중 여부 ── */
-  const [externalLoading, setExternalLoading] = useState(true);
-
-  /* ── 백엔드 API에서 빵집 데이터 가져오기 ── */
-  /* 컴포넌트가 처음 화면에 나타날 때 한 번 실행 */
-  useEffect(() => {
-    async function fetchPlaces() {
-      try {
-        /* 백엔드 API 호출: 모든 빵집 목록 가져오기 */
-        const res = await fetch(`${BASE_URL}/api/places`);
-        const data = await res.json();
-
-        /* API 응답 데이터를 프론트엔드 형식으로 변환 */
-        const mapped = data
-          .filter(p => p.LATITUDE && p.LONGITUDE)  /* 좌표 없는 건 제외 */
-          .map(p => {
-            /* 뱃지 결정: 블루리본 개수가 있으면 블루리본 뱃지 추가 */
-            const badgeList = [];
-            if (p.ribbonCount && p.ribbonCount > 0) badgeList.push('blueribbon');
-            if (p.certification === 'cheonha') badgeList.push('cheonha');
-            if (p.certification === 'myungjang') badgeList.push('myungjang');
-
-            return {
-              id: p.PLACE_NUM,                         /* 빵집 고유 번호 */
-              name: p.PLACE_NAME,                      /* 빵집 이름 */
-              address: p.ADDRESS || '',                 /* 주소 */
-              rating: p.avgRating ? Number(p.avgRating).toFixed(1) : 0, /* 평균 별점 */
-              reviewCount: p.reviewCount || 0,         /* 리뷰 수 */
-              menuTags: p.menuTags ? p.menuTags.split(',').slice(0, 3) : [],  /* 메뉴 태그 */
-              badges: badgeList,                       /* 인증 뱃지 */
-              thumbnail: p.thumbnailImage || null,     /* 대표 이미지 URL */
-              lat: parseFloat(p.LATITUDE),             /* 위도 */
-              lng: parseFloat(p.LONGITUDE),            /* 경도 */
-            };
-          });
-
-        /* 변환한 데이터를 상태에 저장 → 지도에 마커로 표시됨 */
-        setRecommendedBakeries(mapped);
-      } catch (err) {
-        console.error('빵집 데이터 불러오기 실패:', err);
-      }
-    }
-    fetchPlaces();
-  }, []);
-
-  /* ── 검색 자동완성: DB 빵집 + 외부 빵집 합쳐서 검색 ── */
+  /* 검색 자동완성 */
   const searchSuggestions = searchKeyword.length >= 1
     ? [
         ...recommendedBakeries,
@@ -123,19 +52,49 @@ export default function HeroBanner() {
           })),
       ]
         .filter(b => {
-          const keyword = searchKeyword.toLowerCase();
-          return b.name.toLowerCase().includes(keyword) ||
-                 b.address.toLowerCase().includes(keyword) ||
-                 (b.menuTags || []).some(t => t.toLowerCase().includes(keyword));
+          const kw = searchKeyword.toLowerCase();
+          return b.name.toLowerCase().includes(kw) ||
+                 b.address.toLowerCase().includes(kw) ||
+                 (b.menuTags || []).some(t => t.toLowerCase().includes(kw));
         })
-        .slice(0, 5)  /* 최대 5개만 표시 */
+        .slice(0, 5)
     : [];
 
-  /* 자동완성 드롭다운 표시 여부 */
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  /* DB 빵집 목록 불러오기 */
+  useEffect(() => {
+    async function fetchPlaces() {
+      try {
+        const res = await fetch(`${BASE_URL}/api/places`);
+        const data = await res.json();
+        const mapped = data
+          .filter(p => p.LATITUDE && p.LONGITUDE)
+          .map(p => {
+            const badgeList = [];
+            if (p.ribbonCount && p.ribbonCount > 0) badgeList.push('blueribbon');
+            if (p.certification === 'cheonha') badgeList.push('cheonha');
+            if (p.certification === 'myungjang') badgeList.push('myungjang');
+            return {
+              id: p.PLACE_NUM,
+              name: p.PLACE_NAME,
+              address: p.ADDRESS || '',
+              rating: p.avgRating ? Number(p.avgRating).toFixed(1) : 0,
+              reviewCount: p.reviewCount || 0,
+              menuTags: p.menuTags ? p.menuTags.split(',').slice(0, 3) : [],
+              badges: badgeList,
+              thumbnail: p.thumbnailImage || null,
+              lat: parseFloat(p.LATITUDE),
+              lng: parseFloat(p.LONGITUDE),
+            };
+          });
+        setRecommendedBakeries(mapped);
+      } catch (err) {
+        console.error('빵집 데이터 불러오기 실패:', err);
+      }
+    }
+    fetchPlaces();
+  }, []);
 
   /* 검색창 바깥 클릭 시 드롭다운 닫기 */
-  const searchWrapRef = useRef(null);
   useEffect(() => {
     function handleClickOutside(e) {
       if (searchWrapRef.current && !searchWrapRef.current.contains(e.target)) {
@@ -146,46 +105,8 @@ export default function HeroBanner() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  /* ── 검색 실행 함수 ── */
-  /* 검색어를 가지고 빵집 탐색 페이지(/places)로 이동하는 함수 */
-  const handleSearch = () => {
-    setShowSuggestions(false);
-    /* URL 뒤에 붙일 검색 조건(쿼리 파라미터) 만들기 */
-    const params = new URLSearchParams();
-    /* 검색어가 있으면 search 파라미터 추가 */
-    if (searchKeyword) params.set('search', searchKeyword);
-    /* 선택한 뱃지가 있으면 badge 파라미터 추가 */
-    if (activeBadge) params.set('badge', activeBadge);
-    /* /places?search=빵집이름&badge=blueribbon 이런 식으로 이동 */
-    navigate(`/places?${params.toString()}`);
-  };
-
-  /* ── 엔터키로 검색 실행 ── */
-  /* 검색창에서 엔터키를 누르면 검색이 실행되도록 */
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') handleSearch();
-  };
-
-  /* --- 지도를 넣을 div를 가리키는 참조(ref) --- */
-  /* useRef: 특정 HTML 요소를 직접 가리킬 때 사용 */
-  const mapRef = useRef(null);
-
-  /* mapInstanceRef: 생성된 네이버 지도 객체를 저장 */
-  /* 나중에 지도를 움직이거나 마커를 추가할 때 이 객체를 사용 */
-  const mapInstanceRef = useRef(null);
-
-  /* markersRef: 지도 위에 찍힌 마커들을 저장하는 배열 */
-  const markersRef = useRef([]);
-
-  /* clusterRef: 마커 클러스터링 객체를 저장 */
-  /* 가까운 마커끼리 묶어서 숫자로 표시해주는 기능 */
-  const clusterRef = useRef(null);
-
-  /* ── 사용자 위치 가져오기 + 주변 베이커리 로드 ── */
-  /* 처음 한 번 실행: 위치 허용 → 실제 위치 기준, 거부/실패 → 마포구 기준으로 베이커리 검색 */
+  /* 위치 + 주변 베이커리 */
   useEffect(() => {
-
-    /* Google Places에서 주변 베이커리를 가져오는 함수 */
     async function fetchExternalBakeries(lat, lng) {
       try {
         setExternalLoading(true);
@@ -193,16 +114,14 @@ export default function HeroBanner() {
         const data = await res.json();
         setExternalBakeries(Array.isArray(data) ? data : []);
       } catch {
-        /* 실패해도 DB 빵집은 계속 표시 */
+        // DB 빵집은 계속 표시
       } finally {
         setExternalLoading(false);
       }
     }
 
-    /* 위치 권한 요청 후 결과에 따라 분기 */
     async function initLocation() {
       if (!navigator.geolocation) {
-        /* 브라우저가 위치 API를 지원하지 않으면 마포구로 대체 */
         fetchExternalBakeries(37.5622, 126.9086);
         return;
       }
@@ -212,64 +131,55 @@ export default function HeroBanner() {
         );
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
-        setUserLocation({ lat, lng });           /* 지도 중심을 현재 위치로 이동 */
-        fetchExternalBakeries(lat, lng);         /* 현재 위치 기준 베이커리 검색 */
+        setUserLocation({ lat, lng });
+        fetchExternalBakeries(lat, lng);
       } catch {
-        /* 위치 거부 or 타임아웃 → 마포구 기준으로 검색 */
         fetchExternalBakeries(37.5622, 126.9086);
       }
     }
-
     initLocation();
-  }, []); /* [] → 처음 한 번만 실행 */
+  }, []);
 
-  /* ── 네이버 지도 초기화 + 마커 표시 ── */
-  /* userLocation이 바뀔 때마다 (= 위치를 받아올 때) 지도를 새로 그림 */
+  /* 지도 초기화 (최초 1회) */
   useEffect(() => {
-    /* naver 지도 라이브러리가 아직 로딩 안 됐으면 실행하지 않음 */
     if (!window.naver || !window.naver.maps) return;
+    if (!mapInstanceRef.current) {
+      const map = new window.naver.maps.Map(mapRef.current, {
+        center: new window.naver.maps.LatLng(userLocation.lat, userLocation.lng),
+        zoom: 14,
+        zoomControl: false,
+        mapTypeControl: false,
+      });
+      mapInstanceRef.current = map;
+    } else {
+      mapInstanceRef.current.panTo(new window.naver.maps.LatLng(userLocation.lat, userLocation.lng));
+    }
+  }, [userLocation]);
 
-    /* --- 지도 생성 --- */
-    /* mapRef가 가리키는 div 안에 네이버 지도를 그림 */
-    const map = new window.naver.maps.Map(mapRef.current, {
-      /* 지도의 중심 좌표 = 사용자의 현재 위치 (또는 기본: 서울 중심) */
-      center: new window.naver.maps.LatLng(userLocation.lat, userLocation.lng),
-      /* 확대 레벨: 14 → 동네 단위 (주변 베이커리가 잘 보이는 정도) */
-      zoom: 14,
-      /* 줌 컨트롤(확대/축소 버튼) 숨기기 → 깔끔한 배너 느낌 */
-      zoomControl: false,
-      /* 지도 타입 컨트롤(일반/위성 전환) 숨기기 */
-      mapTypeControl: false,
-    });
-
-    /* 만든 지도 객체를 ref에 저장 → 나중에 다른 곳에서 쓸 수 있게 */
-    mapInstanceRef.current = map;
-
-    /* --- 내 위치 마커 표시 --- */
-    /* 파란색 점으로 "여기가 내 위치야!" 표시 */
-    new window.naver.maps.Marker({
-      map: map,
+  /* 내 위치 마커 */
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !window.naver) return;
+    if (myLocationMarkerRef.current) myLocationMarkerRef.current.setMap(null);
+    myLocationMarkerRef.current = new window.naver.maps.Marker({
+      map,
       position: new window.naver.maps.LatLng(userLocation.lat, userLocation.lng),
       icon: {
-        /* HTML로 파란 동그라미 만들기 */
-        content: `
-          <div style="
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #4285f4;
-            border: 3px solid #ffffff;
-            box-shadow: 0 0 8px rgba(66,133,244,0.5);
-          "></div>
-        `,
+        content: `<div style="width:16px;height:16px;border-radius:50%;background:#4285f4;border:3px solid #fff;box-shadow:0 0 8px rgba(66,133,244,0.5);"></div>`,
         anchor: new window.naver.maps.Point(8, 8),
       },
-      /* 이 마커는 클릭해도 아무 반응 없게 */
       clickable: false,
     });
+  }, [userLocation]);
 
-    /* --- DB 빵집 + Google Places 빵집 합치기 --- */
-    /* DB에 같은 이름이 있으면 외부 데이터는 제외 (중복 방지) */
+  /* 빵집 마커 + 클러스터 업데이트 */
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !window.naver) return;
+
+    markersRef.current.forEach(m => m.setMap(null));
+    if (clusterRef.current) { clusterRef.current.setMap(null); clusterRef.current = null; }
+
     const dbNames = new Set(recommendedBakeries.map(b => b.name));
     const allBakeries = [
       ...recommendedBakeries,
@@ -283,454 +193,241 @@ export default function HeroBanner() {
           reviewCount: 0,
           menuTags: [],
           badges: [],
-          thumbnail: ext.photoUrl || null,   /* Google Places 사진 */
+          thumbnail: ext.photoUrl || null,
           lat: ext.lat,
           lng: ext.lng,
           isExternal: true,
         })),
     ];
 
-    /* --- 빵집 마커 표시 (클러스터링 적용) --- */
-    /* DB + 외부 빵집 데이터를 하나씩 돌면서 마커를 만듦 */
-    /* 단, 지도에 바로 안 찍고 → 클러스터링이 알아서 묶어서 표시함 */
-    const newMarkers = allBakeries.map((bakery) => {
-
-      /* 마커 스타일 결정 */
-      const isBlueRibbon = bakery.badges && bakery.badges.includes('blueribbon');
-      const isExternal = bakery.isExternal;     /* 외부 빵집 여부 */
-
-      /* 마커 생성: map을 안 넣음! (클러스터가 대신 관리) */
+    const newMarkers = allBakeries.map(bakery => {
+      const isBlueRibbon = bakery.badges?.includes('blueribbon');
+      const isExternal = bakery.isExternal;
       const marker = new window.naver.maps.Marker({
         position: new window.naver.maps.LatLng(bakery.lat, bakery.lng),
         icon: {
-          content: `
-            <div style="
-              width: 40px;
-              height: 40px;
-              border-radius: 20px;
-              background: #ffffff;
-              border: 2.5px solid ${isBlueRibbon ? '#1a73e8' : isExternal ? '#aaa' : '#c96442'};
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 20px;
-              box-shadow: 0 2px 10px rgba(0,0,0,0.18);
-              cursor: pointer;
-              opacity: ${isExternal ? '0.75' : '1'};
-              transition: transform 0.2s;
-            ">${isBlueRibbon ? '🎀' : '🍞'}</div>
-          `,
-          /* 마커의 기준점 (가운데) → 좌표가 마커 정중앙에 오도록 */
+          content: `<div style="width:40px;height:40px;border-radius:20px;background:#fff;border:2.5px solid ${isBlueRibbon ? '#1a73e8' : isExternal ? '#aaa' : '#c96442'};display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 10px rgba(0,0,0,0.18);cursor:pointer;opacity:${isExternal ? '0.75' : '1'};">${isBlueRibbon ? '🎀' : '🍞'}</div>`,
           anchor: new window.naver.maps.Point(20, 20),
         },
       });
-
-      /* 마커에 빵집 데이터를 저장 → 나중에 필터링할 때 사용 */
       marker._bakeryData = bakery;
-
-      /* --- 마커 클릭 이벤트 --- */
-      /* 마커를 클릭하면 → 해당 빵집을 선택 → 왼쪽에 카드가 나타남 */
       window.naver.maps.Event.addListener(marker, 'click', () => {
-        /* 선택된 빵집 데이터를 상태에 저장 → 카드가 표시됨 */
-        setSelectedBakery(bakery);
-        /* 지도 중심을 클릭한 빵집으로 부드럽게 이동 */
         map.panTo(new window.naver.maps.LatLng(bakery.lat, bakery.lng));
+        if (!isExternal) navigate(`/place/${bakery.id}`);
       });
-
       return marker;
     });
 
-    /* 만든 마커들을 ref에 저장 */
     markersRef.current = newMarkers;
 
-    /* --- 마커 클러스터링 적용 --- */
-    /* 가까운 마커끼리 묶어서 "5", "12" 같은 숫자 원으로 표시 */
-    /* 지도를 확대하면 개별 마커가 하나씩 펼쳐짐 */
     if (typeof MarkerClustering !== 'undefined' && newMarkers.length > 0) {
-      /* 기존 클러스터 제거 (있으면) */
-      if (clusterRef.current) {
-        clusterRef.current.setMap(null);
-      }
-
-      /* 클러스터 아이콘: 마커 개수에 따라 크기/색상이 달라짐 */
-      /* 2~9개: 작은 갈색 원 */
-      const htmlMarker1 = {
-        content: '<div style="cursor:pointer;width:40px;height:40px;line-height:40px;font-size:13px;color:white;text-align:center;font-weight:bold;background:#c96442;border-radius:50%;border:2px solid white;box-shadow:0 2px 8px rgba(201,100,66,0.4);"></div>',
-        size: new window.naver.maps.Size(40, 40),
-        anchor: new window.naver.maps.Point(20, 20),
-      };
-      /* 10~29개: 중간 갈색 원 */
-      const htmlMarker2 = {
-        content: '<div style="cursor:pointer;width:50px;height:50px;line-height:50px;font-size:14px;color:white;text-align:center;font-weight:bold;background:#92400e;border-radius:50%;border:2px solid white;box-shadow:0 3px 12px rgba(146,64,14,0.4);"></div>',
-        size: new window.naver.maps.Size(50, 50),
-        anchor: new window.naver.maps.Point(25, 25),
-      };
-      /* 30개 이상: 큰 어두운 갈색 원 */
-      const htmlMarker3 = {
-        content: '<div style="cursor:pointer;width:60px;height:60px;line-height:60px;font-size:15px;color:white;text-align:center;font-weight:bold;background:#78350f;border-radius:50%;border:3px solid white;box-shadow:0 4px 16px rgba(120,53,15,0.4);"></div>',
-        size: new window.naver.maps.Size(60, 60),
-        anchor: new window.naver.maps.Point(30, 30),
-      };
-
-      /* 클러스터링 생성: 마커들을 지도에 묶어서 표시 */
+      const mkIcon = (size, bg) => ({
+        content: `<div style="cursor:pointer;width:${size}px;height:${size}px;line-height:${size}px;font-size:13px;color:white;text-align:center;font-weight:bold;background:${bg};border-radius:50%;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>`,
+        size: new window.naver.maps.Size(size, size),
+        anchor: new window.naver.maps.Point(size / 2, size / 2),
+      });
       clusterRef.current = new MarkerClustering({
-        minClusterSize: 2,       /* 최소 2개 이상 겹쳐야 묶음 */
-        maxZoom: 15,             /* 줌 15 이상이면 클러스터 풀림 → 개별 마커 표시 */
-        map: map,                /* 이 지도에 클러스터 표시 */
-        markers: newMarkers,     /* 클러스터링할 마커들 */
-        disableClickZoom: false, /* 클러스터 클릭 시 확대 허용 */
-        gridSize: 120,           /* 120px 범위 안의 마커끼리 묶음 */
-        icons: [htmlMarker1, htmlMarker2, htmlMarker3],
-        indexGenerator: [2, 10, 30], /* 2개부터 아이콘1, 10개부터 아이콘2, 30개부터 아이콘3 */
-        stylingFunction: (clusterMarker, count) => {
-          /* 클러스터 원 안에 숫자(마커 개수) 표시 */
-          const el = clusterMarker.getElement();
-          if (el) {
-            const div = el.querySelector('div');
-            if (div) div.textContent = count;
-          }
+        minClusterSize: 2, maxZoom: 15, map, markers: newMarkers,
+        disableClickZoom: false, gridSize: 120,
+        icons: [mkIcon(40, '#c96442'), mkIcon(50, '#92400e'), mkIcon(60, '#78350f')],
+        indexGenerator: [2, 10, 30],
+        stylingFunction: (cm, count) => {
+          const el = cm.getElement();
+          if (el) { const d = el.querySelector('div'); if (d) d.textContent = count; }
         },
       });
     }
 
-    /* --- 지도 빈 곳 클릭 시 카드 닫기 --- */
-    /* 지도의 빈 공간을 클릭하면 선택된 빵집 카드를 숨김 */
-    window.naver.maps.Event.addListener(map, 'click', () => {
-      setSelectedBakery(null);
-    });
-
-    /* ── 정리 함수 (cleanup) ── */
-    /* 컴포넌트가 사라지거나 다시 그려질 때 기존 마커/클러스터 제거 */
     return () => {
-      newMarkers.forEach((m) => m.setMap(null));
-      if (clusterRef.current) {
-        clusterRef.current.setMap(null);
-        clusterRef.current = null;
-      }
+      newMarkers.forEach(m => m.setMap(null));
+      if (clusterRef.current) { clusterRef.current.setMap(null); clusterRef.current = null; }
     };
-  }, [userLocation, recommendedBakeries, externalBakeries]); /* 위치/DB빵집/외부빵집 바뀌면 지도 다시 그림 */
+  }, [recommendedBakeries, externalBakeries]);
 
-  /* ── 뱃지 필터가 바뀔 때 클러스터 재생성 ── */
-  /* activeBadge가 바뀔 때마다 실행 */
-  /* 선택한 뱃지에 맞는 마커만 골라서 새 클러스터를 만듦 */
+  /* 뱃지 필터 */
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map) return;  /* 지도가 아직 없으면 실행 안 함 */
+    if (!map) return;
 
-    /* 필터 조건에 맞는 마커만 골라내기 */
-    const filteredMarkers = markersRef.current.filter((marker) => {
-      const bakery = marker._bakeryData;
-      if (!bakery) return false;
-      /* 전체 또는 미선택 → 모든 마커 포함 */
-      if (activeBadge === 'all') return true;
-      if (activeBadge === null) return false;
-      /* 선택된 뱃지가 있는 빵집만 포함 */
-      return bakery.badges.includes(activeBadge);
+    const filtered = markersRef.current.filter(marker => {
+      const b = marker._bakeryData;
+      if (!b) return false;
+      if (activeBadge === null) return true;
+      return b.badges?.includes(activeBadge);
     });
 
-    /* 기존 클러스터 제거 */
-    if (clusterRef.current) {
-      clusterRef.current.setMap(null);
-    }
+    if (clusterRef.current) clusterRef.current.setMap(null);
+    markersRef.current.forEach(m => m.setMap(null));
 
-    /* 모든 마커를 지도에서 숨김 (클러스터가 다시 관리할 거니까) */
-    markersRef.current.forEach((m) => m.setMap(null));
-
-    /* 필터된 마커로 새 클러스터 생성 */
-    if (typeof MarkerClustering !== 'undefined' && filteredMarkers.length > 0) {
-      const htmlMarker1 = {
-        content: '<div style="cursor:pointer;width:40px;height:40px;line-height:40px;font-size:13px;color:white;text-align:center;font-weight:bold;background:#c96442;border-radius:50%;border:2px solid white;box-shadow:0 2px 8px rgba(201,100,66,0.4);"></div>',
-        size: new window.naver.maps.Size(40, 40),
-        anchor: new window.naver.maps.Point(20, 20),
-      };
-      const htmlMarker2 = {
-        content: '<div style="cursor:pointer;width:50px;height:50px;line-height:50px;font-size:14px;color:white;text-align:center;font-weight:bold;background:#92400e;border-radius:50%;border:2px solid white;box-shadow:0 3px 12px rgba(146,64,14,0.4);"></div>',
-        size: new window.naver.maps.Size(50, 50),
-        anchor: new window.naver.maps.Point(25, 25),
-      };
-      const htmlMarker3 = {
-        content: '<div style="cursor:pointer;width:60px;height:60px;line-height:60px;font-size:15px;color:white;text-align:center;font-weight:bold;background:#78350f;border-radius:50%;border:3px solid white;box-shadow:0 4px 16px rgba(120,53,15,0.4);"></div>',
-        size: new window.naver.maps.Size(60, 60),
-        anchor: new window.naver.maps.Point(30, 30),
-      };
-
+    if (typeof MarkerClustering !== 'undefined' && filtered.length > 0) {
+      const mkIcon = (size, bg) => ({
+        content: `<div style="cursor:pointer;width:${size}px;height:${size}px;line-height:${size}px;font-size:13px;color:white;text-align:center;font-weight:bold;background:${bg};border-radius:50%;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>`,
+        size: new window.naver.maps.Size(size, size),
+        anchor: new window.naver.maps.Point(size / 2, size / 2),
+      });
       clusterRef.current = new MarkerClustering({
-        minClusterSize: 2,
-        maxZoom: 15,
-        map: map,
-        markers: filteredMarkers,
-        disableClickZoom: false,
-        gridSize: 120,
-        icons: [htmlMarker1, htmlMarker2, htmlMarker3],
+        minClusterSize: 2, maxZoom: 15, map, markers: filtered,
+        disableClickZoom: false, gridSize: 120,
+        icons: [mkIcon(40, '#c96442'), mkIcon(50, '#92400e'), mkIcon(60, '#78350f')],
         indexGenerator: [2, 10, 30],
-        stylingFunction: (clusterMarker, count) => {
-          const el = clusterMarker.getElement();
-          if (el) {
-            const div = el.querySelector('div');
-            if (div) div.textContent = count;
-          }
+        stylingFunction: (cm, count) => {
+          const el = cm.getElement();
+          if (el) { const d = el.querySelector('div'); if (d) d.textContent = count; }
         },
       });
     }
-  }, [activeBadge]); /* activeBadge가 바뀔 때마다 실행 */
+  }, [activeBadge]);
+
+  const handleSearch = () => {
+    setShowSuggestions(false);
+    const params = new URLSearchParams();
+    if (searchKeyword) params.set('search', searchKeyword);
+    if (activeBadge && activeBadge !== 'all') params.set('badge', activeBadge);
+    navigate(`/places?${params.toString()}`);
+  };
 
   return (
-    /* 히어로 배너 전체를 감싸는 영역 */
-    <div className="hero-banner">
+    <section className="hero-section">
 
-      {/* ===== 배경: 네이버 지도 영역 ===== */}
-      {/* ref={mapRef} → 이 div를 mapRef로 가리켜서 네이버 지도가 여기에 그려짐 */}
+      {/* 지도 — 전체 배경 */}
       <div className="hero-map-bg" ref={mapRef} />
 
-      {/* ===== 현재 위치로 이동 버튼 ===== */}
-      <button
-        className="hero-locate-btn"
-        title="현재 위치로 이동"
-        onClick={() => {
-          if (!mapInstanceRef.current) return;
-          mapInstanceRef.current.panTo(new window.naver.maps.LatLng(userLocation.lat, userLocation.lng));
-          mapInstanceRef.current.setZoom(15);
-        }}
-      >
-        <i className="fi fi-rs-location-crosshairs" />
-      </button>
+      {/* ===== 왼쪽 플로팅 패널: 검색 + 지금 뜨는 빵집 ===== */}
+      <div className="hero-left">
 
-      {/* ===== 지도 위 검색바 + 인증 뱃지 버튼 ===== */}
-      {/* position: absolute로 지도 위에 떠있는 형태 */}
-      <div className="hero-search-bar">
+        {/* 검색 헤더 */}
+        <div className="hero-left-header">
+          <h2 className="hero-left-title">
+            <i className="fi fi-sr-bread hero-title-icon"></i>
+            어떤 빵집을 찾으시나요?
+          </h2>
+          <p className="hero-left-desc">
+            빵집 이름이나 지점을 정확히 입력해주세요 (예: 어니언 성수)
+          </p>
+        </div>
 
-        {/* 검색 입력창 + 자동완성 드롭다운 */}
-        <div className="hero-search-wrap" ref={searchWrapRef}>
-          {/* 돋보기 아이콘 */}
-          <span className="hero-search-icon">🔍</span>
-          {/* 검색어 입력 필드 */}
-          <input
-            type="text"
-            className="hero-search-input"
-            placeholder="빵집 이름이나 지역을 검색해보세요"
-            value={searchKeyword}
-            onChange={(e) => {
-              setSearchKeyword(e.target.value);
-              setShowSuggestions(true); /* 입력할 때 드롭다운 열기 */
-            }}
-            onFocus={() => setShowSuggestions(true)}
-            onKeyDown={handleKeyDown}
-          />
-          {/* 검색 버튼 (클릭하면 빵집 탐색 페이지로 이동) */}
-          <button className="hero-search-btn" onClick={handleSearch}>
-            검색
-          </button>
+        {/* 검색 입력창 */}
+        <div className="hero-search-area" ref={searchWrapRef}>
+          <div className="hero-search-wrap">
+            <input
+              type="text"
+              className="hero-search-input"
+              placeholder="지도 검색"
+              value={searchKeyword}
+              onChange={e => { setSearchKeyword(e.target.value); setShowSuggestions(true); }}
+              onFocus={() => setShowSuggestions(true)}
+              onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
+            />
+            <button className="hero-search-icon-btn" onClick={handleSearch}>
+              <i className="fi fi-rr-search"></i>
+            </button>
+          </div>
 
-          {/* ===== 자동완성 드롭다운 ===== */}
-          {/* 검색어가 있고 매칭되는 빵집이 있을 때만 표시 */}
+          {/* 자동완성 드롭다운 */}
           {showSuggestions && searchSuggestions.length > 0 && (
             <div className="hero-suggestions">
-              {searchSuggestions.map((bakery) => (
+              {searchSuggestions.map(b => (
                 <div
-                  key={bakery.id}
+                  key={b.id}
                   className="hero-suggestion-item"
                   onClick={() => {
                     setShowSuggestions(false);
-                    if (bakery.isExternal) {
-                      /* 외부 빵집: 지도에서 해당 위치로 이동 + 카드 표시 */
-                      setSelectedBakery(bakery);
+                    if (b.isExternal) {
                       if (mapInstanceRef.current) {
-                        mapInstanceRef.current.panTo(new window.naver.maps.LatLng(bakery.lat, bakery.lng));
+                        mapInstanceRef.current.panTo(new window.naver.maps.LatLng(b.lat, b.lng));
                         mapInstanceRef.current.setZoom(16);
                       }
                     } else {
-                      navigate(`/place/${bakery.id}`);
+                      navigate(`/place/${b.id}`);
                     }
                   }}
                 >
-                  {/* 빵집 썸네일 (작은 원형) */}
                   <div className="hero-suggestion-thumb">
-                    {bakery.thumbnail ? (
-                      <img
-                        src={bakery.thumbnail.startsWith('http')
-                          ? bakery.thumbnail
-                          : `${BASE_URL}${bakery.thumbnail}`}
-                        alt={bakery.name}
-                      />
-                    ) : (
-                      <span>🍞</span>
-                    )}
+                    {b.thumbnail
+                      ? <img src={b.thumbnail.startsWith('http') ? b.thumbnail : `${BASE_URL}${b.thumbnail}`} alt={b.name} />
+                      : <span>🍞</span>}
                   </div>
-                  {/* 빵집 이름 + 주소 + 매칭된 메뉴 */}
                   <div className="hero-suggestion-info">
-                    <span className="hero-suggestion-name">{bakery.name}</span>
-                    <span className="hero-suggestion-address">
-                      {bakery.menuTags.some(t => t.toLowerCase().includes(searchKeyword.toLowerCase()))
-                        ? `🏷️ ${bakery.menuTags.filter(t => t.toLowerCase().includes(searchKeyword.toLowerCase())).join(', ')}`
-                        : bakery.address}
-                    </span>
+                    <span className="hero-suggestion-name">{b.name}</span>
+                    <span className="hero-suggestion-address">{b.address}</span>
                   </div>
-                  {/* 별점 (있으면) */}
-                  {bakery.rating > 0 && (
-                    <span className="hero-suggestion-rating">⭐ {bakery.rating}</span>
-                  )}
+                  {b.rating > 0 && <span className="hero-suggestion-rating">⭐ {b.rating}</span>}
                 </div>
               ))}
-              {/* 전체 검색 결과 보기 링크 */}
-              <div
-                className="hero-suggestion-all"
-                onClick={() => {
-                  setShowSuggestions(false);
-                  handleSearch();
-                }}
-              >
+              <div className="hero-suggestion-all" onClick={() => { setShowSuggestions(false); handleSearch(); }}>
                 "{searchKeyword}" 전체 검색 결과 보기 →
               </div>
             </div>
           )}
         </div>
 
-        {/* 인증 뱃지 필터 버튼들 (블루리본, 천하제빵, 제빵명장) */}
-        <div className="hero-badge-filters">
-          {badges.map((badge) => (
-            <button
-              key={badge.id}
-              /* 선택된 뱃지면 'active' 클래스 추가 → 배경색이 바뀜 */
-              className={`hero-badge-btn ${activeBadge === badge.id ? 'active' : ''}`}
-              onClick={() => {
-                setActiveBadge(activeBadge === badge.id ? null : badge.id);
-              }}
-              /* 뱃지마다 고유 색상을 CSS 변수로 전달 (CSS에서 이 색상 사용) */
-              style={{ '--badge-color': badge.color }}
-            >
-              <span className="hero-badge-icon">{badge.icon}</span>
-              <span className="hero-badge-name">{badge.name}</span>
-            </button>
-          ))}
+        {/* 지금 뜨는 빵집 */}
+        <div className="hero-trending">
+          <p className="hero-trending-label">지금 뜨는 빵집</p>
+          <div className="hero-trending-list">
+            {topBakeries.length === 0 ? (
+              <p className="hero-trending-empty">
+                {externalLoading ? '빵집 불러오는 중...' : '등록된 빵집이 없습니다.'}
+              </p>
+            ) : topBakeries.map(bakery => (
+              <div
+                key={bakery.id}
+                className="hero-trending-item"
+                onClick={() => {
+                  if (mapInstanceRef.current) {
+                    mapInstanceRef.current.panTo(new window.naver.maps.LatLng(bakery.lat, bakery.lng));
+                    mapInstanceRef.current.setZoom(16);
+                  }
+                  navigate(`/place/${bakery.id}`);
+                }}
+              >
+                <div className="hero-item-thumb">
+                  {bakery.thumbnail
+                    ? <img src={bakery.thumbnail.startsWith('http') ? bakery.thumbnail : `${BASE_URL}${bakery.thumbnail}`} alt={bakery.name} />
+                    : <span className="hero-item-thumb-placeholder">🍞</span>}
+                </div>
+                <div className="hero-item-info">
+                  <h4 className="hero-item-name">{bakery.name}</h4>
+                  <p className="hero-item-addr">{bakery.address}</p>
+                  <div className="hero-item-tags">
+                    {(bakery.menuTags || []).map(tag => (
+                      <span key={tag} className="hero-item-tag">#{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-
       </div>
 
-      {/* ===== 왼쪽: 빵집 상세 카드 ===== */}
-      {/* selectedBakery가 있을 때만 카드를 보여줌 (마커를 클릭해야 나타남) */}
-      {selectedBakery && (
-        <div className="hero-place-card">
+      {/* 뱃지 필터 — 지도 위 floating */}
+      <div className="hero-badge-filters">
+        {badges.map(badge => (
+          <button
+            key={badge.id}
+            className={`hero-badge-btn ${activeBadge === badge.id ? 'active' : ''}`}
+            onClick={() => setActiveBadge(activeBadge === badge.id ? null : badge.id)}
+            style={{ '--badge-color': badge.color }}
+          >
+            <img src={badge.img} alt={badge.name} className="hero-badge-img" />
+            <span className="hero-badge-name">{badge.name}</span>
+          </button>
+        ))}
+      </div>
 
-          {/* --- 카드 상단: 빵집 이미지 --- */}
-          <div className="place-card-images">
-            {selectedBakery.thumbnail ? (
-              <img
-                src={selectedBakery.thumbnail.startsWith('http')
-                  ? selectedBakery.thumbnail
-                  : `${BASE_URL}${selectedBakery.thumbnail}`}
-                alt={selectedBakery.name}
-                className="place-card-real-img"
-              />
-            ) : (
-              <div className="place-card-img main-img">
-                <div className="img-placeholder">🍞 사진 준비중</div>
-              </div>
-            )}
-          </div>
+      {/* 줌 컨트롤 */}
+      <div className="hero-zoom-controls">
+        <button className="hero-zoom-btn" onClick={() => {
+          const map = mapInstanceRef.current;
+          if (map) map.setZoom(map.getZoom() + 1);
+        }}>+</button>
+        <button className="hero-zoom-btn" onClick={() => {
+          const map = mapInstanceRef.current;
+          if (map) map.setZoom(map.getZoom() - 1);
+        }}>−</button>
+      </div>
 
-          {/* --- 빵집 이름과 위치 정보 --- */}
-          <div className="place-card-info">
-            {/* 빵집 이름 (DB 빵집만 클릭 시 상세 페이지로 이동 / 외부 빵집은 이동 없음) */}
-            <h2
-              className="place-name"
-              style={{
-                cursor: selectedBakery.isExternal ? 'default' : 'pointer',
-                textDecoration: selectedBakery.isExternal ? 'none' : 'underline',
-                textDecorationColor: '#d6d3d1',
-                textUnderlineOffset: '4px',
-              }}
-              onClick={() => { if (!selectedBakery.isExternal) navigate(`/place/${selectedBakery.id}`); }}
-            >
-              {selectedBakery.name}
-              {selectedBakery.isExternal && <span style={{ fontSize: '12px', color: '#aaa', fontWeight: 'normal', marginLeft: '6px' }}>지도 검색 결과</span>}
-            </h2>
-            {/* 빵집 주소 */}
-            <p className="place-address">{selectedBakery.address}</p>
-
-            {/* --- 인증 뱃지 표시 --- */}
-            {/* 이 빵집이 가지고 있는 뱃지들을 보여줌 */}
-            {selectedBakery.badges.length > 0 && (
-              <div className="place-badges">
-                {selectedBakery.badges.map((badgeId) => {
-                  /* badges 배열에서 해당 뱃지의 상세 정보(이름, 색상, 아이콘) 찾기 */
-                  const badgeInfo = badges.find((b) => b.id === badgeId);
-                  if (!badgeInfo) return null;
-                  return (
-                    <span
-                      key={badgeId}
-                      className="place-badge-chip"
-                      /* 뱃지 고유 색상을 CSS 변수로 전달 */
-                      style={{ '--badge-color': badgeInfo.color }}
-                    >
-                      {badgeInfo.icon} {badgeInfo.name}
-                    </span>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* --- 별점 + 대표 메뉴 --- */}
-          <div className="place-card-meta">
-            {/* 별점 (리뷰가 있을 때만 표시) */}
-            {selectedBakery.rating > 0 && (
-              <div className="place-rating">
-                <span className="place-stars">⭐</span>
-                <span className="place-rating-num">{selectedBakery.rating}</span>
-                <span className="place-review-count">({selectedBakery.reviewCount})</span>
-              </div>
-            )}
-            {/* 대표 메뉴 (있을 때만 표시) */}
-            {selectedBakery.signature && (
-              <p className="place-signature">🍰 {selectedBakery.signature}</p>
-            )}
-          </div>
-
-          {/* --- 액션 버튼 모음 --- */}
-          <div className="place-card-actions">
-            {/* 공유 버튼 */}
-            <button className="action-btn">
-              ↗️
-              <span>공유</span>
-            </button>
-
-            {/* 길찾기 버튼: 클릭하면 네이버 지도 길찾기 페이지가 새 탭에서 열림 */}
-            <button
-              className="action-btn"
-              onClick={() => {
-                /* 네이버 지도 검색 URL로 이동 → 해당 빵집이 검색된 상태로 열림 */
-                /* 거기서 "길찾기" 버튼을 누르면 바로 경로 안내 가능 */
-                window.open(
-                  `https://map.naver.com/v5/search/${encodeURIComponent(selectedBakery.name + ' ' + selectedBakery.address)}`,
-                  '_blank'
-                );
-              }}
-            >
-              🧭
-              <span>길찾기</span>
-            </button>
-          </div>
-
-        </div>
-      )}
-
-      {/* ===== 마커를 아직 클릭 안 했을 때 안내 문구 ===== */}
-      {/* 로딩 중이면 "불러오는 중", 완료되면 "마커 클릭" 안내 */}
-      {!selectedBakery && (
-        <div className="hero-guide-msg">
-          {externalLoading ? (
-            <>
-              <span className="hero-guide-icon hero-guide-spin">🍞</span>
-              <p className="hero-guide-text">빵집 불러오는 중 ...</p>
-            </>
-          ) : (
-            <>
-              <span className="hero-guide-icon">👆</span>
-              <p className="hero-guide-text">마커를 클릭하면 빵집 정보를 볼 수 있어요</p>
-            </>
-          )}
-        </div>
-      )}
-    </div>
+    </section>
   );
 }
