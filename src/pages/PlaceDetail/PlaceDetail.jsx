@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { BASE_URL } from '../../api/apiAxios';
+import { BASE_URL, getPlaceGoogleDetails, getExternalPlaceDetails, saveExternalPlace } from '../../api/apiAxios';
 import './PlaceDetail.css';
 
 export default function PlaceDetail() {
@@ -19,6 +19,7 @@ export default function PlaceDetail() {
   const [place, setPlace] = useState(null);
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState([]);
+  const [googleInfo, setGoogleInfo] = useState(null);
 
   /* 리뷰 작성 모달 */
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -29,8 +30,7 @@ export default function PlaceDetail() {
   const userData = localStorage.getItem('user');
   const currentUser = userData ? JSON.parse(userData) : null;
 
-  /* 좋아요 + 공유 상태 */
-  const [liked, setLiked] = useState(false);
+  /* 공유 상태 */
   const [copied, setCopied] = useState(false);
 
   /* 사진 갤러리 라이트박스 (클릭하면 크게 보기) */
@@ -79,7 +79,44 @@ export default function PlaceDetail() {
   };
 
   useEffect(() => {
-    fetchPlace();
+    const isExternal = String(id).startsWith('ext_');
+
+    if (isExternal) {
+      /* 외부(Google Places) 빵집: DB에 저장 후 진짜 상세 페이지로 이동 */
+      const placeId = id.replace('ext_', '');
+      setLoading(true);
+      saveExternalPlace(placeId)
+        .then(({ placeNum }) => {
+          /* DB에 저장 완료 → 실제 placeNum으로 리다이렉트 */
+          navigate(`/place/${placeNum}`, { replace: true });
+        })
+        .catch(() => {
+          /* 저장 실패 시 Google 데이터로 임시 표시 */
+          getExternalPlaceDetails(placeId)
+            .then(data => {
+              setPlace({
+                id,
+                name: data.name,
+                address: data.address || '주소 정보 없음',
+                rating: data.rating ? Number(data.rating).toFixed(1) : '0.0',
+                reviewCount: data.ratingCount || 0,
+                lat: data.lat, lng: data.lng,
+                hasRibbon: false,
+                images: data.photos.map(url => ({ IMAGE_URL: url })),
+                courses: [], menus: [], isExternal: true,
+              });
+              setGoogleInfo({ found: true, openingHours: data.openingHours, isOpenNow: data.isOpenNow, phone: data.phone, website: data.website });
+            })
+            .catch(() => setPlace(null))
+            .finally(() => setLoading(false));
+        });
+    } else {
+      /* DB 빵집: 기존 로직 */
+      fetchPlace();
+      getPlaceGoogleDetails(id)
+        .then(data => { if (data?.found) setGoogleInfo(data); })
+        .catch(() => {});
+    }
   }, [id]);
 
   /* 주소 클릭 → 네이버 지도 열기 */
@@ -142,7 +179,7 @@ export default function PlaceDetail() {
         </div>
       </div>
 
-      {/* ===== 2. 액션 바 (공유 + 좋아요 버튼) ===== */}
+      {/* ===== 2. 액션 바 (공유 + 지도보기 버튼) ===== */}
       <div className="pd-action-bar">
         <button
           className="pd-action-btn"
@@ -158,16 +195,6 @@ export default function PlaceDetail() {
         >
           <span className="pd-action-icon">{copied ? '✅' : '📤'}</span>
           <span>{copied ? '복사완료!' : '공유하기'}</span>
-        </button>
-        <button
-          className={`pd-action-btn ${liked ? 'liked' : ''}`}
-          onClick={() => {
-            if (!currentUser) { alert('로그인이 필요합니다!'); return; }
-            setLiked(!liked);
-          }}
-        >
-          <span className="pd-action-icon">{liked ? '❤️' : '🤍'}</span>
-          <span>{liked ? '좋아요!' : '좋아요'}</span>
         </button>
         <button className="pd-action-btn" onClick={openNaverMap}>
           <span className="pd-action-icon">📍</span>
@@ -193,10 +220,42 @@ export default function PlaceDetail() {
             <div className="pd-info-row">
               <div className="pd-info-icon">🕐</div>
               <div className="pd-info-text">
-                <h4 className="pd-info-label">영업시간</h4>
-                <p className="pd-info-value">매장에 직접 문의해주세요</p>
+                <h4 className="pd-info-label">
+                  영업시간
+                  {googleInfo?.isOpenNow === true && <span className="pd-open-badge">영업중</span>}
+                  {googleInfo?.isOpenNow === false && <span className="pd-closed-badge">영업종료</span>}
+                </h4>
+                {googleInfo?.openingHours ? (
+                  <ul className="pd-hours-list">
+                    {googleInfo.openingHours.map((line, i) => (
+                      <li key={i} className="pd-hours-item">{line}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="pd-info-value">매장에 직접 문의해주세요</p>
+                )}
               </div>
             </div>
+            {googleInfo?.phone && (
+              <div className="pd-info-row">
+                <div className="pd-info-icon">📞</div>
+                <div className="pd-info-text">
+                  <h4 className="pd-info-label">전화번호</h4>
+                  <a href={`tel:${googleInfo.phone}`} className="pd-info-link">{googleInfo.phone}</a>
+                </div>
+              </div>
+            )}
+            {googleInfo?.website && (
+              <div className="pd-info-row">
+                <div className="pd-info-icon">🌐</div>
+                <div className="pd-info-text">
+                  <h4 className="pd-info-label">웹사이트</h4>
+                  <a href={googleInfo.website} target="_blank" rel="noreferrer" className="pd-info-link pd-info-link-external">
+                    {googleInfo.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -220,11 +279,36 @@ export default function PlaceDetail() {
 
         {/* --- 메뉴 --- */}
         <div className="pd-section">
-          <h2 className="pd-section-title">메뉴</h2>
+          <div className="pd-section-title-row">
+            <h2 className="pd-section-title">메뉴</h2>
+            {/* 네이버 플레이스에서 전체 메뉴 보기 */}
+            <a
+              className="pd-naver-menu-btn"
+              href={`https://map.naver.com/v5/search/${encodeURIComponent((place.name || ''))}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src="https://ssl.pstatic.net/static/maps/mantle/resources/maps-icon-10.png"
+                alt="네이버"
+                className="pd-naver-icon"
+                onError={e => { e.target.style.display = 'none'; }}
+              />
+              네이버 플레이스에서 보기
+            </a>
+          </div>
           {(!place.menus || place.menus.length === 0) ? (
             <div className="pd-empty-box">
               <span>🍞</span>
               <p>아직 등록된 메뉴 정보가 없습니다</p>
+              <a
+                className="pd-naver-menu-fallback"
+                href={`https://map.naver.com/v5/search/${encodeURIComponent((place.name || '') + ' ' + (place.address || ''))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                네이버 플레이스에서 메뉴 확인하기 →
+              </a>
             </div>
           ) : (
             <>
@@ -305,16 +389,47 @@ export default function PlaceDetail() {
         <div className="pd-section">
           <div className="pd-section-header">
             <h2 className="pd-section-title">리뷰</h2>
-            <button className="pd-review-write-btn" onClick={() => {
-              const user = localStorage.getItem('user');
-              if (!user) { alert('로그인이 필요합니다.'); navigate('/login'); return; }
-              setShowReviewModal(true);
-            }}>
-              ✏️ 리뷰 작성
-            </button>
+            {!place.isExternal && (
+              <button className="pd-review-write-btn" onClick={() => {
+                const user = localStorage.getItem('user');
+                if (!user) { alert('로그인이 필요합니다.'); navigate('/login'); return; }
+                setShowReviewModal(true);
+              }}>
+                ✏️ 리뷰 작성
+              </button>
+            )}
           </div>
 
-          {/* 리뷰 요약 */}
+          {/* 외부 빵집: Google 별점 안내 */}
+          {place.isExternal ? (
+            <div className="pd-review-summary">
+              <div className="pd-review-big-score">
+                <span className="pd-review-num">{place.rating}</span>
+                <span className="pd-review-max">/ 5.0</span>
+              </div>
+              <div className="pd-review-stars-row">
+                {[1, 2, 3, 4, 5].map(s => (
+                  <span key={s} className={`pd-star ${s <= Math.round(Number(place.rating)) ? 'filled' : ''}`}>★</span>
+                ))}
+              </div>
+              <p className="pd-review-total">Google 리뷰 {place.reviewCount}개</p>
+              <div className="pd-empty-box" style={{ marginTop: '1rem' }}>
+                <span>🌐</span>
+                <p>오븐로드에 등록되지 않은 빵집이에요.<br />리뷰는 Google 지도에서 확인하세요.</p>
+                <a
+                  href={`https://www.google.com/maps/search/${encodeURIComponent(place.name + ' ' + place.address)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="pd-info-link pd-info-link-external"
+                  style={{ marginTop: '0.5rem', display: 'inline-block' }}
+                >
+                  Google 지도에서 보기 →
+                </a>
+              </div>
+            </div>
+          ) : (
+            <>
+          {/* DB 빵집 리뷰 요약 */}
           <div className="pd-review-summary">
             <div className="pd-review-big-score">
               <span className="pd-review-num">{place.rating}</span>
@@ -372,6 +487,8 @@ export default function PlaceDetail() {
                 </div>
               ))}
             </div>
+          )}
+            </>
           )}
         </div>
       </div>

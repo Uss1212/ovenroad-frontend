@@ -1,3 +1,4 @@
+/* global MarkerClustering */
 /* ===================================================
    HeroBanner 컴포넌트 (히어로 배너)
    - 메인 페이지 맨 위, 헤더 바로 아래에 보이는 큰 영역
@@ -31,11 +32,6 @@ export default function HeroBanner() {
   /* null이면 아무 빵집도 선택 안 된 상태 → 카드가 안 보임 */
   const [selectedBakery, setSelectedBakery] = useState(null);
 
-  /* isLiked: 좋아요 버튼을 눌렀는지 안 눌렀는지 기억 */
-  const [isLiked, setIsLiked] = useState(false);
-
-  /* isScraped: 스크랩(저장) 버튼을 눌렀는지 기억 */
-  const [isScraped, setIsScraped] = useState(false);
 
   /* userLocation: 사용자의 현재 위치 (위도, 경도) */
   /* 기본값은 서울 연남동 근처 (위치를 못 가져올 때 사용) */
@@ -58,6 +54,13 @@ export default function HeroBanner() {
   /* ── DB에서 불러온 빵집 데이터를 저장하는 상태 ── */
   /* 처음에는 빈 배열 → API 호출 후 채워짐 */
   const [recommendedBakeries, setRecommendedBakeries] = useState([]);
+
+  /* ── Google Places API로 가져온 주변 베이커리 ── */
+  /* DB에 없는 일반 베이커리들 (현재 위치 기반, 최대 60개) */
+  const [externalBakeries, setExternalBakeries] = useState([]);
+
+  /* ── 주변 베이커리 로딩 중 여부 ── */
+  const [externalLoading, setExternalLoading] = useState(true);
 
   /* ── 백엔드 API에서 빵집 데이터 가져오기 ── */
   /* 컴포넌트가 처음 화면에 나타날 때 한 번 실행 */
@@ -101,15 +104,29 @@ export default function HeroBanner() {
     fetchPlaces();
   }, []);
 
-  /* ── 검색 자동완성: 입력할 때마다 연관 빵집 필터링 ── */
-  /* 검색어가 2글자 이상이면 이름/주소에 포함된 빵집을 최대 5개 보여줌 */
+  /* ── 검색 자동완성: DB 빵집 + 외부 빵집 합쳐서 검색 ── */
   const searchSuggestions = searchKeyword.length >= 1
-    ? recommendedBakeries
+    ? [
+        ...recommendedBakeries,
+        ...externalBakeries
+          .filter(ext => !new Set(recommendedBakeries.map(b => b.name)).has(ext.name))
+          .map(ext => ({
+            id: `ext_${ext.placeId}`,
+            name: ext.name,
+            address: ext.address,
+            rating: ext.rating,
+            menuTags: [],
+            thumbnail: null,
+            lat: ext.lat,
+            lng: ext.lng,
+            isExternal: true,
+          })),
+      ]
         .filter(b => {
           const keyword = searchKeyword.toLowerCase();
           return b.name.toLowerCase().includes(keyword) ||
                  b.address.toLowerCase().includes(keyword) ||
-                 b.menuTags.some(t => t.toLowerCase().includes(keyword));
+                 (b.menuTags || []).some(t => t.toLowerCase().includes(keyword));
         })
         .slice(0, 5)  /* 최대 5개만 표시 */
     : [];
@@ -164,27 +181,46 @@ export default function HeroBanner() {
   /* 가까운 마커끼리 묶어서 숫자로 표시해주는 기능 */
   const clusterRef = useRef(null);
 
-  /* ── 사용자 위치 가져오기 ── */
-  /* 컴포넌트가 처음 화면에 나타날 때 브라우저에게 "내 위치 알려줘" 요청 */
+  /* ── 사용자 위치 가져오기 + 주변 베이커리 로드 ── */
+  /* 처음 한 번 실행: 위치 허용 → 실제 위치 기준, 거부/실패 → 마포구 기준으로 베이커리 검색 */
   useEffect(() => {
-    /* navigator.geolocation: 브라우저가 제공하는 위치 정보 API */
-    /* 사용자가 "위치 허용"을 누르면 현재 GPS 좌표를 받아옴 */
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        /* 성공: 위치를 받아오면 실행되는 함수 */
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,   /* 위도 (세로 위치) */
-            lng: position.coords.longitude,  /* 경도 (가로 위치) */
-          });
-        },
-        /* 실패: 위치를 못 가져오면 (거부하거나 에러) → 기본 위치 사용 */
-        () => {
-          /* 아무것도 안 함 → 기본값(연남동)이 그대로 사용됨 */
-          /* 위치를 못 가져오면 기본 위치(연남동) 사용 */
-        }
-      );
+
+    /* Google Places에서 주변 베이커리를 가져오는 함수 */
+    async function fetchExternalBakeries(lat, lng) {
+      try {
+        setExternalLoading(true);
+        const res = await fetch(`${BASE_URL}/api/places/nearby-bakeries?lat=${lat}&lng=${lng}&radius=5000`);
+        const data = await res.json();
+        setExternalBakeries(Array.isArray(data) ? data : []);
+      } catch {
+        /* 실패해도 DB 빵집은 계속 표시 */
+      } finally {
+        setExternalLoading(false);
+      }
     }
+
+    /* 위치 권한 요청 후 결과에 따라 분기 */
+    async function initLocation() {
+      if (!navigator.geolocation) {
+        /* 브라우저가 위치 API를 지원하지 않으면 마포구로 대체 */
+        fetchExternalBakeries(37.5622, 126.9086);
+        return;
+      }
+      try {
+        const pos = await new Promise((resolve, reject) =>
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 })
+        );
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setUserLocation({ lat, lng });           /* 지도 중심을 현재 위치로 이동 */
+        fetchExternalBakeries(lat, lng);         /* 현재 위치 기준 베이커리 검색 */
+      } catch {
+        /* 위치 거부 or 타임아웃 → 마포구 기준으로 검색 */
+        fetchExternalBakeries(37.5622, 126.9086);
+      }
+    }
+
+    initLocation();
   }, []); /* [] → 처음 한 번만 실행 */
 
   /* ── 네이버 지도 초기화 + 마커 표시 ── */
@@ -198,8 +234,8 @@ export default function HeroBanner() {
     const map = new window.naver.maps.Map(mapRef.current, {
       /* 지도의 중심 좌표 = 사용자의 현재 위치 (또는 기본: 서울 중심) */
       center: new window.naver.maps.LatLng(userLocation.lat, userLocation.lng),
-      /* 확대 레벨: 12 → 서울 전체가 보이는 정도 (DB 빵집이 많으니까) */
-      zoom: 12,
+      /* 확대 레벨: 14 → 동네 단위 (주변 베이커리가 잘 보이는 정도) */
+      zoom: 14,
       /* 줌 컨트롤(확대/축소 버튼) 숨기기 → 깔끔한 배너 느낌 */
       zoomControl: false,
       /* 지도 타입 컨트롤(일반/위성 전환) 숨기기 */
@@ -232,13 +268,36 @@ export default function HeroBanner() {
       clickable: false,
     });
 
-    /* --- 빵집 마커 표시 (클러스터링 적용) --- */
-    /* DB에서 가져온 빵집 데이터를 하나씩 돌면서 마커를 만듦 */
-    /* 단, 지도에 바로 안 찍고 → 클러스터링이 알아서 묶어서 표시함 */
-    const newMarkers = recommendedBakeries.map((bakery) => {
+    /* --- DB 빵집 + Google Places 빵집 합치기 --- */
+    /* DB에 같은 이름이 있으면 외부 데이터는 제외 (중복 방지) */
+    const dbNames = new Set(recommendedBakeries.map(b => b.name));
+    const allBakeries = [
+      ...recommendedBakeries,
+      ...externalBakeries
+        .filter(ext => !dbNames.has(ext.name))
+        .map(ext => ({
+          id: `ext_${ext.placeId}`,
+          name: ext.name,
+          address: ext.address,
+          rating: ext.rating,
+          reviewCount: 0,
+          menuTags: [],
+          badges: [],
+          thumbnail: ext.photoUrl || null,   /* Google Places 사진 */
+          lat: ext.lat,
+          lng: ext.lng,
+          isExternal: true,
+        })),
+    ];
 
-      /* 블루리본 빵집인지 확인 */
+    /* --- 빵집 마커 표시 (클러스터링 적용) --- */
+    /* DB + 외부 빵집 데이터를 하나씩 돌면서 마커를 만듦 */
+    /* 단, 지도에 바로 안 찍고 → 클러스터링이 알아서 묶어서 표시함 */
+    const newMarkers = allBakeries.map((bakery) => {
+
+      /* 마커 스타일 결정 */
       const isBlueRibbon = bakery.badges && bakery.badges.includes('blueribbon');
+      const isExternal = bakery.isExternal;     /* 외부 빵집 여부 */
 
       /* 마커 생성: map을 안 넣음! (클러스터가 대신 관리) */
       const marker = new window.naver.maps.Marker({
@@ -250,13 +309,14 @@ export default function HeroBanner() {
               height: 40px;
               border-radius: 20px;
               background: #ffffff;
-              border: 2.5px solid ${isBlueRibbon ? '#1a73e8' : '#c96442'};
+              border: 2.5px solid ${isBlueRibbon ? '#1a73e8' : isExternal ? '#aaa' : '#c96442'};
               display: flex;
               align-items: center;
               justify-content: center;
               font-size: 20px;
               box-shadow: 0 2px 10px rgba(0,0,0,0.18);
               cursor: pointer;
+              opacity: ${isExternal ? '0.75' : '1'};
               transition: transform 0.2s;
             ">${isBlueRibbon ? '🎀' : '🍞'}</div>
           `,
@@ -273,9 +333,6 @@ export default function HeroBanner() {
       window.naver.maps.Event.addListener(marker, 'click', () => {
         /* 선택된 빵집 데이터를 상태에 저장 → 카드가 표시됨 */
         setSelectedBakery(bakery);
-        /* 좋아요/스크랩 초기화 (빵집이 바뀌었으니까) */
-        setIsLiked(false);
-        setIsScraped(false);
         /* 지도 중심을 클릭한 빵집으로 부드럽게 이동 */
         map.panTo(new window.naver.maps.LatLng(bakery.lat, bakery.lng));
       });
@@ -351,7 +408,7 @@ export default function HeroBanner() {
         clusterRef.current = null;
       }
     };
-  }, [userLocation, recommendedBakeries]); /* 위치가 바뀌거나 빵집 데이터가 로드되면 지도를 다시 그림 */
+  }, [userLocation, recommendedBakeries, externalBakeries]); /* 위치/DB빵집/외부빵집 바뀌면 지도 다시 그림 */
 
   /* ── 뱃지 필터가 바뀔 때 클러스터 재생성 ── */
   /* activeBadge가 바뀔 때마다 실행 */
@@ -425,6 +482,19 @@ export default function HeroBanner() {
       {/* ref={mapRef} → 이 div를 mapRef로 가리켜서 네이버 지도가 여기에 그려짐 */}
       <div className="hero-map-bg" ref={mapRef} />
 
+      {/* ===== 현재 위치로 이동 버튼 ===== */}
+      <button
+        className="hero-locate-btn"
+        title="현재 위치로 이동"
+        onClick={() => {
+          if (!mapInstanceRef.current) return;
+          mapInstanceRef.current.panTo(new window.naver.maps.LatLng(userLocation.lat, userLocation.lng));
+          mapInstanceRef.current.setZoom(15);
+        }}
+      >
+        <i className="fi fi-rs-location-crosshairs" />
+      </button>
+
       {/* ===== 지도 위 검색바 + 인증 뱃지 버튼 ===== */}
       {/* position: absolute로 지도 위에 떠있는 형태 */}
       <div className="hero-search-bar">
@@ -461,7 +531,16 @@ export default function HeroBanner() {
                   className="hero-suggestion-item"
                   onClick={() => {
                     setShowSuggestions(false);
-                    navigate(`/place/${bakery.id}`);
+                    if (bakery.isExternal) {
+                      /* 외부 빵집: 지도에서 해당 위치로 이동 + 카드 표시 */
+                      setSelectedBakery(bakery);
+                      if (mapInstanceRef.current) {
+                        mapInstanceRef.current.panTo(new window.naver.maps.LatLng(bakery.lat, bakery.lng));
+                        mapInstanceRef.current.setZoom(16);
+                      }
+                    } else {
+                      navigate(`/place/${bakery.id}`);
+                    }
                   }}
                 >
                   {/* 빵집 썸네일 (작은 원형) */}
@@ -551,13 +630,19 @@ export default function HeroBanner() {
 
           {/* --- 빵집 이름과 위치 정보 --- */}
           <div className="place-card-info">
-            {/* 빵집 이름 (클릭하면 빵집 상세 페이지로 이동) */}
+            {/* 빵집 이름 (DB 빵집만 클릭 시 상세 페이지로 이동 / 외부 빵집은 이동 없음) */}
             <h2
               className="place-name"
-              style={{ cursor: 'pointer', textDecoration: 'underline', textDecorationColor: '#d6d3d1', textUnderlineOffset: '4px' }}
-              onClick={() => navigate(`/place/${selectedBakery.id}`)}
+              style={{
+                cursor: selectedBakery.isExternal ? 'default' : 'pointer',
+                textDecoration: selectedBakery.isExternal ? 'none' : 'underline',
+                textDecorationColor: '#d6d3d1',
+                textUnderlineOffset: '4px',
+              }}
+              onClick={() => { if (!selectedBakery.isExternal) navigate(`/place/${selectedBakery.id}`); }}
             >
               {selectedBakery.name}
+              {selectedBakery.isExternal && <span style={{ fontSize: '12px', color: '#aaa', fontWeight: 'normal', marginLeft: '6px' }}>지도 검색 결과</span>}
             </h2>
             {/* 빵집 주소 */}
             <p className="place-address">{selectedBakery.address}</p>
@@ -601,26 +686,8 @@ export default function HeroBanner() {
             )}
           </div>
 
-          {/* --- 액션 버튼 모음 (좋아요, 스크랩, 공유 등) --- */}
+          {/* --- 액션 버튼 모음 --- */}
           <div className="place-card-actions">
-            {/* 좋아요 버튼: 누르면 빨간 하트로 바뀜 */}
-            <button
-              className={`action-btn ${isLiked ? 'active' : ''}`}
-              onClick={() => setIsLiked(!isLiked)}
-            >
-              {isLiked ? '❤️' : '🤍'}
-              <span>좋아요</span>
-            </button>
-
-            {/* 스크랩(저장) 버튼: 누르면 노란 별로 바뀜 */}
-            <button
-              className={`action-btn ${isScraped ? 'active' : ''}`}
-              onClick={() => setIsScraped(!isScraped)}
-            >
-              {isScraped ? '⭐' : '☆'}
-              <span>스크랩</span>
-            </button>
-
             {/* 공유 버튼 */}
             <button className="action-btn">
               ↗️
@@ -648,11 +715,20 @@ export default function HeroBanner() {
       )}
 
       {/* ===== 마커를 아직 클릭 안 했을 때 안내 문구 ===== */}
-      {/* 카드가 안 보일 때 사용자에게 마커를 클릭하라고 알려줌 */}
+      {/* 로딩 중이면 "불러오는 중", 완료되면 "마커 클릭" 안내 */}
       {!selectedBakery && (
         <div className="hero-guide-msg">
-          <span className="hero-guide-icon">👆</span>
-          <p className="hero-guide-text">마커를 클릭하면 빵집 정보를 볼 수 있어요</p>
+          {externalLoading ? (
+            <>
+              <span className="hero-guide-icon hero-guide-spin">🍞</span>
+              <p className="hero-guide-text">빵집 불러오는 중 ...</p>
+            </>
+          ) : (
+            <>
+              <span className="hero-guide-icon">👆</span>
+              <p className="hero-guide-text">마커를 클릭하면 빵집 정보를 볼 수 있어요</p>
+            </>
+          )}
         </div>
       )}
     </div>

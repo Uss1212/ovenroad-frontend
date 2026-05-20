@@ -507,6 +507,25 @@ export async function getMyPosts(userNum) {
   return request(`/api/user/${userNum}/my-posts`);
 }
 
+/* --- Google Places 상세 정보 (영업시간, 전화, 웹사이트) --- */
+export async function getPlaceGoogleDetails(placeNum) {
+  return request(`/api/places/${placeNum}/google-details`);
+}
+
+/* --- 외부(Google Places) 베이커리 상세 조회 --- */
+/* placeId: Google Places place_id */
+export async function getExternalPlaceDetails(placeId) {
+  return request(`/api/places/external/${placeId}`);
+}
+
+/* --- 외부 베이커리 DB 저장 후 placeNum 반환 --- */
+export async function saveExternalPlace(placeId) {
+  return request('/api/places/save-external', {
+    method: 'POST',
+    body: JSON.stringify({ placeId }),
+  });
+}
+
 /* --- 리뷰 삭제 --- */
 /* reviewNum: 리뷰 번호, userNum: 작성자 번호 */
 export async function deleteReview(reviewNum, userNum) {

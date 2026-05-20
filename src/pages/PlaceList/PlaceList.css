@@ -401,6 +401,60 @@
   color: #92400e;
 }
 
+/* 지도 검색 결과 배지 (외부 빵집) */
+.pl-card-external-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(240, 240, 240, 0.95);
+  backdrop-filter: blur(4px);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #666;
+}
+
+/* 외부 빵집 카드: 약간 흐리게 */
+.pl-card-external {
+  opacity: 0.88;
+}
+
+.pl-card-external:hover {
+  opacity: 1;
+}
+
+/* 결과 개수 - 주변 베이커리 포함 표시 */
+.pl-result-external {
+  font-size: 0.8rem;
+  color: #aaa;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+/* 주변 베이커리 검색 중 안내 */
+.pl-external-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-bottom: 12px;
+}
+
+.pl-external-loading-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c96442;
+  animation: pl-pulse 1s infinite;
+}
+
+@keyframes pl-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
 /* --- 카드 하단 정보 영역 --- */
 .pl-card-body {
   padding: 1rem 1.125rem 1.125rem;

@@ -28,14 +28,23 @@ export default function PlaceList() {
   /* 백엔드에서 불러온 빵집 데이터 */
   const [bakeries, setBakeries] = useState([]);
 
+  /* Google Places에서 가져온 주변 베이커리 */
+  const [externalBakeries, setExternalBakeries] = useState([]);
+
   /* 인기 메뉴 태그 목록 (백엔드에서 가져옴) */
   const [menuTags, setMenuTags] = useState([]);
 
   /* 로딩 상태 */
   const [loading, setLoading] = useState(true);
 
+  /* 주변 베이커리 로딩 상태 */
+  const [externalLoading, setExternalLoading] = useState(true);
+
+  /* 사용자 위치 (거리순 정렬에 사용) */
+  const [userCoords, setUserCoords] = useState(null);
+
   /* 현재 선택한 정렬 방식 */
-  const [activeSort, setActiveSort] = useState('인기순');
+  const [activeSort, setActiveSort] = useState('거리순');
 
   /* 보여줄 빵집 개수 */
   const [visibleCount, setVisibleCount] = useState(12);
@@ -51,8 +60,59 @@ export default function PlaceList() {
   }, [urlMenu]);
 
   /* 정렬 옵션 */
-  const sortOptions = ['인기순', '최신순', '별점순'];
+  const sortOptions = ['거리순', '인기순', '최신순', '별점순'];
 
+  /* 두 좌표 간 거리 계산 (Haversine, km 단위) */
+  function calcDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371;
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLng = ((lng2 - lng1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+
+  /* --- 현재 위치 기반 주변 베이커리 가져오기 (Google Places) --- */
+  useEffect(() => {
+    async function fetchExternal(lat, lng) {
+      try {
+        setExternalLoading(true);
+        const res = await fetch(`${BASE_URL}/api/places/nearby-bakeries?lat=${lat}&lng=${lng}&radius=5000`);
+        const data = await res.json();
+        setExternalBakeries(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('주변 베이커리 불러오기 실패:', err);
+      } finally {
+        setExternalLoading(false);
+      }
+    }
+
+    async function initLocation() {
+      if (!navigator.geolocation) {
+        setUserCoords({ lat: 37.5622, lng: 126.9086 });
+        fetchExternal(37.5622, 126.9086);
+        return;
+      }
+      try {
+        const pos = await new Promise((resolve, reject) =>
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 })
+        );
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setUserCoords({ lat, lng });
+        fetchExternal(lat, lng);
+      } catch {
+        setUserCoords({ lat: 37.5622, lng: 126.9086 });
+        fetchExternal(37.5622, 126.9086); /* 위치 거부 시 마포구 기본값 */
+      }
+    }
+
+    initLocation();
+  }, []);
 
   /* --- 인기 메뉴 태그 가져오기 (DB에서 많이 등록된 메뉴) --- */
   useEffect(() => {
@@ -106,6 +166,8 @@ export default function PlaceList() {
               hasRibbon: p.ribbonCount && p.ribbonCount > 0,
               image: p.thumbnailImage || null,
               menuTags: tags,
+              lat: parseFloat(p.LATITUDE),
+              lng: parseFloat(p.LONGITUDE),
             };
           });
 
@@ -119,9 +181,34 @@ export default function PlaceList() {
     fetchBakeries();
   }, [activeMenuTag]);
 
+  /* --- DB 빵집 + 외부 빵집 합치기 (이름 중복 제거) --- */
+  const dbNames = new Set(bakeries.map(b => b.name));
+  const mergedBakeries = [
+    ...bakeries,
+    ...externalBakeries
+      .filter(ext => !dbNames.has(ext.name))
+      .map(ext => {
+        const regionMatch = ext.address?.match(/([가-힣]+구)/);
+        return {
+          id: `ext_${ext.placeId}`,
+          name: ext.name,
+          address: ext.address,
+          region: regionMatch ? regionMatch[1] : '',
+          rating: ext.rating ? Number(ext.rating).toFixed(1) : '0.0',
+          reviewCount: 0,
+          hasRibbon: false,
+          image: ext.photoUrl || null,
+          menuTags: [],
+          isExternal: true,
+          lat: ext.lat,
+          lng: ext.lng,
+        };
+      }),
+  ];
+
   /* --- 필터링 + 정렬 --- */
-  const filteredBakeries = bakeries
-    /* 1) 검색어 필터: 이름, 주소, 메뉴 태그에 포함된 빵집 */
+  const filteredBakeries = mergedBakeries
+    /* 1) 검색어 필터 */
     .filter(b => {
       if (!searchKeyword) return true;
       const keyword = searchKeyword.toLowerCase();
@@ -129,11 +216,32 @@ export default function PlaceList() {
              b.address.toLowerCase().includes(keyword) ||
              b.menuTags.some(t => t.toLowerCase().includes(keyword));
     })
+    /* 2) 메뉴 태그 필터 (외부 빵집은 태그 없으므로 태그 선택 시 숨김) */
+    .filter(b => {
+      if (!activeMenuTag) return true;
+      if (b.isExternal) return false;
+      return b.menuTags.some(t => t === activeMenuTag);
+    })
     /* 3) 정렬 */
     .sort((a, b) => {
-      if (activeSort === '인기순') return b.reviewCount - a.reviewCount;
+      /* 거리순: 사용자 위치 기준 가까운 순 (위도/경도 없으면 맨 뒤) */
+      if (activeSort === '거리순') {
+        if (!userCoords) return 0;
+        const hasA = a.lat != null && a.lng != null;
+        const hasB = b.lat != null && b.lng != null;
+        if (!hasA && !hasB) return 0;
+        if (!hasA) return 1;
+        if (!hasB) return -1;
+        const dA = calcDistance(userCoords.lat, userCoords.lng, a.lat, a.lng);
+        const dB = calcDistance(userCoords.lat, userCoords.lng, b.lat, b.lng);
+        return dA - dB;
+      }
       if (activeSort === '별점순') return parseFloat(b.rating) - parseFloat(a.rating);
-      return b.id - a.id;
+      /* 인기순/최신순: DB 빵집 우선, 외부는 뒤로 */
+      if (a.isExternal && !b.isExternal) return 1;
+      if (!a.isExternal && b.isExternal) return -1;
+      if (activeSort === '인기순') return b.reviewCount - a.reviewCount;
+      return (typeof b.id === 'number' ? b.id : 0) - (typeof a.id === 'number' ? a.id : 0);
     });
 
   /* 메뉴 태그 클릭 핸들러 */
@@ -221,6 +329,9 @@ export default function PlaceList() {
         <div className="pl-result-row">
           <p className="pl-result-count">
             총 <strong>{filteredBakeries.length}</strong>개의 빵집
+            {externalBakeries.length > 0 && (
+              <span className="pl-result-external"> (주변 {externalBakeries.length}개 포함)</span>
+            )}
           </p>
           {activeMenuTag && (
             <button className="pl-tag-clear" onClick={() => setActiveMenuTag(null)}>
@@ -237,13 +348,21 @@ export default function PlaceList() {
           </div>
         )}
 
+        {/* ===== 주변 베이커리 로딩 중 안내 ===== */}
+        {!loading && externalLoading && (
+          <div className="pl-external-loading">
+            <span className="pl-external-loading-dot" />
+            주변 베이커리 검색 중...
+          </div>
+        )}
+
         {/* ===== 빵집 카드 그리드 ===== */}
         {!loading && (
           <div className="pl-grid">
             {filteredBakeries.slice(0, visibleCount).map((bakery) => (
               <div
                 key={bakery.id}
-                className="pl-card"
+                className={`pl-card ${bakery.isExternal ? 'pl-card-external' : ''}`}
                 onClick={() => navigate(`/place/${bakery.id}`)}
               >
                 {/* 카드 이미지 */}
@@ -262,6 +381,9 @@ export default function PlaceList() {
 
                   {bakery.hasRibbon && (
                     <span className="pl-card-ribbon">🎀 블루리본</span>
+                  )}
+                  {bakery.isExternal && (
+                    <span className="pl-card-external-badge">지도 검색</span>
                   )}
                 </div>
 
