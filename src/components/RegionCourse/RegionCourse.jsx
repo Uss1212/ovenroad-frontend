@@ -1,142 +1,182 @@
-/* ===================================================
-   RegionCourse 컴포넌트 → Best 5
-   - 메인 페이지에서 TodayCourse 바로 아래에 위치
-   - 평점 높은 순으로 상위 5개 빵집을 카드로 보여줌
-   - 사진 위에 순위 번호 표시
-   - 백엔드 API에서 빵집 데이터를 가져옴
-   =================================================== */
-
-import { useRef, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BASE_URL } from '../../api/apiAxios';
+import { getCourseList, BASE_URL } from '../../api/apiAxios';
 import './RegionCourse.css';
 
+const REGIONS = [
+  { label: '서울 전체', value: '' },
+  { label: '강남구',    value: '강남구' },
+  { label: '마포구',    value: '마포구' },
+  { label: '용산구',    value: '용산구' },
+  { label: '서대문구',  value: '서대문구' },
+  { label: '성동구',    value: '성동구' },
+  { label: '종로구',    value: '종로구' },
+  { label: '송파구',    value: '송파구' },
+  { label: '홍대/합정', value: '홍대' },
+];
+
 export default function RegionCourse() {
-
-  /* --- 페이지 이동 도구 --- */
   const navigate = useNavigate();
+  const [region, setRegion] = useState('');
+  const [courses, setCourses] = useState([]);
 
-  /* --- 스크롤 영역을 직접 조작하기 위한 ref --- */
-  const scrollRef = useRef(null);
-
-  /* --- DB에서 불러온 빵집 Best 5 데이터 --- */
-  const [bakeries, setBakeries] = useState([]);
-
-  /* --- 백엔드 API에서 평점 높은 순 Best 5 가져오기 --- */
   useEffect(() => {
-    async function fetchBest5() {
-      try {
-        const res = await fetch(`${BASE_URL}/api/places`);
-        const data = await res.json();
+    getCourseList('popular', region)
+      .then(data => setCourses(data.slice(0, 6)))
+      .catch(err => console.error('지역 코스 불러오기 실패:', err));
+  }, [region]);
 
-        /* 평점 높은 순 → 같으면 리뷰 많은 순으로 정렬, 상위 5개 */
-        const mapped = data
-          .filter(p => p.LATITUDE && p.LONGITUDE && p.avgRating)
-          .map(p => ({
-            id: p.PLACE_NUM,
-            name: p.PLACE_NAME,
-            address: p.ADDRESS || '',
-            rating: Number(p.avgRating).toFixed(1),
-            reviewCount: p.reviewCount || 0,
-            image: p.thumbnailImage || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=300&fit=crop',
-          }))
-          .sort((a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount)
-          .slice(0, 5);
+  if (courses.length === 0) return null;
 
-        setBakeries(mapped);
-      } catch (err) {
-        console.error('Best 5 데이터 불러오기 실패:', err);
-      }
-    }
-    fetchBest5();
-  }, []);
+  const featured = courses[0];
+  const listCourses = courses.slice(1, 6);
 
-  /* --- ◀ 왼쪽으로 스크롤 --- */
-  const scrollLeft = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: -300, behavior: 'smooth' });
-    }
+  const getThumbnail = (course) => {
+    const img = course.thumbnailImage || course.thumbnail || course.COVER_IMAGE;
+    if (img) return img.startsWith('http') ? img : `${BASE_URL}${img}`;
+    return null;
   };
 
-  /* --- ▶ 오른쪽으로 스크롤 --- */
-  const scrollRight = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: 300, behavior: 'smooth' });
-    }
+  const getAuthorAvatar = (course) => {
+    const img = course.authorImage || course.PROFILE_IMAGE;
+    if (!img) return null;
+    return img.startsWith('http') ? img : `${BASE_URL}${img}`;
   };
+
+  const getTags = (course, max = 4) => {
+    if (!course.TAGS) return [];
+    try {
+      const parsed = typeof course.TAGS === 'string' ? JSON.parse(course.TAGS) : course.TAGS;
+      return Array.isArray(parsed) ? parsed.slice(0, max) : [];
+    } catch { return []; }
+  };
+
+  const selectedLabel = REGIONS.find(r => r.value === region)?.label || '서울 전체';
+  const featuredThumb = getThumbnail(featured);
+  const featuredAvatar = getAuthorAvatar(featured);
+  const featuredAuthor = featured.author || featured.NICKNAME || '작성자';
+  const featuredTags = getTags(featured, 4);
 
   return (
-    <section className="region-course">
+    <section className="rc-section">
+      <div className="rc-inner">
 
-      {/* ===== 상단: 제목 + View more ===== */}
-      <div className="region-course-header">
-        <div>
-          <h2 className="region-course-title">Best 5</h2>
-          <p className="region-course-subtitle">
-            평점이 가장 높은 빵집 TOP 5
-          </p>
-        </div>
-        <a
-          href="/places"
-          className="region-course-more"
-          onClick={(e) => { e.preventDefault(); navigate('/places'); }}
-        >
-          View more →
-        </a>
-      </div>
-
-      {/* ===== 카드 캐러셀 영역 ===== */}
-      <div className="region-course-carousel">
-
-        {/* ◀ 왼쪽 버튼 */}
-        <button className="region-btn region-btn-left" onClick={scrollLeft}>
-          ◀
-        </button>
-
-        {/* --- 카드 목록 (가로 스크롤) --- */}
-        <div className="region-course-list" ref={scrollRef}>
-          {bakeries.map((bakery, index) => (
-            <div
-              key={bakery.id}
-              className="region-card"
-              onClick={() => navigate(`/place/${bakery.id}`)}
-              style={{ cursor: 'pointer' }}
-            >
-
-              {/* 카드 상단: 썸네일 이미지 + 순위 번호 */}
-              <div className="region-card-img">
-                <img
-                  src={bakery.image}
-                  alt={bakery.name}
-                  className="region-card-photo"
-                />
-                {/* 순위 뱃지 */}
-                <div className={`region-card-rank region-card-rank-${index + 1}`}>
-                  {index + 1}
-                </div>
-              </div>
-
-              {/* 카드 하단: 빵집 정보 */}
-              <div className="region-card-body">
-                <h3 className="region-card-title">{bakery.name}</h3>
-                <div className="region-card-author">
-                  <span>{bakery.address}</span>
-                </div>
-                <div className="region-card-stats">
-                  <span>⭐ {bakery.rating}</span>
-                  <span>💬 리뷰 {bakery.reviewCount}</span>
-                </div>
-              </div>
-
+        {/* ── 헤더 ── */}
+        <div className="rc-header">
+          <div className="rc-header-left">
+            {/* 지역 셀렉터 */}
+            <div className="rc-region-wrap">
+              <select
+                className="rc-region-select"
+                value={region}
+                onChange={e => setRegion(e.target.value)}
+              >
+                {REGIONS.map(r => (
+                  <option key={r.value} value={r.value}>{r.label}</option>
+                ))}
+              </select>
+              <span className="rc-region-arrow">▼</span>
             </div>
-          ))}
+            <h2 className="rc-title">
+              <span className="rc-title-region">{selectedLabel}</span> 추천 코스
+            </h2>
+          </div>
+          <button
+            className="rc-more"
+            onClick={() => navigate(region ? `/courses?region=${encodeURIComponent(region)}` : '/courses')}
+          >
+            View more <i className="fi fi-rr-caret-right rc-more-arrow"></i>
+          </button>
         </div>
 
-        {/* ▶ 오른쪽 버튼 */}
-        <button className="region-btn region-btn-right" onClick={scrollRight}>
-          ▶
-        </button>
+        {/* ── 본문: 좌(피처드) + 우(리스트) ── */}
+        <div className="rc-body">
 
+          {/* 왼쪽: 대표 코스 */}
+          <div
+            className="rc-featured"
+            onClick={() => navigate(`/courses/${featured.COURSE_NUM}`)}
+          >
+            <div
+              className="rc-featured-img"
+              style={{ backgroundImage: featuredThumb ? `url(${featuredThumb})` : undefined }}
+            >
+              {!featuredThumb && <span className="rc-featured-placeholder">🍞</span>}
+
+              {/* 작성자 아바타 */}
+              <div className="rc-featured-avatar">
+                {featuredAvatar
+                  ? <img src={featuredAvatar} alt={featuredAuthor} />
+                  : <span>{featuredAuthor.charAt(0)}</span>}
+              </div>
+            </div>
+
+            <div className="rc-featured-body">
+              <h3 className="rc-featured-title">{featured.TITLE}</h3>
+              {featured.SUBTITLE && (
+                <p className="rc-featured-subtitle">{featured.SUBTITLE}</p>
+              )}
+              <div className="rc-featured-meta">
+                <span className="rc-featured-like">
+                  <span className="rc-like-icon">❤</span>
+                  {featured.likeCount || 0}
+                </span>
+                {featuredTags.length > 0 && (
+                  <div className="rc-featured-tags">
+                    {featuredTags.map(tag => (
+                      <span key={tag} className="rc-tag">#{tag}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* 오른쪽: 순위 리스트 */}
+          <div className="rc-list">
+            {listCourses.map((course, i) => {
+              const thumb = getThumbnail(course);
+              const tags = getTags(course, 3);
+              return (
+                <div
+                  key={course.COURSE_NUM}
+                  className="rc-list-item"
+                  onClick={() => navigate(`/courses/${course.COURSE_NUM}`)}
+                >
+                  <span className="rc-list-num">{i + 2}</span>
+
+                  <div
+                    className="rc-list-thumb"
+                    style={{ backgroundImage: thumb ? `url(${thumb})` : undefined }}
+                  >
+                    {!thumb && <span>🍞</span>}
+                  </div>
+
+                  <div className="rc-list-info">
+                    <p className="rc-list-name">{course.TITLE}</p>
+                    {course.SUBTITLE && (
+                      <p className="rc-list-sub">{course.SUBTITLE}</p>
+                    )}
+                    <div className="rc-list-meta">
+                      <span className="rc-list-rating">
+                        <span className="rc-star-icon">⭐</span>
+                        {course.avgRating ? Number(course.avgRating).toFixed(1) : (course.likeCount || 0)}
+                      </span>
+                      {tags.length > 0 && (
+                        <div className="rc-list-tags">
+                          {tags.map(tag => (
+                            <span key={tag} className="rc-list-tag">#{tag}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
       </div>
     </section>
   );
