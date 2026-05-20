@@ -7,9 +7,9 @@
 
 /* --- 섹션 전체 영역 --- */
 .notice {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 48px 32px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 48px 60px;
 }
 
 /* --- 상단: 제목 + View more --- */

@@ -16,9 +16,7 @@
 /* --- 푸터 안쪽 컨테이너 --- */
 /* 헤더와 동일하게 최대 너비 1280px, 가운데 정렬 */
 .footer-inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 40px 40px 28px;
+  padding: 40px 60px 28px;
 }
 
 /* --- 상단 4개 컬럼 영역 --- */
