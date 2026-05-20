@@ -67,15 +67,6 @@ export default function Header() {
     navigate('/');                    /* 메인 페이지로 이동 */
   };
 
-  /* --- 네비게이션 메뉴 목록 --- */
-  // name: 화면에 보여줄 이름
-  // path: 클릭하면 이동할 URL 경로
-  const navItems = [
-    { name: '빵집탐색',   path: '/places' },     // 인기 빵집 목록을 볼 수 있는 페이지
-    { name: '추천코스',   path: '/courses' },    // 추천 빵집 코스를 모아보는 페이지
-    { name: '코스만들기', path: '/create' },     // 나만의 빵집 코스를 만드는 페이지
-    { name: '공지사항',   path: '/notice' },     // 공지사항 / FAQ / 문의하기
-  ];
 
   return (
     // header 태그: 페이지 맨 위에 고정되는 영역
@@ -91,37 +82,24 @@ export default function Header() {
           onClick={() => navigate('/')}
           style={{ cursor: 'pointer' }}
         >
-          <img src="/logo.png" alt="오븐로드" style={{ height: '40px' }} />
+          <img src="/logo.png" alt="오븐로드" style={{ height: '44px' }} />
         </div>
 
-        {/* ===== 가운데 영역: 검색 + 네비게이션 메뉴 ===== */}
-        <div className="header-center">
-
-{/* 네비게이션 메뉴 목록 */}
-          <nav className="header-nav">
-            {/* navItems 배열을 하나씩 꺼내서 버튼으로 만듦 */}
-            {navItems.map((item) => (
-              <button
-                key={item.name} // 리스트 안의 각 항목을 구분하는 고유 키
-                className={`header-nav-item ${location.pathname === item.path ? 'active' : ''}`}
-                // ↑ 지금 URL과 메뉴의 path가 같으면 'active' 클래스 추가 (선택된 표시)
-                onClick={() => navigate(item.path)}
-                // ↑ 메뉴를 클릭하면 해당 경로로 페이지 이동
-              >
-                {item.name}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* ===== 오른쪽 영역: 로그인 + 다크모드 토글 ===== */}
+        {/* ===== 오른쪽 영역 ===== */}
         <div className="header-actions">
+
+          {/* "+ 코스 만들기" 버튼 */}
+          <button
+            className="header-create-btn"
+            onClick={() => navigate('/create')}
+          >
+            <i className="fi fi-rr-plus-small"></i> 코스 만들기
+          </button>
 
           {/* 로그인 상태에 따라 다르게 보여줌 */}
           {user ? (
             /* ── 로그인 한 상태: 프로필 사진 + 드롭다운 메뉴 ── */
             <div className="header-user-area" ref={dropdownRef}>
-              {/* 프로필 사진 (클릭하면 드롭다운 메뉴 열기/닫기) */}
               <div
                 className="header-profile"
                 onClick={() => setShowDropdown(!showDropdown)}
@@ -130,55 +108,37 @@ export default function Header() {
                 {user.profileImage ? (
                   <img src={user.profileImage} alt="프로필" className="header-profile-img" />
                 ) : (
-                  /* 프로필 사진이 없으면 닉네임 첫 글자로 표시 */
                   <div className="header-profile-default">
                     {user.nickname?.charAt(0) || '?'}
                   </div>
                 )}
               </div>
 
-              {/* 드롭다운 메뉴 (프로필 클릭하면 아래로 나타남) */}
               {showDropdown && (
                 <div className="header-dropdown">
-                  {/* 마이페이지 버튼 */}
                   <button
                     className="header-dropdown-item"
-                    onClick={() => {
-                      navigate('/mypage');
-                      setShowDropdown(false);
-                    }}
+                    onClick={() => { navigate('/mypage'); setShowDropdown(false); }}
                   >
                     👤 마이페이지
                   </button>
-                  {/* 공지사항 버튼 */}
                   <button
                     className="header-dropdown-item"
-                    onClick={() => {
-                      navigate('/notice');
-                      setShowDropdown(false);
-                    }}
+                    onClick={() => { navigate('/notice'); setShowDropdown(false); }}
                   >
                     📢 공지사항
                   </button>
-                  {/* 관리자 메뉴 (관리자만 보임) */}
                   {(user.grade === 'admin' || user.grade === 1 || user.grade === '1') && (
                     <button
                       className="header-dropdown-item"
-                      onClick={() => {
-                        navigate('/admin');
-                        setShowDropdown(false);
-                      }}
+                      onClick={() => { navigate('/admin'); setShowDropdown(false); }}
                     >
                       ⚙️ 관리자
                     </button>
                   )}
-                  {/* 로그아웃 버튼 */}
                   <button
                     className="header-dropdown-item logout"
-                    onClick={() => {
-                      handleLogout();
-                      setShowDropdown(false);
-                    }}
+                    onClick={() => { handleLogout(); setShowDropdown(false); }}
                   >
                     🚪 로그아웃
                   </button>
@@ -186,7 +146,7 @@ export default function Header() {
               )}
             </div>
           ) : (
-            /* ── 로그인 안 한 상태: 로그인 버튼 ── */
+            /* ── 로그인 안 한 상태: 로그인 텍스트 ── */
             <button
               className="header-login-btn"
               onClick={() => navigate('/login')}

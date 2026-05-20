@@ -13,20 +13,11 @@
   z-index: 100;
   background: #ffffff;
   border-bottom: 1px solid #eaeaea;
-  height: 52px;
   width: 100%;
 }
 
-/* --- 헤더 안쪽 컨테이너 --- */
-/* max-width: 내용물의 최대 너비를 1280px로 제한 */
-/* margin: 0 auto → 가운데 정렬 */
-/* display: flex → 가로로 나란히 배치 */
-/* justify-content: space-between → 양 끝으로 벌려서 배치 */
 .header-inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 32px;
-  height: 100%;
+  padding: 20px 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -42,90 +33,53 @@
   cursor: pointer;
 }
 
-/* --- 가운데 영역 (검색 + 네비게이션) --- */
-/* position: absolute + left: 50% + transform → 정확히 화면 가운데 위치 */
-.header-center {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* --- 검색 버튼 --- */
-.header-search-btn {
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-}
-
-/* --- 네비게이션 메뉴 그룹 --- */
-/* gap: 버튼들 사이 간격 4px */
-.header-nav {
-  display: flex;
-  gap: 4px;
-}
-
-/* --- 네비게이션 메뉴 버튼 (기본 상태) --- */
-/* border-radius: 모서리를 둥글게 (알약 모양) */
-.header-nav-item {
-  padding: 6px 14px;
-  border-radius: 18px;
-  border: none;
-  cursor: pointer;
-  font-size: 12.5px;
-  font-weight: 500;
-  background: transparent;
-  color: #666666;
-  transition: all 0.15s;
-  font-family: inherit;
-}
-
-/* --- 네비게이션 메뉴 버튼 (선택된 상태) --- */
-/* 배경이 검정색, 글자가 흰색으로 변함 */
-.header-nav-item.active {
-  font-weight: 700;
-  background: #111111;
-  color: #ffffff;
-}
-
-/* --- 네비게이션 메뉴 버튼 (마우스를 올렸을 때) --- */
-.header-nav-item:hover:not(.active) {
-  background: #f5f5f5;
-  color: #333333;
-}
-
-/* --- 오른쪽 액션 영역 (로그인 + 토글) --- */
+/* --- 오른쪽 액션 영역 --- */
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 24px;
 }
 
-/* --- 로그인 버튼 --- */
-/* 테두리가 있는 둥근 버튼 */
-.header-login-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 14px;
-  border-radius: 18px;
-  border: 1px solid #e0e0e0;
-  background: #ffffff;
-  cursor: pointer;
-  font-size: 12px;
-  color: #444444;
+/* "+ 코스 만들기" 버튼: 130×44, padding 20/12, 17pt medium */
+.header-create-btn {
+  height: 44px;
+  min-width: 130px;
+  padding: 12px 20px;
+  border-radius: 9999px;
+  border: 1.5px solid gray;
+  background: #fff;
+  color: gray;
+  font-size: 17px;
   font-weight: 500;
   font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-create-btn:hover {
+  background: gray;
+  color: #ffffff;
+}
+
+/* 로그인 텍스트 버튼 */
+.header-login-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: 500;
+  color: #1c1917;
+  font-family: inherit;
+  padding: 0;
+  transition: opacity 0.15s;
 }
 
 .header-login-btn:hover {
-  background: #f9f9f9;
+  opacity: 0.6;
 }
 
 /* --- 로그인 후 사용자 영역 --- */
