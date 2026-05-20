@@ -89,13 +89,11 @@ export default function NoticeList() {
   const [showForm, setShowForm] = useState(false);
   const [qTitle, setQTitle] = useState('');
   const [qContent, setQContent] = useState('');
-  const [qPrivate, setQPrivate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
-  const [editPrivate, setEditPrivate] = useState(false);
 
   /* ===== 탭이 바뀔 때마다 해당 탭의 데이터를 서버에서 가져옴 ===== */
   /* 예: 공지사항 탭을 누르면 → fetchNotices() 실행 → 서버에서 공지 목록을 가져옴 */
@@ -182,12 +180,11 @@ export default function NoticeList() {
     setSubmitting(true); /* 등록 버튼을 "등록 중..."으로 바꿈 (중복 클릭 방지) */
     try {
       /* 서버에 문의 등록 요청 (회원번호, 제목, 내용) */
-      await createQuestion(user.userNum, qTitle.trim(), qContent.trim(), qPrivate);
+      await createQuestion(user.userNum, qTitle.trim(), qContent.trim(), true);
       alert('문의가 등록되었습니다.');
 
       setQTitle('');
       setQContent('');
-      setQPrivate(false);
       setShowForm(false);
       fetchQuestions(); /* 방금 등록한 문의가 목록에 나타나도록 다시 가져옴 */
     } catch (err) {
@@ -218,7 +215,6 @@ export default function NoticeList() {
   function handleStartEdit() {
     setEditTitle(selectedQuestion.TITLE);
     setEditContent(selectedQuestion.CONTENT || '');
-    setEditPrivate(selectedQuestion.IS_PRIVATE === 1);
     setEditMode(true);
   }
 
@@ -229,7 +225,7 @@ export default function NoticeList() {
       await updateQuestion(selectedQuestion.QUESTION_NUM, {
         title: editTitle.trim(),
         content: editContent.trim(),
-        isPrivate: editPrivate,
+        isPrivate: true,
       });
       const updated = await getQuestionDetail(selectedQuestion.QUESTION_NUM);
       setSelectedQuestion(updated);
@@ -442,24 +438,11 @@ export default function NoticeList() {
                     rows={6}
                   />
 
-                  <div className="nl-privacy-toggle">
-                    <button
-                      type="button"
-                      className={`nl-privacy-btn ${qPrivate ? 'private' : 'public'}`}
-                      onClick={() => setQPrivate(prev => !prev)}
-                    >
-                      {qPrivate ? '🔒 비공개' : '🌐 공개'}
-                    </button>
-                    <span className="nl-privacy-desc">
-                      {qPrivate ? '본인과 관리자만 볼 수 있습니다.' : '모든 사용자에게 공개됩니다.'}
-                    </span>
-                  </div>
-
                   <div className="nl-form-actions">
                     <button
                       type="button"
                       className="nl-form-cancel"
-                      onClick={() => { setShowForm(false); setQTitle(''); setQContent(''); setQPrivate(false); }}
+                      onClick={() => { setShowForm(false); setQTitle(''); setQContent(''); }}
                     >
                       취소
                     </button>
@@ -509,15 +492,6 @@ export default function NoticeList() {
                         onChange={(e) => setEditContent(e.target.value)}
                         rows={6}
                       />
-                      <div className="nl-privacy-toggle">
-                        <button
-                          type="button"
-                          className={`nl-privacy-btn ${editPrivate ? 'private' : 'public'}`}
-                          onClick={() => setEditPrivate(prev => !prev)}
-                        >
-                          {editPrivate ? '🔒 비공개' : '🌐 공개'}
-                        </button>
-                      </div>
                       <div className="nl-form-actions">
                         <button type="button" className="nl-form-cancel" onClick={() => setEditMode(false)}>취소</button>
                         <button type="submit" className="nl-form-submit">수정 완료</button>
@@ -531,9 +505,6 @@ export default function NoticeList() {
                       <span>{new Date(selectedQuestion.CREATED_TIME).toLocaleDateString('ko-KR')}</span>
                       <span className={`nl-status ${selectedQuestion.STATUS === 1 ? 'answered' : ''}`}>
                         {selectedQuestion.STATUS === 1 ? '답변완료' : '답변대기'}
-                      </span>
-                      <span className="nl-privacy-badge-sm">
-                        {selectedQuestion.IS_PRIVATE === 1 ? '🔒 비공개' : '🌐 공개'}
                       </span>
                     </div>
                   </div>
@@ -583,11 +554,8 @@ export default function NoticeList() {
                         onClick={() => handleViewQuestion(q.QUESTION_NUM)}
                         /* ↑ 클릭하면 상세 보기 함수 실행 */
                       >
-                        {/* 왼쪽: "비공개" 뱃지 (본인과 관리자만 볼 수 있다는 표시) */}
                         <div className="nl-item-left">
-                          <span className="nl-category nl-private-badge">
-                            {q.IS_PRIVATE === 1 ? '🔒 비공개' : '🌐 공개'}
-                          </span>
+                          <span className="nl-category nl-private-badge">🔒 비공개</span>
                         </div>
                         {/* 가운데: 문의 제목 + 작성자 닉네임 */}
                         <div className="nl-item-body">
