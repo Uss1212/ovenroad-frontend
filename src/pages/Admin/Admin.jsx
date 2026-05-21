@@ -476,6 +476,7 @@ function CourseTab({ showMsg }) {
 /* ===== 회원 관리 ===== */
 function MemberTab({ showMsg }) {
   const [list, setList] = useState([]);
+  const me = JSON.parse(localStorage.getItem('user') || '{}');
 
   const load = async () => {
     try {
@@ -493,6 +494,19 @@ function MemberTab({ showMsg }) {
       load();
     } catch (e) { showMsg(e.message, 'error'); }
   };
+
+  const handleGrade = async (userNum, newGrade) => {
+    const label = newGrade === 1 ? '관리자로 등록' : '관리자 해제';
+    if (!window.confirm(`이 회원을 ${label}하시겠습니까?`)) return;
+    try {
+      await request(`/api/user/${userNum}/grade`, { method: 'PATCH', body: JSON.stringify({ grade: newGrade }) });
+      showMsg(`${label}되었습니다.`);
+      load();
+    } catch (e) { showMsg(e.message, 'error'); }
+  };
+
+  const isAdmin = (u) => u.GRADE === 1 || u.GRADE === 'admin';
+  const isSelf = (u) => u.USER_NUM === me.userNum;
 
   return (
     <>
@@ -512,13 +526,19 @@ function MemberTab({ showMsg }) {
                 <td>{u.ID || '-'}</td>
                 <td>{u.NICKNAME}</td>
                 <td>{u.EMAIL}</td>
-                <td>{u.GRADE === 'admin' || u.GRADE === 1 ? '관리자' : '일반'}</td>
-                <td>
-                  {u.GRADE !== 'admin' && u.GRADE !== 1 ? (
-                    <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => handleDelete(u.USER_NUM)}>탈퇴</button>
-                  ) : (
-                    <span style={{ color: '#a8a29e', fontSize: '0.8rem' }}>-</span>
+                <td>{isAdmin(u) ? '관리자' : '일반'}</td>
+                <td className="admin-table-actions">
+                  {!isSelf(u) && (
+                    isAdmin(u) ? (
+                      <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => handleGrade(u.USER_NUM, 0)}>관리자 해제</button>
+                    ) : (
+                      <>
+                        <button className="admin-btn admin-btn-primary admin-btn-sm" onClick={() => handleGrade(u.USER_NUM, 1)}>관리자 등록</button>
+                        <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => handleDelete(u.USER_NUM)}>탈퇴</button>
+                      </>
+                    )
                   )}
+                  {isSelf(u) && <span style={{ color: '#a8a29e', fontSize: '0.8rem' }}>-</span>}
                 </td>
               </tr>
             ))}
