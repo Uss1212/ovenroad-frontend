@@ -28,7 +28,7 @@ export default function MyPage() {
 
   const navigate = useNavigate();
 
-  const [activeMenu, setActiveMenu] = useState('courses');
+  const [activeMenu, setActiveMenu] = useState('profile');
   const [user, setUser] = useState(null);
   const [nickname, setNickname] = useState('');
   const [currentPw, setCurrentPw] = useState('');
@@ -406,6 +406,20 @@ export default function MyPage() {
 
             {activeMenu === 'profile' && (
               <div className="mypage-info-section">
+                <h3 className="mypage-section-title">기본 정보</h3>
+                <div className="mypage-field">
+                  <label className="mypage-label">아이디</label>
+                  <input
+                    type="text"
+                    className="mypage-input"
+                    value={user.ID || user.id || '소셜 로그인 사용자'}
+                    disabled
+                  />
+                  <p style={{ fontSize: '0.8rem', color: '#a8a29e', marginTop: '4px' }}>아이디는 변경할 수 없습니다.</p>
+                </div>
+
+                <hr className="mypage-divider" />
+
                 <h3 className="mypage-section-title">닉네임 수정</h3>
                 <div className="mypage-field">
                   <label className="mypage-label">닉네임</label>
