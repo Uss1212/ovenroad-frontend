@@ -10,6 +10,30 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { BASE_URL } from '../../api/apiAxios';
 import './PlaceList.css';
 
+/* 이미지 없는 카드에 Google 사진을 lazy load */
+function PlaceCardImage({ image, googlePlaceId, placeId, name }) {
+  const [src, setSrc] = useState(image || null);
+
+  useEffect(() => {
+    if (src || !googlePlaceId || typeof placeId !== 'number') return;
+    fetch(`${BASE_URL}/api/places/${placeId}/google-details`)
+      .then(r => r.json())
+      .then(data => { if (data.photoUrl) setSrc(data.photoUrl); })
+      .catch(() => {});
+  }, []);
+
+  if (src) {
+    return (
+      <img
+        src={src.startsWith('http') ? src : `${BASE_URL}${src}`}
+        alt={name}
+        className="pl-card-photo"
+      />
+    );
+  }
+  return <div className="pl-card-placeholder"><span>🍞</span></div>;
+}
+
 export default function PlaceList() {
 
   const navigate = useNavigate();
@@ -165,6 +189,7 @@ export default function PlaceList() {
               reviewCount: p.reviewCount || 0,
               hasRibbon: p.ribbonCount && p.ribbonCount > 0,
               image: p.thumbnailImage || null,
+              googlePlaceId: p.GOOGLE_PLACE_ID || null,
               menuTags: tags,
               lat: parseFloat(p.LATITUDE),
               lng: parseFloat(p.LONGITUDE),
@@ -367,17 +392,12 @@ export default function PlaceList() {
               >
                 {/* 카드 이미지 */}
                 <div className="pl-card-img">
-                  {bakery.image ? (
-                    <img
-                      src={bakery.image.startsWith('http') ? bakery.image : `${BASE_URL}${bakery.image}`}
-                      alt={bakery.name}
-                      className="pl-card-photo"
-                    />
-                  ) : (
-                    <div className="pl-card-placeholder">
-                      <span>🍞</span>
-                    </div>
-                  )}
+                  <PlaceCardImage
+                    image={bakery.image}
+                    googlePlaceId={bakery.googlePlaceId}
+                    placeId={bakery.id}
+                    name={bakery.name}
+                  />
 
                   {bakery.hasRibbon && (
                     <span className="pl-card-ribbon">🎀 블루리본</span>
