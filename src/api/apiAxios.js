@@ -281,9 +281,10 @@ export async function deleteComment(boardNum, commentId, userNum) {
 /* --- 코스 목록 조회 --- */
 /* sort: latest(최신) / popular(인기) / scrap(스크랩순) */
 /* region: 지역 필터 (예: 마포구) */
-export async function getCourseList(sort = 'latest', region = '') {
+export async function getCourseList(sort = 'latest', region = '', userNum = '') {
   let query = `?sort=${sort}`;
   if (region) query += `&region=${encodeURIComponent(region)}`;
+  if (userNum) query += `&userNum=${userNum}`;
   return request(`/api/courses${query}`);
 }
 

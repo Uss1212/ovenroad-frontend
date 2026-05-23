@@ -282,7 +282,11 @@ export default function CourseDetail() {
             </p>
           )}
           {/* 작성자 */}
-          <div className="cd-info-author">
+          <div
+            className="cd-info-author"
+            style={{ cursor: 'pointer' }}
+            onClick={() => navigate(`/courses?userNum=${course.USER_NUM}&author=${encodeURIComponent(course.author || '작성자')}`)}
+          >
             {course.authorImage ? (
               <img src={imgUrl(course.authorImage)} alt="" className="cd-author-avatar" />
             ) : (
