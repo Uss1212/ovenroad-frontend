@@ -34,6 +34,7 @@ import CourseList from './pages/CourseList/CourseList'; // 추천코스 목록
 import NoticeList from './pages/NoticeList/NoticeList'; // 고객지원 (공지사항/FAQ/문의)
 import NoticeDetail from './pages/NoticeDetail/NoticeDetail'; // 공지사항 상세
 import Admin from './pages/Admin/Admin'; // 관리자 페이지
+import AICourse from './components/AICourse/AICourse'; // AI 추천 코스
 import './css/App.css';
 
 /* --- 메인 페이지 컴포넌트 --- */
@@ -49,6 +50,8 @@ function MainPage() {
       <BreadBTI />
       {/* 지역별 추천 코스: 가로 스크롤 카드 */}
       <RegionCourse />
+      {/* AI 추천 코스: AI가 생성한 베이커리 투어 코스 */}
+      <AICourse />
       {/* 공지사항: 최신 공지 목록 */}
       <Notice />
     </>

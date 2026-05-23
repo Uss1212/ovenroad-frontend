@@ -6,16 +6,17 @@
    =================================================== */
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getCourseList, BASE_URL } from '../../api/apiAxios'; /* 코스 목록 API + 서버 주소 */
 import './CourseList.css';
 
 export default function CourseList() {
 
-  /* 페이지 이동 도구 */
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const filterUserNum = searchParams.get('userNum');
+  const filterAuthor = searchParams.get('author');
 
-  /* 현재 선택한 정렬 방식 */
   const [activeSort, setActiveSort] = useState('인기순');
 
   /* DB에서 가져온 코스 목록 */
@@ -42,7 +43,7 @@ export default function CourseList() {
     const fetchCourses = async () => {
       setLoading(true);
       try {
-        const data = await getCourseList(getSortParam(activeSort));
+        const data = await getCourseList(getSortParam(activeSort), '', filterUserNum || '');
         setCourses(data);
       } catch (err) {
         console.error('코스 목록 불러오기 실패:', err);
@@ -51,7 +52,7 @@ export default function CourseList() {
       }
     };
     fetchCourses();
-  }, [activeSort]);
+  }, [activeSort, filterUserNum]);
 
   return (
     /* 전체 페이지 배경 */
@@ -61,9 +62,11 @@ export default function CourseList() {
         {/* ===== 1. 헤더: 제목 + 필터 버튼들 ===== */}
         <div className="explore-header">
           <div>
-            <h1 className="explore-title">코스 탐색</h1>
+            <h1 className="explore-title">
+              {filterAuthor ? `${filterAuthor}님의 코스` : '코스 탐색'}
+            </h1>
             <p className="explore-subtitle">
-              다른 사람들이 만든 개성 있는 빵 코스를 구경해보세요
+              {filterAuthor ? `${filterAuthor}님이 만든 코스 목록이에요` : '다른 사람들이 만든 개성 있는 빵 코스를 구경해보세요'}
             </p>
           </div>
 
