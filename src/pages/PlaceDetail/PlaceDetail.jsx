@@ -54,6 +54,8 @@ export default function PlaceDetail() {
         ? data.categories[0].CATEGORY_NAME : '베이커리';
       const ribbonCount = data.categories && data.categories.length > 0
         ? data.categories[0].RIBBON_COUNT : 0;
+      const certification = data.categories && data.categories.length > 0
+        ? data.categories[0].CERTIFICATION : '';
 
       setPlace({
         id: data.PLACE_NUM,
@@ -64,7 +66,9 @@ export default function PlaceDetail() {
         reviewCount: data.reviewCount || 0,
         lat: parseFloat(data.LATITUDE),
         lng: parseFloat(data.LONGITUDE),
-        hasRibbon: ribbonCount && ribbonCount > 0,
+        hasRibbon: certification?.includes('블루리본') || (ribbonCount && ribbonCount > 0),
+        hasCheonha: certification?.includes('천하제빵'),
+        hasMyungjang: certification?.includes('제과명장'),
         images: data.images || [],
         courses: data.courses || [],
         menus: data.menus || [],
@@ -168,6 +172,8 @@ export default function PlaceDetail() {
         <div className="pd-hero-content">
           <div className="pd-hero-badges">
             {place.hasRibbon && <span className="pd-hero-badge ribbon">🎀 블루리본</span>}
+            {place.hasCheonha && <span className="pd-hero-badge cheonha">🏆 천하제빵</span>}
+            {place.hasMyungjang && <span className="pd-hero-badge myungjang">🥇 제과제빵명장</span>}
             <span className="pd-hero-badge category">{place.category}</span>
           </div>
           <h1 className="pd-hero-name">{place.name}</h1>
