@@ -70,9 +70,9 @@ export default function HeroBanner() {
           .filter(p => p.LATITUDE && p.LONGITUDE)
           .map(p => {
             const badgeList = [];
-            if (p.ribbonCount && p.ribbonCount > 0) badgeList.push('blueribbon');
-            if (p.certification === 'cheonha') badgeList.push('cheonha');
-            if (p.certification === 'myungjang') badgeList.push('myungjang');
+            if (p.certification?.includes('블루리본') || (p.ribbonCount && p.ribbonCount > 0)) badgeList.push('blueribbon');
+            if (p.certification?.includes('천하제빵')) badgeList.push('cheonha');
+            if (p.certification?.includes('제과명장')) badgeList.push('myungjang');
             return {
               id: p.PLACE_NUM,
               name: p.PLACE_NAME,
