@@ -302,7 +302,7 @@ export default function HeroBanner() {
 
   /* 선택된 장소의 대표 이미지 URL */
   const getThumbUrl = (bakery) => {
-    if (!bakery.thumbnail) return null;
+    if (!bakery || !bakery.thumbnail) return null;
     return bakery.thumbnail.startsWith('http') ? bakery.thumbnail : `${BASE_URL}${bakery.thumbnail}`;
   };
 
