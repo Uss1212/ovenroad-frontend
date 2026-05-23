@@ -348,6 +348,161 @@
 }
 
 /* =========================================
+   장소 상세 패널
+   ========================================= */
+.hero-place-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.hero-place-back-btn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #a8a29e;
+  cursor: pointer;
+  padding: 0 0 14px 0;
+  text-align: left;
+  font-family: inherit;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+
+.hero-place-back-btn:hover {
+  color: #c96442;
+}
+
+/* 이미지 그리드 */
+.hero-place-imgs {
+  display: grid;
+  gap: 4px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.hero-place-imgs-1 { grid-template-columns: 1fr; height: 180px; }
+.hero-place-imgs-2 { grid-template-columns: 1fr 1fr; height: 160px; }
+.hero-place-imgs-3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; height: 160px; }
+.hero-place-imgs-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; height: 160px; }
+
+.hero-place-imgs-3 .hero-place-img-wrap:first-child { grid-row: span 2; }
+
+.hero-place-img-wrap {
+  overflow: hidden;
+  background: #f5ede6;
+}
+
+.hero-place-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hero-place-img-placeholder {
+  height: 140px;
+  background: linear-gradient(135deg, #fef3ed, #fde8d8);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+/* 정보 영역 */
+.hero-place-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hero-place-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1c1917;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.hero-place-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hero-place-badge {
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 9999px;
+}
+
+.hero-place-badge.ribbon   { background: #fef3c7; color: #92400e; }
+.hero-place-badge.cheonha  { background: #dcfce7; color: #166534; }
+.hero-place-badge.myungjang { background: #fef9c3; color: #854d0e; }
+
+.hero-place-address {
+  font-size: 13px;
+  color: #78716c;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.hero-place-rating {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1c1917;
+  margin: 0;
+}
+
+.hero-place-review-count {
+  font-size: 12px;
+  font-weight: 400;
+  color: #a8a29e;
+}
+
+.hero-place-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.hero-place-tag {
+  font-size: 12px;
+  font-weight: 500;
+  color: #c96442;
+  background: #fef3ed;
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+.hero-place-detail-btn {
+  margin-top: 6px;
+  padding: 11px 0;
+  background: #c96442;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.hero-place-detail-btn:hover {
+  background: #b05535;
+}
+
+/* =========================================
    뱃지 필터 — 지도 위 floating
    (left 패널 우측 + 24px, top 24px)
    ========================================= */
