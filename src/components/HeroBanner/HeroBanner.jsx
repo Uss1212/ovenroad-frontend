@@ -16,6 +16,7 @@ export default function HeroBanner() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedBakery, setSelectedBakery] = useState(null);
   const [selectedImages, setSelectedImages] = useState([]);
+  const [selectedGoogleInfo, setSelectedGoogleInfo] = useState(null);
 
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -96,16 +97,21 @@ export default function HeroBanner() {
     fetchPlaces();
   }, []);
 
-  /* 마커 클릭 시 DB 빵집 이미지 추가 fetch */
+  /* 마커 클릭 시 DB 빵집 이미지 + 영업시간 fetch */
   useEffect(() => {
     if (!selectedBakery || selectedBakery.isExternal) {
       setSelectedImages([]);
+      setSelectedGoogleInfo(null);
       return;
     }
     fetch(`${BASE_URL}/api/places/${selectedBakery.id}`)
       .then(r => r.json())
       .then(data => setSelectedImages(data.images || []))
       .catch(() => setSelectedImages([]));
+    fetch(`${BASE_URL}/api/places/${selectedBakery.id}/google-details`)
+      .then(r => r.json())
+      .then(data => { if (data?.found) setSelectedGoogleInfo(data); else setSelectedGoogleInfo(null); })
+      .catch(() => setSelectedGoogleInfo(null));
   }, [selectedBakery]);
 
   /* 검색창 바깥 클릭 시 드롭다운 닫기 */
@@ -373,6 +379,23 @@ export default function HeroBanner() {
                     <span className="hero-place-review-count"> ({selectedBakery.reviewCount}개 리뷰)</span>
                   )}
                 </p>
+              )}
+
+              {selectedGoogleInfo && (
+                <div className="hero-place-hours">
+                  <div className="hero-place-open-status">
+                    {selectedGoogleInfo.isOpenNow === true && <span className="hero-open-badge">영업중</span>}
+                    {selectedGoogleInfo.isOpenNow === false && <span className="hero-closed-badge">영업종료</span>}
+                    <span className="hero-place-hours-label">영업시간</span>
+                  </div>
+                  {selectedGoogleInfo.openingHours && (
+                    <ul className="hero-place-hours-list">
+                      {selectedGoogleInfo.openingHours.map((line, i) => (
+                        <li key={i} className="hero-place-hours-item">{line}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               )}
 
               {selectedBakery.menuTags?.length > 0 && (

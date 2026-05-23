@@ -484,6 +484,57 @@
   padding: 4px 8px;
 }
 
+.hero-place-hours {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hero-place-open-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-open-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #166534;
+  background: #dcfce7;
+  border-radius: 9999px;
+  padding: 2px 8px;
+}
+
+.hero-closed-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #991b1b;
+  background: #fee2e2;
+  border-radius: 9999px;
+  padding: 2px 8px;
+}
+
+.hero-place-hours-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #44403c;
+}
+
+.hero-place-hours-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hero-place-hours-item {
+  font-size: 12px;
+  color: #78716c;
+  line-height: 1.5;
+}
+
 .hero-place-detail-btn {
   margin-top: 6px;
   padding: 11px 0;
