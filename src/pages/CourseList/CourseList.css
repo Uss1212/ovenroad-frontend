@@ -90,6 +90,21 @@
   border-color: #92400e;
 }
 
+/* AI 추천 배지 (카드 이미지 위) */
+.explore-card-ai-badge {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  z-index: 2;
+  background: #92400e;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  letter-spacing: 0.02em;
+}
+
 /* 필터 ↔ 정렬 사이 세로 구분선 */
 .explore-filter-divider {
   width: 1px;

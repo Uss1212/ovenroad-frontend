@@ -288,6 +288,11 @@ export async function getCourseList(sort = 'latest', region = '', userNum = '') 
   return request(`/api/courses${query}`);
 }
 
+/* --- AI 추천 코스 목록 조회 --- */
+export async function getAiCourseList() {
+  return request('/api/ai-course');
+}
+
 /* --- 코스 상세 조회 --- */
 export async function getCourseDetail(courseNum, userNum) {
   const query = userNum ? `?userNum=${userNum}` : '';
