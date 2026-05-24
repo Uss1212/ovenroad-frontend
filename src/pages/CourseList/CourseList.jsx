@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { getCourseList, BASE_URL } from '../../api/apiAxios'; /* 코스 목록 API + 서버 주소 */
+import { getCourseList, getAiCourseList, BASE_URL } from '../../api/apiAxios'; /* 코스 목록 API + 서버 주소 */
 import './CourseList.css';
 
 export default function CourseList() {
@@ -18,6 +18,7 @@ export default function CourseList() {
   const filterAuthor = searchParams.get('author');
 
   const [activeSort, setActiveSort] = useState('인기순');
+  const [activeTab, setActiveTab] = useState('일반');
 
   /* DB에서 가져온 코스 목록 */
   const [courses, setCourses] = useState([]);
@@ -43,7 +44,14 @@ export default function CourseList() {
     const fetchCourses = async () => {
       setLoading(true);
       try {
-        const data = await getCourseList(getSortParam(activeSort), '', filterUserNum || '');
+        let data;
+        if (activeTab === 'AI') {
+          data = await getAiCourseList();
+        } else {
+          const normal = await getCourseList(getSortParam(activeSort), '', filterUserNum || '');
+          const ai = await getAiCourseList();
+          data = [...normal, ...ai];
+        }
         setCourses(data);
       } catch (err) {
         console.error('코스 목록 불러오기 실패:', err);
@@ -52,14 +60,14 @@ export default function CourseList() {
       }
     };
     fetchCourses();
-  }, [activeSort, filterUserNum]);
+  }, [activeSort, activeTab, filterUserNum]);
 
   return (
     /* 전체 페이지 배경 */
     <div className="explore-page">
       <div className="explore-container">
 
-        {/* ===== 1. 헤더: 제목 + 필터 버튼들 ===== */}
+        {/* ===== 1. 헤더: 제목 + 탭 + 필터 버튼들 ===== */}
         <div className="explore-header">
           <div>
             <h1 className="explore-title">
@@ -71,7 +79,23 @@ export default function CourseList() {
           </div>
 
           <div className="explore-filters">
-            {sortOptions.map((s) => (
+            {!filterUserNum && (
+              <>
+                <button
+                  className={`explore-filter-btn ${activeTab === '일반' ? 'active' : ''}`}
+                  onClick={() => { setActiveTab('일반'); setVisibleCount(8); }}
+                >
+                  전체
+                </button>
+                <button
+                  className={`explore-filter-btn ${activeTab === 'AI' ? 'active' : ''}`}
+                  onClick={() => { setActiveTab('AI'); setVisibleCount(8); }}
+                >
+                  ✦ AI 추천
+                </button>
+              </>
+            )}
+            {activeTab === '일반' && sortOptions.map((s) => (
               <button
                 key={s}
                 className={`explore-filter-btn ${activeSort === s ? 'active' : ''}`}
@@ -119,6 +143,9 @@ export default function CourseList() {
             >
               {/* 카드 이미지 (높이 통일) */}
               <div className="explore-card-img">
+                {(activeTab === 'AI' || course.IS_AI === 1) && (
+                  <span className="explore-card-ai-badge">✦ AI 추천</span>
+                )}
                 {(course.COVER_IMAGE || course.thumbnailImage) ? (
                   <img
                     src={(() => {
@@ -149,7 +176,7 @@ export default function CourseList() {
                 <p className="explore-card-subtitle">{course.SUBTITLE || ''}</p>
                 <div className="explore-card-footer">
                   <div className="explore-card-tags">
-                    <span className="explore-card-tag">by {course.author}</span>
+                    <span className="explore-card-tag">by {course.IS_AI === 1 ? 'AI 추천봇' : course.author}</span>
                   </div>
                   <div className="explore-card-likes">
                     ❤️ {course.likeCount || 0}

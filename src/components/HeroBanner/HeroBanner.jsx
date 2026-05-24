@@ -14,6 +14,9 @@ export default function HeroBanner() {
   const [externalBakeries, setExternalBakeries] = useState([]);
   const [externalLoading, setExternalLoading] = useState(true);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedBakery, setSelectedBakery] = useState(null);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [selectedGoogleInfo, setSelectedGoogleInfo] = useState(null);
 
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -70,9 +73,9 @@ export default function HeroBanner() {
           .filter(p => p.LATITUDE && p.LONGITUDE)
           .map(p => {
             const badgeList = [];
-            if (p.ribbonCount && p.ribbonCount > 0) badgeList.push('blueribbon');
-            if (p.certification === 'cheonha') badgeList.push('cheonha');
-            if (p.certification === 'myungjang') badgeList.push('myungjang');
+            if (p.certification?.includes('블루리본') || (p.ribbonCount && p.ribbonCount > 0)) badgeList.push('blueribbon');
+            if (p.certification?.includes('천하제빵')) badgeList.push('cheonha');
+            if (p.certification?.includes('제과명장')) badgeList.push('myungjang');
             return {
               id: p.PLACE_NUM,
               name: p.PLACE_NAME,
@@ -93,6 +96,23 @@ export default function HeroBanner() {
     }
     fetchPlaces();
   }, []);
+
+  /* 마커 클릭 시 DB 빵집 이미지 + 영업시간 fetch */
+  useEffect(() => {
+    if (!selectedBakery || selectedBakery.isExternal) {
+      setSelectedImages([]);
+      setSelectedGoogleInfo(null);
+      return;
+    }
+    fetch(`${BASE_URL}/api/places/${selectedBakery.id}`)
+      .then(r => r.json())
+      .then(data => setSelectedImages(data.images || []))
+      .catch(() => setSelectedImages([]));
+    fetch(`${BASE_URL}/api/places/${selectedBakery.id}/google-details`)
+      .then(r => r.json())
+      .then(data => { if (data?.found) setSelectedGoogleInfo(data); else setSelectedGoogleInfo(null); })
+      .catch(() => setSelectedGoogleInfo(null));
+  }, [selectedBakery]);
 
   /* 검색창 바깥 클릭 시 드롭다운 닫기 */
   useEffect(() => {
@@ -213,7 +233,7 @@ export default function HeroBanner() {
       marker._bakeryData = bakery;
       window.naver.maps.Event.addListener(marker, 'click', () => {
         map.panTo(new window.naver.maps.LatLng(bakery.lat, bakery.lng));
-        if (!isExternal) navigate(`/place/${bakery.id}`);
+        setSelectedBakery(bakery);
       });
       return marker;
     });
@@ -286,119 +306,221 @@ export default function HeroBanner() {
     navigate(`/places?${params.toString()}`);
   };
 
+  /* 선택된 장소의 대표 이미지 URL */
+  const getThumbUrl = (bakery) => {
+    if (!bakery || !bakery.thumbnail) return null;
+    return bakery.thumbnail.startsWith('http') ? bakery.thumbnail : `${BASE_URL}${bakery.thumbnail}`;
+  };
+
+  /* 선택된 장소 패널 이미지 목록 (최대 4장) */
+  const displayImages = selectedImages.length > 0
+    ? selectedImages.slice(0, 4).map(img => img.IMAGE_URL?.startsWith('http') ? img.IMAGE_URL : `${BASE_URL}${img.IMAGE_URL}`)
+    : (getThumbUrl(selectedBakery) ? [getThumbUrl(selectedBakery)] : []);
+
+  const badgeLabels = {
+    blueribbon: { icon: '🎀', label: '블루리본', cls: 'ribbon' },
+    cheonha:    { icon: '🏆', label: '천하제빵', cls: 'cheonha' },
+    myungjang:  { icon: '🥇', label: '제과제빵명장', cls: 'myungjang' },
+  };
+
   return (
     <section className="hero-section">
 
       {/* 지도 — 전체 배경 */}
       <div className="hero-map-bg" ref={mapRef} />
 
-      {/* ===== 왼쪽 플로팅 패널: 검색 + 지금 뜨는 빵집 ===== */}
+      {/* ===== 왼쪽 플로팅 패널 ===== */}
       <div className="hero-left">
 
-        {/* 검색 헤더 */}
-        <div className="hero-left-header">
-          <h2 className="hero-left-title">
-            <i className="fi fi-sr-bread hero-title-icon"></i>
-            어떤 빵집을 찾으시나요?
-          </h2>
-          <p className="hero-left-desc">
-            빵집 이름이나 지점을 정확히 입력해주세요 (예: 어니언 성수)
-          </p>
-        </div>
-
-        {/* 검색 입력창 */}
-        <div className="hero-search-area" ref={searchWrapRef}>
-          <div className="hero-search-wrap">
-            <input
-              type="text"
-              className="hero-search-input"
-              placeholder="지도 검색"
-              value={searchKeyword}
-              onChange={e => { setSearchKeyword(e.target.value); setShowSuggestions(true); }}
-              onFocus={() => setShowSuggestions(true)}
-              onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
-            />
-            <button className="hero-search-icon-btn" onClick={handleSearch}>
-              <i className="fi fi-rr-search"></i>
+        {selectedBakery ? (
+          /* ── 장소 상세 패널 ── */
+          <div className="hero-place-panel">
+            <button className="hero-place-back-btn" onClick={() => setSelectedBakery(null)}>
+              ← 검색으로 돌아가기
             </button>
-          </div>
 
-          {/* 자동완성 드롭다운 */}
-          {showSuggestions && searchSuggestions.length > 0 && (
-            <div className="hero-suggestions">
-              {searchSuggestions.map(b => (
-                <div
-                  key={b.id}
-                  className="hero-suggestion-item"
-                  onClick={() => {
-                    setShowSuggestions(false);
-                    if (b.isExternal) {
+            {/* 이미지 영역 */}
+            {displayImages.length > 0 ? (
+              <div className={`hero-place-imgs hero-place-imgs-${Math.min(displayImages.length, 4)}`}>
+                {displayImages.map((url, i) => (
+                  <div key={i} className="hero-place-img-wrap">
+                    <img src={url} alt="" className="hero-place-img" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="hero-place-img-placeholder">🍞</div>
+            )}
+
+            {/* 정보 */}
+            <div className="hero-place-info">
+              <h3 className="hero-place-name">{selectedBakery.name}</h3>
+
+              {/* 뱃지 */}
+              {selectedBakery.badges?.length > 0 && (
+                <div className="hero-place-badges">
+                  {selectedBakery.badges.map(b => {
+                    const info = badgeLabels[b];
+                    return info ? (
+                      <span key={b} className={`hero-place-badge ${info.cls}`}>
+                        {info.icon} {info.label}
+                      </span>
+                    ) : null;
+                  })}
+                </div>
+              )}
+
+              <p className="hero-place-address">📍 {selectedBakery.address || '주소 정보 없음'}</p>
+
+              {Number(selectedBakery.rating) > 0 && (
+                <p className="hero-place-rating">
+                  ⭐ {selectedBakery.rating}
+                  {selectedBakery.reviewCount > 0 && (
+                    <span className="hero-place-review-count"> ({selectedBakery.reviewCount}개 리뷰)</span>
+                  )}
+                </p>
+              )}
+
+              {selectedGoogleInfo && (
+                <div className="hero-place-hours">
+                  <div className="hero-place-open-status">
+                    {selectedGoogleInfo.isOpenNow === true && <span className="hero-open-badge">영업중</span>}
+                    {selectedGoogleInfo.isOpenNow === false && <span className="hero-closed-badge">영업종료</span>}
+                    <span className="hero-place-hours-label">영업시간</span>
+                  </div>
+                  {selectedGoogleInfo.openingHours && (
+                    <ul className="hero-place-hours-list">
+                      {selectedGoogleInfo.openingHours.map((line, i) => (
+                        <li key={i} className="hero-place-hours-item">{line}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+
+              {selectedBakery.menuTags?.length > 0 && (
+                <div className="hero-place-tags">
+                  {selectedBakery.menuTags.map(t => (
+                    <span key={t} className="hero-place-tag">#{t}</span>
+                  ))}
+                </div>
+              )}
+
+              {!selectedBakery.isExternal && (
+                <button
+                  className="hero-place-detail-btn"
+                  onClick={() => navigate(`/place/${selectedBakery.id}`)}
+                >
+                  장소 상세 보기 →
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* ── 검색 패널 (기본) ── */
+          <>
+            <div className="hero-left-header">
+              <h2 className="hero-left-title">
+                <i className="fi fi-sr-bread hero-title-icon"></i>
+                어떤 빵집을 찾으시나요?
+              </h2>
+              <p className="hero-left-desc">
+                빵집 이름이나 지점을 정확히 입력해주세요 (예: 어니언 성수)
+              </p>
+            </div>
+
+            <div className="hero-search-area" ref={searchWrapRef}>
+              <div className="hero-search-wrap">
+                <input
+                  type="text"
+                  className="hero-search-input"
+                  placeholder="지도 검색"
+                  value={searchKeyword}
+                  onChange={e => { setSearchKeyword(e.target.value); setShowSuggestions(true); }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
+                />
+                <button className="hero-search-icon-btn" onClick={handleSearch}>
+                  <i className="fi fi-rr-search"></i>
+                </button>
+              </div>
+
+              {showSuggestions && searchSuggestions.length > 0 && (
+                <div className="hero-suggestions">
+                  {searchSuggestions.map(b => (
+                    <div
+                      key={b.id}
+                      className="hero-suggestion-item"
+                      onClick={() => {
+                        setShowSuggestions(false);
+                        if (b.isExternal) {
+                          if (mapInstanceRef.current) {
+                            mapInstanceRef.current.panTo(new window.naver.maps.LatLng(b.lat, b.lng));
+                            mapInstanceRef.current.setZoom(16);
+                          }
+                        } else {
+                          navigate(`/place/${b.id}`);
+                        }
+                      }}
+                    >
+                      <div className="hero-suggestion-thumb">
+                        {b.thumbnail
+                          ? <img src={b.thumbnail.startsWith('http') ? b.thumbnail : `${BASE_URL}${b.thumbnail}`} alt={b.name} />
+                          : <span>🍞</span>}
+                      </div>
+                      <div className="hero-suggestion-info">
+                        <span className="hero-suggestion-name">{b.name}</span>
+                        <span className="hero-suggestion-address">{b.address}</span>
+                      </div>
+                      {b.rating > 0 && <span className="hero-suggestion-rating">⭐ {b.rating}</span>}
+                    </div>
+                  ))}
+                  <div className="hero-suggestion-all" onClick={() => { setShowSuggestions(false); handleSearch(); }}>
+                    "{searchKeyword}" 전체 검색 결과 보기 →
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="hero-trending">
+              <p className="hero-trending-label">지금 뜨는 빵집</p>
+              <div className="hero-trending-list">
+                {topBakeries.length === 0 ? (
+                  <p className="hero-trending-empty">
+                    {externalLoading ? '빵집 불러오는 중...' : '등록된 빵집이 없습니다.'}
+                  </p>
+                ) : topBakeries.map(bakery => (
+                  <div
+                    key={bakery.id}
+                    className="hero-trending-item"
+                    onClick={() => {
                       if (mapInstanceRef.current) {
-                        mapInstanceRef.current.panTo(new window.naver.maps.LatLng(b.lat, b.lng));
+                        mapInstanceRef.current.panTo(new window.naver.maps.LatLng(bakery.lat, bakery.lng));
                         mapInstanceRef.current.setZoom(16);
                       }
-                    } else {
-                      navigate(`/place/${b.id}`);
-                    }
-                  }}
-                >
-                  <div className="hero-suggestion-thumb">
-                    {b.thumbnail
-                      ? <img src={b.thumbnail.startsWith('http') ? b.thumbnail : `${BASE_URL}${b.thumbnail}`} alt={b.name} />
-                      : <span>🍞</span>}
+                      navigate(`/place/${bakery.id}`);
+                    }}
+                  >
+                    <div className="hero-item-thumb">
+                      {bakery.thumbnail
+                        ? <img src={bakery.thumbnail.startsWith('http') ? bakery.thumbnail : `${BASE_URL}${bakery.thumbnail}`} alt={bakery.name} />
+                        : <span className="hero-item-thumb-placeholder">🍞</span>}
+                    </div>
+                    <div className="hero-item-info">
+                      <h4 className="hero-item-name">{bakery.name}</h4>
+                      <p className="hero-item-addr">{bakery.address}</p>
+                      <div className="hero-item-tags">
+                        {(bakery.menuTags || []).map(tag => (
+                          <span key={tag} className="hero-item-tag">#{tag}</span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <div className="hero-suggestion-info">
-                    <span className="hero-suggestion-name">{b.name}</span>
-                    <span className="hero-suggestion-address">{b.address}</span>
-                  </div>
-                  {b.rating > 0 && <span className="hero-suggestion-rating">⭐ {b.rating}</span>}
-                </div>
-              ))}
-              <div className="hero-suggestion-all" onClick={() => { setShowSuggestions(false); handleSearch(); }}>
-                "{searchKeyword}" 전체 검색 결과 보기 →
+                ))}
               </div>
             </div>
-          )}
-        </div>
-
-        {/* 지금 뜨는 빵집 */}
-        <div className="hero-trending">
-          <p className="hero-trending-label">지금 뜨는 빵집</p>
-          <div className="hero-trending-list">
-            {topBakeries.length === 0 ? (
-              <p className="hero-trending-empty">
-                {externalLoading ? '빵집 불러오는 중...' : '등록된 빵집이 없습니다.'}
-              </p>
-            ) : topBakeries.map(bakery => (
-              <div
-                key={bakery.id}
-                className="hero-trending-item"
-                onClick={() => {
-                  if (mapInstanceRef.current) {
-                    mapInstanceRef.current.panTo(new window.naver.maps.LatLng(bakery.lat, bakery.lng));
-                    mapInstanceRef.current.setZoom(16);
-                  }
-                  navigate(`/place/${bakery.id}`);
-                }}
-              >
-                <div className="hero-item-thumb">
-                  {bakery.thumbnail
-                    ? <img src={bakery.thumbnail.startsWith('http') ? bakery.thumbnail : `${BASE_URL}${bakery.thumbnail}`} alt={bakery.name} />
-                    : <span className="hero-item-thumb-placeholder">🍞</span>}
-                </div>
-                <div className="hero-item-info">
-                  <h4 className="hero-item-name">{bakery.name}</h4>
-                  <p className="hero-item-addr">{bakery.address}</p>
-                  <div className="hero-item-tags">
-                    {(bakery.menuTags || []).map(tag => (
-                      <span key={tag} className="hero-item-tag">#{tag}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
       {/* 뱃지 필터 — 지도 위 floating */}

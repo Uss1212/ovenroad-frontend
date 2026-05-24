@@ -187,7 +187,9 @@ export default function PlaceList() {
               region: region,
               rating: p.avgRating ? Number(p.avgRating).toFixed(1) : '0.0',
               reviewCount: p.reviewCount || 0,
-              hasRibbon: p.ribbonCount && p.ribbonCount > 0,
+              hasRibbon: p.certification?.includes('블루리본') || (p.ribbonCount && p.ribbonCount > 0),
+              hasCheonha: p.certification?.includes('천하제빵'),
+              hasMyungjang: p.certification?.includes('제과명장'),
               image: p.thumbnailImage || null,
               googlePlaceId: p.GOOGLE_PLACE_ID || null,
               menuTags: tags,
@@ -401,6 +403,12 @@ export default function PlaceList() {
 
                   {bakery.hasRibbon && (
                     <span className="pl-card-ribbon">🎀 블루리본</span>
+                  )}
+                  {bakery.hasCheonha && (
+                    <span className="pl-card-ribbon" style={{ background: 'rgba(220,252,231,0.92)', color: '#166534' }}>🏆 천하제빵</span>
+                  )}
+                  {bakery.hasMyungjang && (
+                    <span className="pl-card-ribbon" style={{ background: 'rgba(254,243,199,0.92)', color: '#92400e' }}>🥇 제과제빵명장</span>
                   )}
                   {bakery.isExternal && (
                     <span className="pl-card-external-badge">지도 검색</span>

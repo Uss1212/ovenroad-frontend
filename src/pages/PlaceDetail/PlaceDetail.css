@@ -76,6 +76,16 @@
   color: white;
 }
 
+.pd-hero-badge.cheonha {
+  background: rgba(220, 252, 231, 0.9);
+  color: #166534;
+}
+
+.pd-hero-badge.myungjang {
+  background: rgba(254, 243, 199, 0.9);
+  color: #92400e;
+}
+
 /* 히어로 빵집 이름 */
 .pd-hero-name {
   font-size: 2.25rem;
