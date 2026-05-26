@@ -46,9 +46,14 @@ export default function CourseList() {
       try {
         let data;
         if (activeTab === 'AI') {
-          data = await getAiCourseList(true); /* 전체 AI 코스 조회 */
+          data = await getAiCourseList(true);
         } else {
-          data = await getCourseList(getSortParam(activeSort), '', filterUserNum || '');
+          const [normal, ai] = await Promise.all([
+            getCourseList(getSortParam(activeSort), '', filterUserNum || ''),
+            getAiCourseList(true),
+          ]);
+          const aiNums = new Set(ai.map(c => c.COURSE_NUM));
+          data = [...normal.filter(c => !aiNums.has(c.COURSE_NUM)), ...ai];
         }
         setCourses(data);
       } catch (err) {
