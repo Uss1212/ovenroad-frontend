@@ -289,8 +289,9 @@ export async function getCourseList(sort = 'latest', region = '', userNum = '') 
 }
 
 /* --- AI 추천 코스 목록 조회 --- */
-export async function getAiCourseList() {
-  return request('/api/ai-course');
+/* all=true 이면 전체, 기본값은 최신 3개 (메인 페이지용) */
+export async function getAiCourseList(all = false) {
+  return request(`/api/ai-course${all ? '?all=true' : ''}`);
 }
 
 /* --- 코스 상세 조회 --- */

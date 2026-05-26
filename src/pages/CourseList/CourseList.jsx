@@ -46,11 +46,9 @@ export default function CourseList() {
       try {
         let data;
         if (activeTab === 'AI') {
-          data = await getAiCourseList();
+          data = await getAiCourseList(true); /* 전체 AI 코스 조회 */
         } else {
-          const normal = await getCourseList(getSortParam(activeSort), '', filterUserNum || '');
-          const ai = await getAiCourseList();
-          data = [...normal, ...ai];
+          data = await getCourseList(getSortParam(activeSort), '', filterUserNum || '');
         }
         setCourses(data);
       } catch (err) {

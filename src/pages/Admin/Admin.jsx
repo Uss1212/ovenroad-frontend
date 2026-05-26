@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   getNoticeList, getNoticeDetail, getFaqList, getQuestionList, getQuestionDetail,
-  getCourseList, deleteCourse,
+  getCourseList, getAiCourseList, deleteCourse,
   BASE_URL
 } from '../../api/apiAxios';
 import './Admin.css';
@@ -429,7 +429,12 @@ function CourseTab({ showMsg }) {
   const [list, setList] = useState([]);
 
   const load = async () => {
-    try { setList(await getCourseList()); } catch {}
+    try {
+      const [normal, ai] = await Promise.all([getCourseList(), getAiCourseList(true)]);
+      const aiNums = new Set(ai.map(c => c.COURSE_NUM));
+      const merged = [...ai, ...normal.filter(c => !aiNums.has(c.COURSE_NUM))];
+      setList(merged);
+    } catch {}
   };
   useEffect(() => { load(); }, []);
 
@@ -457,8 +462,8 @@ function CourseTab({ showMsg }) {
             {list.map(c => (
               <tr key={c.COURSE_NUM}>
                 <td>{c.COURSE_NUM}</td>
-                <td>{c.TITLE}</td>
-                <td>{c.author}</td>
+                <td>{c.TITLE}{c.IS_AI === 1 && <span style={{marginLeft:6,fontSize:'0.75rem',color:'#f59e0b'}}>✦ AI</span>}</td>
+                <td>{c.IS_AI === 1 ? 'AI 추천봇' : c.author}</td>
                 <td>{c.likeCount}</td>
                 <td>{new Date(c.CREATED_TIME).toLocaleDateString()}</td>
                 <td>
