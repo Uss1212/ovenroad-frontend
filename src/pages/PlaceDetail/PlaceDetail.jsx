@@ -1,48 +1,55 @@
-/* ===================================================
-   PlaceDetail 컴포넌트 (빵집 상세 페이지)
-   - URL: /place/:id
-   - 히어로 + 기본정보 + 사진 갤러리 + 매장정보 + 메뉴 + 코스 + 리뷰
-   =================================================== */
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { BASE_URL, getPlaceGoogleDetails, getExternalPlaceDetails, saveExternalPlace } from '../../api/apiAxios';
+import { BASE_URL, getPlaceGoogleDetails, getExternalPlaceDetails, saveExternalPlace, togglePlaceLike, togglePlaceBookmark, getPlaceStatus } from '../../api/apiAxios';
 import './PlaceDetail.css';
 
 export default function PlaceDetail() {
-
-  /* URL에서 빵집 ID 가져오기 */
   const { id } = useParams();
   const navigate = useNavigate();
 
-  /* 상태 관리 */
   const [place, setPlace] = useState(null);
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState([]);
   const [googleInfo, setGoogleInfo] = useState(null);
-
-  /* 리뷰 작성 모달 */
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
-
-  /* 로그인 사용자 */
   const userData = localStorage.getItem('user');
   const currentUser = userData ? JSON.parse(userData) : null;
-
-  /* 공유 상태 */
   const [copied, setCopied] = useState(false);
-
-  /* 사진 갤러리 라이트박스 (클릭하면 크게 보기) */
   const [lightboxIdx, setLightboxIdx] = useState(-1);
+  const [activeTab, setActiveTab] = useState('홈');
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
 
-  /* 기본 히어로 이미지 */
+  useEffect(() => {
+    if (!currentUser || !id || String(id).startsWith('ext_')) return;
+    getPlaceStatus(id).then(data => {
+      setIsLiked(data.liked);
+      setIsBookmarked(data.bookmarked);
+    }).catch(() => {});
+  }, [id]);
+
   const defaultHero = 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&h=400&fit=crop';
-
-  /* 이미지 URL 만들기 (http로 시작하면 그대로, 아니면 서버 주소 붙이기) */
   const imgUrl = (url) => url.startsWith('http') ? url : `${BASE_URL}${url}`;
 
-  /* 백엔드 API에서 빵집 데이터 가져오기 */
+  const getCourseImg = (course) => {
+    const src = course.COVER_IMAGE || course.thumbnailImage;
+    if (!src) return null;
+    try {
+      const parsed = JSON.parse(src);
+      const first = Array.isArray(parsed) ? parsed[0] : src;
+      return first?.startsWith('http') ? first : `${BASE_URL}${first}`;
+    } catch {
+      return src.startsWith('http') ? src : `${BASE_URL}${src}`;
+    }
+  };
+
+  const getDistrict = (address) => {
+    const match = address?.match(/([가-힣]+[구군시])\s/);
+    return match ? match[1] : null;
+  };
+
   const fetchPlace = async () => {
     try {
       setLoading(true);
@@ -86,16 +93,13 @@ export default function PlaceDetail() {
     const isExternal = String(id).startsWith('ext_');
 
     if (isExternal) {
-      /* 외부(Google Places) 빵집: DB에 저장 후 진짜 상세 페이지로 이동 */
       const placeId = id.replace('ext_', '');
       setLoading(true);
       saveExternalPlace(placeId)
         .then(({ placeNum }) => {
-          /* DB에 저장 완료 → 실제 placeNum으로 리다이렉트 */
           navigate(`/place/${placeNum}`, { replace: true });
         })
         .catch(() => {
-          /* 저장 실패 시 Google 데이터로 임시 표시 */
           getExternalPlaceDetails(placeId)
             .then(data => {
               setPlace({
@@ -115,7 +119,6 @@ export default function PlaceDetail() {
             .finally(() => setLoading(false));
         });
     } else {
-      /* DB 빵집: 기존 로직 */
       fetchPlace();
       getPlaceGoogleDetails(id)
         .then(data => { if (data?.found) setGoogleInfo(data); })
@@ -123,13 +126,21 @@ export default function PlaceDetail() {
     }
   }, [id]);
 
-  /* 주소 클릭 → 네이버 지도 열기 */
   const openNaverMap = () => {
     if (!place) return;
     window.open(`https://map.naver.com/v5/search/${encodeURIComponent(place.name)}`, '_blank');
   };
 
-  /* 로딩 중 */
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      prompt('아래 링크를 복사해주세요:', window.location.href);
+    }
+  };
+
   if (loading) {
     return (
       <div className="place-detail">
@@ -141,14 +152,13 @@ export default function PlaceDetail() {
     );
   }
 
-  /* 빵집 없음 */
   if (!place) {
     return (
       <div className="place-detail">
         <div className="pd-loading">
           <span style={{ fontSize: '3rem' }}>😢</span>
           <p>빵집 정보를 찾을 수 없습니다</p>
-          <button className="pd-back-btn" onClick={() => navigate('/')}>
+          <button className="pd-back-btn-main" onClick={() => navigate('/')}>
             메인으로 돌아가기
           </button>
         </div>
@@ -156,350 +166,375 @@ export default function PlaceDetail() {
     );
   }
 
+  const district = getDistrict(place.address);
+  const tabs = ['홈', '코스', '메뉴', '사진', '정보'];
+
   return (
     <div className="place-detail">
 
-      {/* ===== 1. 히어로 이미지 ===== */}
-      <div className="pd-hero">
-        <img
-          src={place.images.length > 0 ? imgUrl(place.images[0].IMAGE_URL) : defaultHero}
-          alt={place.name}
-          className="pd-hero-img"
-        />
-        {/* 어두운 오버레이 (글씨 잘 보이게) */}
-        <div className="pd-hero-overlay" />
-        {/* 히어로 위에 빵집 이름 + 뱃지 표시 */}
-        <div className="pd-hero-content">
-          <div className="pd-hero-badges">
-            {place.hasRibbon && <span className="pd-hero-badge ribbon">🎀 블루리본</span>}
-            {place.hasCheonha && <span className="pd-hero-badge cheonha">🏆 천하제빵</span>}
-            {place.hasMyungjang && <span className="pd-hero-badge myungjang">🥇 제과제빵명장</span>}
-            <span className="pd-hero-badge category">{place.category}</span>
-          </div>
-          <h1 className="pd-hero-name">{place.name}</h1>
-          <div className="pd-hero-meta">
-            <span className="pd-hero-rating">⭐ {place.rating}</span>
-            <span className="pd-hero-dot">·</span>
-            <span>리뷰 {place.reviewCount}개</span>
-          </div>
-        </div>
-      </div>
+      {/* Back arrow */}
+      <button className="pd-back-arrow" onClick={() => navigate(-1)}>‹</button>
 
-      {/* ===== 2. 액션 바 (공유 + 지도보기 버튼) ===== */}
-      <div className="pd-action-bar">
-        <button
-          className="pd-action-btn"
-          onClick={async () => {
-            try {
-              await navigator.clipboard.writeText(window.location.href);
-              setCopied(true);
-              setTimeout(() => setCopied(false), 2000);
-            } catch {
-              prompt('아래 링크를 복사해주세요:', window.location.href);
-            }
-          }}
-        >
-          <span className="pd-action-icon">{copied ? '✅' : '📤'}</span>
-          <span>{copied ? '복사완료!' : '공유하기'}</span>
-        </button>
-        <button className="pd-action-btn" onClick={openNaverMap}>
-          <span className="pd-action-icon">📍</span>
-          <span>지도보기</span>
-        </button>
-      </div>
-
-      {/* ===== 3. 본문 영역 ===== */}
-      <div className="pd-container">
-
-        {/* --- 매장 정보 --- */}
-        <div className="pd-section">
-          <h2 className="pd-section-title">매장 정보</h2>
-          <div className="pd-info-card">
-            <div className="pd-info-row pd-info-clickable" onClick={openNaverMap}>
-              <div className="pd-info-icon">📍</div>
-              <div className="pd-info-text">
-                <h4 className="pd-info-label">주소</h4>
-                <p className="pd-info-value">{place.address}</p>
-                <span className="pd-info-link-hint">네이버 지도에서 보기 →</span>
-              </div>
+      {/* Horizontal scrolling image gallery */}
+      <div className="pd-gallery-scroll">
+        {place.images.length > 0 ? (
+          place.images.map((img, i) => (
+            <div key={i} className="pd-gallery-scroll-item" onClick={() => setLightboxIdx(i)}>
+              <img src={imgUrl(img.IMAGE_URL)} alt={`${place.name} ${i + 1}`} />
             </div>
-            <div className="pd-info-row">
-              <div className="pd-info-icon">🕐</div>
-              <div className="pd-info-text">
-                <h4 className="pd-info-label">
-                  영업시간
-                  {googleInfo?.isOpenNow === true && <span className="pd-open-badge">영업중</span>}
-                  {googleInfo?.isOpenNow === false && <span className="pd-closed-badge">영업종료</span>}
-                </h4>
-                {googleInfo?.openingHours ? (
-                  <ul className="pd-hours-list">
-                    {googleInfo.openingHours.map((line, i) => (
-                      <li key={i} className="pd-hours-item">{line}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="pd-info-value">매장에 직접 문의해주세요</p>
-                )}
-              </div>
-            </div>
-            {googleInfo?.phone && (
-              <div className="pd-info-row">
-                <div className="pd-info-icon">📞</div>
-                <div className="pd-info-text">
-                  <h4 className="pd-info-label">전화번호</h4>
-                  <a href={`tel:${googleInfo.phone}`} className="pd-info-link">{googleInfo.phone}</a>
-                </div>
-              </div>
-            )}
-            {googleInfo?.website && (
-              <div className="pd-info-row">
-                <div className="pd-info-icon">🌐</div>
-                <div className="pd-info-text">
-                  <h4 className="pd-info-label">웹사이트</h4>
-                  <a href={googleInfo.website} target="_blank" rel="noreferrer" className="pd-info-link pd-info-link-external">
-                    {googleInfo.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-                  </a>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* --- 매장 사진 갤러리 --- */}
-        {place.images.length > 0 && (
-          <div className="pd-section">
-            <h2 className="pd-section-title">매장 사진 ({place.images.length})</h2>
-            <div className="pd-gallery">
-              {place.images.map((img, i) => (
-                <div
-                  key={i}
-                  className="pd-gallery-item"
-                  onClick={() => setLightboxIdx(i)}
-                >
-                  <img src={imgUrl(img.IMAGE_URL)} alt={`${place.name} ${i + 1}`} />
-                </div>
-              ))}
-            </div>
+          ))
+        ) : (
+          <div className="pd-gallery-scroll-item">
+            <img src={defaultHero} alt={place.name} />
           </div>
         )}
+      </div>
 
-        {/* --- 메뉴 --- */}
-        <div className="pd-section">
-          <div className="pd-section-title-row">
-            <h2 className="pd-section-title">메뉴</h2>
-            {/* 네이버 플레이스에서 전체 메뉴 보기 */}
-            <a
-              className="pd-naver-menu-btn"
-              href={`https://map.naver.com/v5/search/${encodeURIComponent((place.name || ''))}`}
-              target="_blank"
-              rel="noopener noreferrer"
+      {/* Store info section */}
+      <div className="pd-store-info">
+        <div className="pd-store-header">
+          <h1 className="pd-store-name">{place.name}</h1>
+          <div className="pd-store-actions">
+            <button className="pd-icon-btn" onClick={handleShare} title="공유하기">
+              {copied ? <span className="pd-icon-check">✓</span> : <i className="fi fi-rs-share"></i>}
+            </button>
+            <button
+              className={`pd-icon-btn ${isBookmarked ? 'active' : ''}`}
+              title="북마크"
+              onClick={async () => {
+                if (!currentUser) { alert('로그인이 필요합니다.'); navigate('/login'); return; }
+                try {
+                  const res = await togglePlaceBookmark(place.id);
+                  setIsBookmarked(res.bookmarked);
+                } catch { setIsBookmarked(prev => !prev); }
+              }}
             >
-              <img
-                src="https://ssl.pstatic.net/static/maps/mantle/resources/maps-icon-10.png"
-                alt="네이버"
-                className="pd-naver-icon"
-                onError={e => { e.target.style.display = 'none'; }}
-              />
-              네이버 플레이스에서 보기
-            </a>
+              <i className={isBookmarked ? 'fi fi-ss-bookmark' : 'fi fi-rs-bookmark'}></i>
+            </button>
+            <button
+              className={`pd-icon-btn pd-icon-btn-heart ${isLiked ? 'active' : ''}`}
+              title="좋아요"
+              onClick={async () => {
+                if (!currentUser) { alert('로그인이 필요합니다.'); navigate('/login'); return; }
+                try {
+                  const res = await togglePlaceLike(place.id);
+                  setIsLiked(res.liked);
+                } catch { setIsLiked(prev => !prev); }
+              }}
+            >
+              <i className={isLiked ? 'fi fi-ss-heart' : 'fi fi-rs-heart'}></i>
+            </button>
           </div>
-          {(!place.menus || place.menus.length === 0) ? (
-            <div className="pd-empty-box">
-              <span>🍞</span>
-              <p>아직 등록된 메뉴 정보가 없습니다</p>
-              <a
-                className="pd-naver-menu-fallback"
-                href={`https://map.naver.com/v5/search/${encodeURIComponent((place.name || '') + ' ' + (place.address || ''))}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                네이버 플레이스에서 메뉴 확인하기 →
-              </a>
-            </div>
-          ) : (
-            <>
-              {/* 시그니처 메뉴 (상위 3개) */}
-              <div className="pd-sig-section">
-                <p className="pd-sig-label">⭐ 시그니처 메뉴</p>
-                <div className="pd-sig-list">
-                  {place.menus.slice(0, 3).map((menu) => (
-                    <div key={menu.MENU_NUM} className="pd-sig-card">
-                      <div className="pd-sig-badge">BEST</div>
-                      <div className="pd-sig-thumb">
-                        {menu.IMAGE_URL
-                          ? <img src={imgUrl(menu.IMAGE_URL)} alt={menu.MENU_NAME} className="pd-sig-thumb-img" />
-                          : <span>🥐</span>}
+        </div>
+        <p className="pd-store-address">{place.address}</p>
+        <div className="pd-store-rating">
+          <span className="pd-store-star">★</span> {place.rating}
+        </div>
+        <div className="pd-store-tags">
+          {place.hasCheonha && <span className="pd-tag">#천하제빵</span>}
+          {place.hasRibbon && <span className="pd-tag">#블루리본</span>}
+          {place.hasMyungjang && <span className="pd-tag">#제과명장</span>}
+          <span className="pd-tag">#{place.category}</span>
+          {district && <span className="pd-tag">#{district}</span>}
+        </div>
+      </div>
+
+      {/* Tab navigation */}
+      <div className="pd-tabs">
+        {tabs.map(tab => (
+          <button
+            key={tab}
+            className={`pd-tab ${activeTab === tab ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      <div className="pd-tab-content">
+
+        {/* ===== 홈 탭 ===== */}
+        {activeTab === '홈' && (
+          <>
+            {place.courses && place.courses.length > 0 && (
+              <section className="pd-section">
+                <h2 className="pd-section-title">포함하고 있는 코스들</h2>
+                <div className="pd-home-courses">
+                  {place.courses.map(c => {
+                    const courseImg = getCourseImg(c);
+                    return (
+                      <div key={c.COURSE_NUM} className="pd-home-course-card" onClick={() => navigate(`/courses/${c.COURSE_NUM}`)}>
+                        <div className="pd-home-course-img">
+                          {courseImg ? (
+                            <img src={courseImg} alt={c.TITLE} />
+                          ) : (
+                            <div className="pd-home-course-placeholder">🗺️</div>
+                          )}
+                        </div>
+                        <h4 className="pd-home-course-title">{c.TITLE}</h4>
+                        <p className="pd-home-course-subtitle">{c.SUBTITLE || '오늘의 빵지순례에 시작하기'}</p>
                       </div>
-                      <div className="pd-sig-info">
-                        <span className="pd-sig-name">{menu.MENU_NAME}</span>
-                        <span className="pd-sig-price">
-                          {menu.PRICE > 0 ? menu.PRICE.toLocaleString() + '원' : '가격변동'}
-                        </span>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {place.menus && place.menus.length > 0 && (
+              <section className="pd-section">
+                <h2 className="pd-section-title">시그니처 메뉴</h2>
+                <div className="pd-home-menus">
+                  {place.menus.slice(0, 3).map((menu, idx) => (
+                    <div key={menu.MENU_NUM} className="pd-home-menu-card">
+                      <div className="pd-home-menu-img">
+                        {menu.IMAGE_URL ? (
+                          <img src={imgUrl(menu.IMAGE_URL)} alt={menu.MENU_NAME} />
+                        ) : (
+                          <div className="pd-home-menu-placeholder">🥐</div>
+                        )}
                       </div>
+                      {idx < 2 && <span className="pd-menu-badge">대표</span>}
+                      <p className="pd-home-menu-name">{menu.MENU_NAME}</p>
+                      <p className="pd-home-menu-price">
+                        {menu.PRICE > 0 ? menu.PRICE.toLocaleString() + ' 원' : '가격변동'}
+                      </p>
                     </div>
                   ))}
                 </div>
+              </section>
+            )}
+
+            {/* 리뷰 섹션 */}
+            <section className="pd-section">
+              <div className="pd-section-header">
+                <h2 className="pd-section-title">리뷰</h2>
+                {!place.isExternal && (
+                  <button className="pd-review-write-btn" onClick={() => {
+                    const user = localStorage.getItem('user');
+                    if (!user) { alert('로그인이 필요합니다.'); navigate('/login'); return; }
+                    setShowReviewModal(true);
+                  }}>
+                    ✏️ 리뷰 작성
+                  </button>
+                )}
               </div>
 
-              {/* 전체 메뉴 목록 (3개 초과 시) */}
-              {place.menus.length > 3 && (
-                <div className="pd-menu-rest">
-                  <p className="pd-menu-rest-label">전체 메뉴</p>
-                  <div className="pd-menu-grid">
-                    {place.menus.slice(3).map((menu) => (
-                      <div key={menu.MENU_NUM} className="pd-menu-card">
-                        <div className="pd-menu-thumb">
-                          {menu.IMAGE_URL
-                            ? <img src={imgUrl(menu.IMAGE_URL)} alt={menu.MENU_NAME} className="pd-menu-thumb-img" />
-                            : <span>🥐</span>}
-                        </div>
-                        <div className="pd-menu-info">
-                          <span className="pd-menu-name">{menu.MENU_NAME}</span>
-                          <span className="pd-menu-price">
-                            {menu.PRICE > 0 ? menu.PRICE.toLocaleString() + '원' : '가격변동'}
-                          </span>
-                        </div>
-                      </div>
+              {place.isExternal ? (
+                <div className="pd-review-summary">
+                  <div className="pd-review-big-score">
+                    <span className="pd-review-num">{place.rating}</span>
+                    <span className="pd-review-max">/ 5.0</span>
+                  </div>
+                  <div className="pd-review-stars-row">
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <span key={s} className={`pd-star ${s <= Math.round(Number(place.rating)) ? 'filled' : ''}`}>★</span>
                     ))}
                   </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* --- 관련 코스 --- */}
-        {place.courses && place.courses.length > 0 && (
-          <div className="pd-section">
-            <h2 className="pd-section-title">이 빵집이 포함된 코스</h2>
-            <div className="pd-course-list">
-              {place.courses.map((c) => (
-                <div
-                  key={c.COURSE_NUM}
-                  className="pd-course-card"
-                  onClick={() => navigate(`/courses/${c.COURSE_NUM}`)}
-                >
-                  <div className="pd-course-icon">🗺️</div>
-                  <div className="pd-course-info">
-                    <h4 className="pd-course-name">{c.TITLE}</h4>
-                    <p className="pd-course-desc">{c.SUBTITLE || '빵지순례 코스'}</p>
+                  <p className="pd-review-total">Google 리뷰 {place.reviewCount}개</p>
+                  <div className="pd-empty-box" style={{ marginTop: '1rem' }}>
+                    <span>🌐</span>
+                    <p>오븐로드에 등록되지 않은 빵집이에요.<br />리뷰는 Google 지도에서 확인하세요.</p>
+                    <a
+                      href={`https://www.google.com/maps/search/${encodeURIComponent(place.name + ' ' + place.address)}`}
+                      target="_blank" rel="noreferrer"
+                      className="pd-ext-link"
+                    >
+                      Google 지도에서 보기 →
+                    </a>
                   </div>
-                  <span className="pd-course-arrow">→</span>
                 </div>
-              ))}
-            </div>
-          </div>
+              ) : (
+                <>
+                  <div className="pd-review-summary">
+                    <div className="pd-review-big-score">
+                      <span className="pd-review-num">{place.rating}</span>
+                      <span className="pd-review-max">/ 5.0</span>
+                    </div>
+                    <div className="pd-review-stars-row">
+                      {[1, 2, 3, 4, 5].map(s => (
+                        <span key={s} className={`pd-star ${s <= Math.round(Number(place.rating)) ? 'filled' : ''}`}>★</span>
+                      ))}
+                    </div>
+                    <p className="pd-review-total">{place.reviewCount}개의 리뷰</p>
+                  </div>
+
+                  {reviews.length === 0 ? (
+                    <div className="pd-empty-box">
+                      <span>💬</span>
+                      <p>아직 작성된 리뷰가 없습니다. 첫 리뷰를 남겨보세요!</p>
+                    </div>
+                  ) : (
+                    <div className="pd-review-list">
+                      {reviews.map((r) => (
+                        <div key={r.REVIEW_NUM} className="pd-review-card">
+                          <div className="pd-review-author">
+                            <div className="pd-review-avatar">{r.NICKNAME?.charAt(0) || '?'}</div>
+                            <div>
+                              <p className="pd-review-name">{r.NICKNAME}</p>
+                              <div className="pd-review-meta">
+                                <span className="pd-review-meta-stars">
+                                  {[1, 2, 3, 4, 5].map(s => (
+                                    <span key={s} className={`pd-star-sm ${s <= r.RATING ? 'filled' : ''}`}>★</span>
+                                  ))}
+                                </span>
+                                <span className="pd-review-meta-date">
+                                  {new Date(r.CREATED_TIME).toLocaleDateString('ko-KR')}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <p className="pd-review-text">{r.CONTENT}</p>
+                          {currentUser && currentUser.userNum === r.USER_NUM && (
+                            <button
+                              className="pd-review-delete"
+                              onClick={async () => {
+                                if (!window.confirm('리뷰를 삭제하시겠습니까?')) return;
+                                try {
+                                  await fetch(`${BASE_URL}/api/places/${id}/reviews/${r.REVIEW_NUM}`, { method: 'DELETE' });
+                                  fetchPlace();
+                                } catch (err) { console.error('리뷰 삭제 실패:', err); }
+                              }}
+                            >
+                              삭제
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </section>
+          </>
         )}
 
-        {/* --- 리뷰 --- */}
-        <div className="pd-section">
-          <div className="pd-section-header">
-            <h2 className="pd-section-title">리뷰</h2>
-            {!place.isExternal && (
-              <button className="pd-review-write-btn" onClick={() => {
-                const user = localStorage.getItem('user');
-                if (!user) { alert('로그인이 필요합니다.'); navigate('/login'); return; }
-                setShowReviewModal(true);
-              }}>
-                ✏️ 리뷰 작성
-              </button>
-            )}
-          </div>
-
-          {/* 외부 빵집: Google 별점 안내 */}
-          {place.isExternal ? (
-            <div className="pd-review-summary">
-              <div className="pd-review-big-score">
-                <span className="pd-review-num">{place.rating}</span>
-                <span className="pd-review-max">/ 5.0</span>
+        {/* ===== 코스 탭 ===== */}
+        {activeTab === '코스' && (
+          <section className="pd-section">
+            {place.courses && place.courses.length > 0 ? (
+              <div className="pd-course-grid">
+                {place.courses.map(c => {
+                  const courseImg = getCourseImg(c);
+                  return (
+                    <div key={c.COURSE_NUM} className="pd-course-card-new" onClick={() => navigate(`/courses/${c.COURSE_NUM}`)}>
+                      <div className="pd-course-card-img">
+                        {courseImg ? (
+                          <img src={courseImg} alt={c.TITLE} />
+                        ) : (
+                          <div className="pd-course-placeholder">🗺️</div>
+                        )}
+                      </div>
+                      <h4 className="pd-course-card-title">{c.TITLE}</h4>
+                      <p className="pd-course-card-subtitle">{c.SUBTITLE || '오늘의 빵지순례에 시작하기'}</p>
+                    </div>
+                  );
+                })}
               </div>
-              <div className="pd-review-stars-row">
-                {[1, 2, 3, 4, 5].map(s => (
-                  <span key={s} className={`pd-star ${s <= Math.round(Number(place.rating)) ? 'filled' : ''}`}>★</span>
+            ) : (
+              <div className="pd-empty-box">
+                <span>🗺️</span>
+                <p>아직 이 빵집이 포함된 코스가 없습니다</p>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ===== 메뉴 탭 ===== */}
+        {activeTab === '메뉴' && (
+          <section className="pd-section">
+            {place.menus && place.menus.length > 0 ? (
+              <div className="pd-menu-grid-new">
+                {place.menus.map((menu, idx) => (
+                  <div key={menu.MENU_NUM} className="pd-menu-card-new">
+                    <div className="pd-menu-card-img">
+                      {menu.IMAGE_URL ? (
+                        <img src={imgUrl(menu.IMAGE_URL)} alt={menu.MENU_NAME} />
+                      ) : (
+                        <div className="pd-menu-placeholder">🥐</div>
+                      )}
+                    </div>
+                    {idx < 2 && <span className="pd-menu-badge">대표</span>}
+                    <p className="pd-menu-card-name">{menu.MENU_NAME}</p>
+                    <p className="pd-menu-card-price">
+                      {menu.PRICE > 0 ? menu.PRICE.toLocaleString() + ' 원' : '가격변동'}
+                    </p>
+                  </div>
                 ))}
               </div>
-              <p className="pd-review-total">Google 리뷰 {place.reviewCount}개</p>
-              <div className="pd-empty-box" style={{ marginTop: '1rem' }}>
-                <span>🌐</span>
-                <p>오븐로드에 등록되지 않은 빵집이에요.<br />리뷰는 Google 지도에서 확인하세요.</p>
+            ) : (
+              <div className="pd-empty-box">
+                <span>🍞</span>
+                <p>아직 등록된 메뉴 정보가 없습니다</p>
                 <a
-                  href={`https://www.google.com/maps/search/${encodeURIComponent(place.name + ' ' + place.address)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="pd-info-link pd-info-link-external"
-                  style={{ marginTop: '0.5rem', display: 'inline-block' }}
+                  className="pd-naver-menu-fallback"
+                  href={`https://map.naver.com/v5/search/${encodeURIComponent((place.name || '') + ' ' + (place.address || ''))}`}
+                  target="_blank" rel="noopener noreferrer"
                 >
-                  Google 지도에서 보기 →
+                  네이버 플레이스에서 메뉴 확인하기 →
                 </a>
               </div>
-            </div>
-          ) : (
-            <>
-          {/* DB 빵집 리뷰 요약 */}
-          <div className="pd-review-summary">
-            <div className="pd-review-big-score">
-              <span className="pd-review-num">{place.rating}</span>
-              <span className="pd-review-max">/ 5.0</span>
-            </div>
-            <div className="pd-review-stars-row">
-              {[1, 2, 3, 4, 5].map(s => (
-                <span key={s} className={`pd-star ${s <= Math.round(Number(place.rating)) ? 'filled' : ''}`}>★</span>
-              ))}
-            </div>
-            <p className="pd-review-total">{place.reviewCount}개의 리뷰</p>
-          </div>
+            )}
+          </section>
+        )}
 
-          {/* 리뷰 목록 */}
-          {reviews.length === 0 ? (
-            <div className="pd-empty-box">
-              <span>💬</span>
-              <p>아직 작성된 리뷰가 없습니다. 첫 리뷰를 남겨보세요!</p>
-            </div>
-          ) : (
-            <div className="pd-review-list">
-              {reviews.map((r) => (
-                <div key={r.REVIEW_NUM} className="pd-review-card">
-                  <div className="pd-review-author">
-                    <div className="pd-review-avatar">{r.NICKNAME?.charAt(0) || '?'}</div>
-                    <div>
-                      <p className="pd-review-name">{r.NICKNAME}</p>
-                      <div className="pd-review-meta">
-                        <span className="pd-review-meta-stars">
-                          {[1, 2, 3, 4, 5].map(s => (
-                            <span key={s} className={`pd-star-sm ${s <= r.RATING ? 'filled' : ''}`}>★</span>
-                          ))}
-                        </span>
-                        <span className="pd-review-meta-date">
-                          {new Date(r.CREATED_TIME).toLocaleDateString('ko-KR')}
-                        </span>
-                      </div>
-                    </div>
+        {/* ===== 사진 탭 ===== */}
+        {activeTab === '사진' && (
+          <section className="pd-section">
+            {place.images.length > 0 ? (
+              <div className="pd-photo-grid">
+                {place.images.map((img, i) => (
+                  <div key={i} className="pd-photo-item" onClick={() => setLightboxIdx(i)}>
+                    <img src={imgUrl(img.IMAGE_URL)} alt={`${place.name} ${i + 1}`} />
                   </div>
-                  <p className="pd-review-text">{r.CONTENT}</p>
-                  {currentUser && currentUser.userNum === r.USER_NUM && (
-                    <button
-                      className="pd-review-delete"
-                      onClick={async () => {
-                        if (!window.confirm('리뷰를 삭제하시겠습니까?')) return;
-                        try {
-                          await fetch(`${BASE_URL}/api/places/${id}/reviews/${r.REVIEW_NUM}`, { method: 'DELETE' });
-                          fetchPlace();
-                        } catch (err) { console.error('리뷰 삭제 실패:', err); }
-                      }}
-                    >
-                      삭제
-                    </button>
-                  )}
+                ))}
+              </div>
+            ) : (
+              <div className="pd-empty-box">
+                <span>📷</span>
+                <p>등록된 사진이 없습니다</p>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ===== 정보 탭 ===== */}
+        {activeTab === '정보' && (
+          <section className="pd-section">
+            <div className="pd-info-card-new">
+              <div className="pd-info-grid-new">
+                {googleInfo?.isOpenNow === true && <div className="pd-info-item-new">• 영업 중</div>}
+                {googleInfo?.isOpenNow === false && <div className="pd-info-item-new">• 영업 종료</div>}
+                {googleInfo?.openingHours && googleInfo.openingHours.length > 0 && (
+                  <div className="pd-info-item-new">• 영업 시간 : {googleInfo.openingHours[0]?.replace(/^[가-힣]+:\s*/, '')}</div>
+                )}
+                {googleInfo?.phone && (
+                  <div className="pd-info-item-new">• 가게번호 : <a href={`tel:${googleInfo.phone}`}>{googleInfo.phone}</a></div>
+                )}
+                <div className="pd-info-item-new pd-info-clickable" onClick={openNaverMap}>• 주소 : {place.address}</div>
+                {googleInfo?.website && (
+                  <div className="pd-info-item-new">• 웹사이트 : <a href={googleInfo.website} target="_blank" rel="noreferrer">
+                    {googleInfo.website.replace(/^https?:\/\//, '').replace(/\/$/, '').slice(0, 30)}
+                  </a></div>
+                )}
+              </div>
+              {googleInfo?.openingHours && googleInfo.openingHours.length > 1 && (
+                <div className="pd-info-hours-detail">
+                  <p className="pd-info-hours-title">전체 영업시간</p>
+                  <ul className="pd-info-hours-list">
+                    {googleInfo.openingHours.map((line, i) => (
+                      <li key={i}>{line}</li>
+                    ))}
+                  </ul>
                 </div>
-              ))}
+              )}
             </div>
-          )}
-            </>
-          )}
-        </div>
+          </section>
+        )}
       </div>
 
-      {/* ===== 사진 라이트박스 (크게 보기) ===== */}
+      {/* Lightbox */}
       {lightboxIdx >= 0 && (
         <div className="pd-lightbox" onClick={() => setLightboxIdx(-1)}>
           <button className="pd-lightbox-close" onClick={() => setLightboxIdx(-1)}>✕</button>
@@ -508,7 +543,6 @@ export default function PlaceDetail() {
             alt={`${place.name} ${lightboxIdx + 1}`}
             onClick={(e) => e.stopPropagation()}
           />
-          {/* 이전/다음 버튼 */}
           {lightboxIdx > 0 && (
             <button className="pd-lightbox-prev" onClick={(e) => { e.stopPropagation(); setLightboxIdx(lightboxIdx - 1); }}>‹</button>
           )}
@@ -519,7 +553,7 @@ export default function PlaceDetail() {
         </div>
       )}
 
-      {/* ===== 리뷰 작성 모달 ===== */}
+      {/* Review modal */}
       {showReviewModal && (
         <div className="pd-modal-overlay" onClick={() => setShowReviewModal(false)}>
           <div className="pd-modal" onClick={(e) => e.stopPropagation()}>

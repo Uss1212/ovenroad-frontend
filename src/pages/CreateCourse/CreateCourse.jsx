@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { createCourse, updateCourse, saveDraft, updateDraft, deleteDraft, uploadCourseImage, BASE_URL } from '../../api/apiAxios';
+import { createCourse, updateCourse, saveDraft, updateDraft, deleteDraft, uploadCourseImage, getMyBookmarkedPlaces, BASE_URL } from '../../api/apiAxios';
 import { createMarkerClustering } from '../../utils/MarkerClustering'; /* 마커 클러스터링 (가까운 마커끼리 묶어서 표시) */
 import './CreateCourse.css';
 
@@ -77,6 +77,14 @@ export default function CreateCourse() {
   /* 이미지 업로드 input 참조 (숨겨진 input을 클릭하기 위해) */
   const fileInputRef = useRef(null);
 
+  /* 에디터 관련 */
+  const editorRef = useRef(null);
+  const editorFileInputRef = useRef(null);
+  const [showFontSize, setShowFontSize] = useState(false);
+  const [editorImages, setEditorImages] = useState([]);
+  const [mainEditorImageIndex, setMainEditorImageIndex] = useState(null);
+  const [bookmarkedPlaces, setBookmarkedPlaces] = useState([]);
+
   /* 비로그인 시 접근 차단 */
   useEffect(() => {
     const user = localStorage.getItem('user');
@@ -85,6 +93,19 @@ export default function CreateCourse() {
       navigate('/login');
     }
   }, [navigate]);
+
+  useEffect(() => {
+    getMyBookmarkedPlaces()
+      .then(rows => {
+        setBookmarkedPlaces(rows.map(r => ({
+          id: r.PLACE_NUM,
+          name: r.PLACE_NAME,
+          address: r.ADDRESS,
+          thumbnail: r.thumbnailImage || null,
+        })));
+      })
+      .catch(() => {});
+  }, []);
 
   /* ============================================
      마이페이지에서 "이어서 작성" 클릭 시 임시저장 데이터 복원
@@ -133,6 +154,7 @@ export default function CreateCourse() {
               badges: badgeList,
               lat: parseFloat(p.LATITUDE),
               lng: parseFloat(p.LONGITUDE),
+              thumbnail: p.thumbnailImage || null,
             };
           });
         setBakeries(mapped);
@@ -205,6 +227,69 @@ export default function CreateCourse() {
   /* 태그 삭제 */
   const handleRemoveTag = (index) => {
     setTags(tags.filter((_, i) => i !== index));
+  };
+
+  /* ============================================
+     에디터 기능
+     ============================================ */
+  const execCmd = (command, value = null) => {
+    editorRef.current?.focus();
+    document.execCommand(command, false, value);
+  };
+
+  const handleEditorImage = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const preview = reader.result;
+      setEditorImages(prev => [...prev, { preview, caption: '' }]);
+      if (mainEditorImageIndex === null) {
+        setMainEditorImageIndex(0);
+        setCoverImages([preview]);
+      }
+    };
+    reader.readAsDataURL(file);
+    try {
+      const uploadResult = await uploadCourseImage(file);
+      if (uploadResult?.imageUrl) {
+        const url = uploadResult.imageUrl.startsWith('http') ? uploadResult.imageUrl : `${BASE_URL}${uploadResult.imageUrl}`;
+        uploadedImageUrlsRef.current = [...uploadedImageUrlsRef.current, url];
+        setUploadedImageUrls([...uploadedImageUrlsRef.current]);
+      }
+    } catch (err) {
+      console.error('에디터 이미지 업로드 실패:', err);
+    }
+    e.target.value = '';
+  };
+
+  const handleSetMainImage = (index) => {
+    setMainEditorImageIndex(index);
+    setCoverImages([editorImages[index].preview]);
+    setMainImageIndex(0);
+  };
+
+  const handleRemoveEditorImage = (index) => {
+    setEditorImages(prev => prev.filter((_, i) => i !== index));
+    if (mainEditorImageIndex === index) {
+      setMainEditorImageIndex(null);
+      setCoverImages([]);
+    } else if (mainEditorImageIndex > index) {
+      setMainEditorImageIndex(prev => prev - 1);
+    }
+  };
+
+  const handleFontSize = (size) => {
+    editorRef.current?.focus();
+    document.execCommand('fontSize', false, '7');
+    const fonts = editorRef.current?.querySelectorAll('font[size="7"]');
+    if (fonts) {
+      fonts.forEach(el => {
+        el.removeAttribute('size');
+        el.style.fontSize = size + 'px';
+      });
+    }
+    setShowFontSize(false);
   };
 
   /* ============================================
@@ -318,11 +403,12 @@ export default function CreateCourse() {
       return;
     }
 
+    const editorContent = editorRef.current?.innerHTML || '';
     const payload = {
       userNum: user.userNum,
       title: title.trim(),
       subtitle: description.trim() || title.trim(),
-      content: description.trim(),
+      content: editorContent || description.trim(),
       tags,
       coverImage: uploadedImageUrls.length > 0 ? uploadedImageUrls[mainImageIndex] || uploadedImageUrls[0] : null,
       coverImages: uploadedImageUrls,
@@ -403,11 +489,7 @@ export default function CreateCourse() {
       map = new window.naver.maps.Map(mapRef.current, {
         center: new window.naver.maps.LatLng(37.5550, 126.9700),
         zoom: 12,
-        zoomControl: true,
-        zoomControlOptions: {
-          position: window.naver.maps.Position.TOP_RIGHT,
-          style: window.naver.maps.ZoomControlStyle.SMALL,
-        },
+        zoomControl: false,
         mapTypeControl: false,
       });
       mapInstanceRef.current = map;
@@ -550,144 +632,159 @@ export default function CreateCourse() {
   return (
     <div className="create-course">
 
-      {/* ===== 상단 버튼 바 ===== */}
-      {/* 오른쪽 정렬: 임시저장 + 발행하기 */}
+      {/* ===== 상단 서브헤더 ===== */}
       <div className="cc-top-bar">
+        <button className="cc-back-arrow" onClick={() => navigate(-1)}>‹</button>
         {!editCourseNum && (
           <button className="cc-draft-btn" onClick={handleDraft}>
             임시저장
           </button>
         )}
         <button className="cc-publish-btn" onClick={handlePublish}>
-          {editCourseNum ? '수정 완료' : '발행하기'}
+          {editCourseNum ? '수정 완료' : '완료'}
         </button>
       </div>
 
       {/* ===== 본문 영역 ===== */}
       <div className="cc-body">
 
-        {/* --- 1. 이미지 업로드 (가로 나열) --- */}
-        {/* + 버튼이 항상 맨 왼쪽, 추가된 이미지들은 오른쪽으로 나열 */}
-        <div className="cc-cover-row">
-          {/* + 버튼: 항상 맨 왼쪽에 위치 */}
-          <div
-            className="cc-cover-upload"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <div className="cc-cover-placeholder">
-              <span className="cc-cover-plus">+</span>
-            </div>
-          </div>
-          {/* 추가된 이미지들이 오른쪽으로 나열 */}
-          {coverImages.map((img, index) => (
-            <div key={index} className="cc-cover-item">
-              <img src={img} alt={`이미지 ${index + 1}`} className="cc-cover-preview" />
-              <button
-                className={`cc-cover-star ${mainImageIndex === index ? 'cc-cover-star-active' : ''}`}
-                onClick={() => setMainImageIndex(index)}
-                title="대표이미지로 설정"
-              >
-                ★
-              </button>
-              <button
-                className="cc-cover-remove"
-                onClick={() => {
-                  handleRemoveImage(index);
-                  if (mainImageIndex === index) setMainImageIndex(0);
-                  else if (mainImageIndex > index) setMainImageIndex(prev => prev - 1);
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-          {/* 숨겨진 파일 input */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={handleImageUpload}
-          />
-        </div>
-
-        {/* --- 2. 코스 제목 --- */}
-        <input
-          type="text"
-          className="cc-title-input"
-          placeholder="코스 제목을 입력하세요. (최소 입력 글자 5글자 이상)"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-
-        <div className="cc-author-row">
-          <div className="cc-author-avatar">
-            {(() => {
-              try {
-                const u = JSON.parse(localStorage.getItem('user'));
-                if (u?.profileImage) {
-                  return <img src={u.profileImage} alt="프로필" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />;
-                }
-                return (u?.nickname || u?.name || '작')[0];
-              } catch { return '작'; }
-            })()}
-          </div>
-          <span className="cc-author-name">
-            {(() => {
-              try {
-                const u = JSON.parse(localStorage.getItem('user'));
-                return u?.nickname || '작성자';
-              } catch { return '작성자'; }
-            })()}
-          </span>
-        </div>
-
-        {/* --- 4. 세부 내용 입력 --- */}
-        <textarea
-          className="cc-desc-input"
-          placeholder="세부 내용을 입력해주세요."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-
-        {/* --- 5. 태그 추가 --- */}
-        <div className="cc-tag-section">
-          {/* 이미 추가된 태그들 */}
-          {tags.length > 0 && (
-            <div className="cc-tag-list">
-              {tags.map((tag, i) => (
-                <span key={i} className="cc-tag-item">
-                  #{tag}
-                  <button className="cc-tag-remove" onClick={() => handleRemoveTag(i)}>✕</button>
-                </span>
-              ))}
-            </div>
+        {/* --- 히어로 섹션: 이미지 + 제목 + 부제목 + 태그 --- */}
+        <div className="cc-hero-section">
+          {coverImages.length > 0 && (
+            <img src={coverImages[mainImageIndex] || coverImages[0]} alt="커버" className="cc-hero-bg" />
           )}
-          {/* 태그 입력 */}
-          <div className="cc-tag-input-wrap">
-            <span className="cc-tag-plus">+</span>
+          <div className="cc-hero-overlay" />
+
+          <div className="cc-hero-content">
+            <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
+
+            {/* 제목 입력 */}
             <input
               type="text"
-              className="cc-tag-input"
-              placeholder="태그 추가 (엔터로 자동 추가)"
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyDown={handleTagKeyDown}
+              className="cc-title-input"
+              placeholder="코스 제목을 입력하세요"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
             />
+
+            {/* 부제목/설명 입력 */}
+            <textarea
+              className="cc-desc-input"
+              placeholder="부제목을 입력해주세요"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={1}
+            />
+
+            {/* 태그 */}
+            <div className="cc-tag-section">
+              {tags.length > 0 && (
+                <div className="cc-tag-list">
+                  {tags.map((tag, i) => (
+                    <span key={i} className="cc-tag-item">
+                      #{tag}
+                      <button className="cc-tag-remove" onClick={() => handleRemoveTag(i)}>✕</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="cc-tag-input-wrap">
+                <span className="cc-tag-plus">+</span>
+                <input
+                  type="text"
+                  className="cc-tag-input"
+                  placeholder="태그 추가 (엔터로 자동 추가)"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* ===== 하단: 지도 + 장소 추가 좌우 분할 ===== */}
+        {/* 글 에디터 영역 */}
+        <div className="cc-editor-area">
+          {editorImages.length === 0 && (
+            <div className="cc-editor-empty" onClick={() => editorFileInputRef.current?.click()}>
+              사진을 추가하고 글을 작성해보세요...
+            </div>
+          )}
+          {editorImages.map((img, index) => (
+            <div key={index} className="cc-editor-block">
+              <div className="cc-editor-img-wrap">
+                <img src={img.preview} alt={`에디터 이미지 ${index + 1}`} />
+                <button
+                  className={`cc-editor-main-btn ${mainEditorImageIndex === index ? 'selected' : ''}`}
+                  onClick={() => handleSetMainImage(index)}
+                >
+                  {mainEditorImageIndex === index ? '✓ 대표' : '대표'}
+                </button>
+                <button className="cc-editor-del-btn" onClick={() => handleRemoveEditorImage(index)}>
+                  <i className="fi fi-rr-trash"></i>
+                </button>
+              </div>
+              <input
+                type="text"
+                className="cc-editor-caption"
+                placeholder="사진 제목을 입력하세요"
+                value={img.caption}
+                onChange={(e) => {
+                  const updated = [...editorImages];
+                  updated[index].caption = e.target.value;
+                  setEditorImages(updated);
+                }}
+              />
+            </div>
+          ))}
+          <div
+            ref={editorRef}
+            className="cc-editor-text"
+            contentEditable
+            suppressContentEditableWarning
+            data-placeholder="글을 작성해보세요..."
+          />
+        </div>
+        <input ref={editorFileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleEditorImage} />
+
+        {/* 에디터 툴바 */}
+        <div className="cc-editor-toolbar">
+          <button className="cc-toolbar-btn" onClick={() => editorFileInputRef.current?.click()}>
+            <i className="fi fi-rr-picture"></i> 사진추가
+          </button>
+          <span className="cc-toolbar-divider" />
+          <div className="cc-fontsize-wrap">
+            <button className="cc-toolbar-btn" onClick={() => setShowFontSize(!showFontSize)}>14 ▾</button>
+            {showFontSize && (
+              <div className="cc-fontsize-dropdown">
+                {[12, 14, 16, 18, 20, 24, 28, 32].map(s => (
+                  <button key={s} className="cc-fontsize-option" onClick={() => handleFontSize(s)}>{s}px</button>
+                ))}
+              </div>
+            )}
+          </div>
+          <span className="cc-toolbar-divider" />
+          <button className="cc-toolbar-btn" style={{ fontWeight: 700 }} onClick={() => execCmd('bold')}>B</button>
+          <button className="cc-toolbar-btn" style={{ fontStyle: 'italic' }} onClick={() => execCmd('italic')}>i</button>
+          <button className="cc-toolbar-btn" style={{ textDecoration: 'underline' }} onClick={() => execCmd('underline')}>U</button>
+          <button className="cc-toolbar-btn" style={{ textDecoration: 'line-through' }} onClick={() => execCmd('strikeThrough')}>T</button>
+          <span className="cc-toolbar-divider" />
+          <button className="cc-toolbar-btn" onClick={() => execCmd('justifyLeft')}>≡</button>
+        </div>
+
+        {/* ===== 하단: 검색 + 장소 카드 좌우 분할 ===== */}
         <div className="cc-map-section">
 
-          {/* --- 왼쪽: 지도 --- */}
+          {/* --- 왼쪽: 지도 (검색은 지도 안에 오버레이) --- */}
           <div className="cc-map-left">
-            {/* 지도 위 검색바 */}
-            <div className="cc-map-search-bar">
+            <div className="cc-map-area" ref={mapRef} />
+
+            {/* 검색바 (지도 위에 플로팅) */}
+            <div className="cc-map-search-bar" style={{ position: 'absolute', top: 16, left: 16, right: 16, zIndex: 15, background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px rgba(0,0,0,0.15)' }}>
               <input
                 type="text"
                 className="cc-map-search-input"
-                placeholder="상호명 빵집 이름이나 지점을 입력해주세요 (예 : 성심당 본점)"
+                placeholder="정확한 빵집 이름이나 지점을 입력해주세요 (예 : 성심당 본점)"
                 value={searchKeyword}
                 onChange={(e) => {
                   setSearchKeyword(e.target.value);
@@ -695,39 +792,63 @@ export default function CreateCourse() {
                 }}
                 onFocus={() => setShowResults(true)}
               />
-              {/* 검색 결과 드롭다운 */}
-              {showResults && searchKeyword && (
-                <div className="cc-map-search-results">
-                  {filteredResults.length > 0 ? (
-                    filteredResults.map((result) => {
-                      const isAdded = places.find((p) => p.id === result.id);
-                      return (
-                        <div
-                          key={result.id}
-                          className="cc-map-search-item"
-                          onClick={() => !isAdded && handleAddPlace(result)}
-                        >
-                          <div className="cc-map-search-item-info">
-                            <span className="cc-map-search-item-name">{result.name}</span>
-                            <span className="cc-map-search-item-addr">{result.address}</span>
-                          </div>
-                          <span className={`cc-map-search-item-btn ${isAdded ? 'added' : ''}`}>
-                            {isAdded ? '추가됨' : '+ 추가'}
-                          </span>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <p className="cc-map-search-empty">검색 결과가 없습니다</p>
-                  )}
-                </div>
-              )}
+              <span className="cc-search-icon"><i className="fi fi-rr-search"></i></span>
             </div>
 
-            {/* 네이버 지도 */}
-            <div className="cc-map-area" ref={mapRef} />
+            {/* 검색 오버레이 (지도 위에 뜸) */}
+            {showResults && (
+              <div className="cc-search-overlay" style={{ position: 'absolute', top: 70, left: 16, right: 16, zIndex: 20, background: '#fff', maxHeight: 'calc(100% - 86px)', overflowY: 'auto', borderRadius: '0 0 12px 12px', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+                {searchKeyword && (
+                  <div className="cc-map-search-results">
+                    {filteredResults.length > 0 ? (
+                      filteredResults.map((result) => {
+                        const isAdded = places.find((p) => p.id === result.id);
+                        return (
+                          <div
+                            key={result.id}
+                            className="cc-map-search-item"
+                            onClick={() => !isAdded && handleAddPlace(result)}
+                          >
+                            <div className="cc-map-search-item-info">
+                              <span className="cc-map-search-item-name">{result.name}</span>
+                              <span className="cc-map-search-item-addr">{result.address}</span>
+                            </div>
+                            <span className={`cc-map-search-item-btn ${isAdded ? 'added' : ''}`}>
+                              {isAdded ? '추가됨' : '+'}
+                            </span>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="cc-map-search-empty">검색 결과가 없습니다</p>
+                    )}
+                  </div>
+                )}
+                <div className="cc-saved-section">
+                  <h3 className="cc-saved-title">내가 저장했던 빵집</h3>
+                  {bookmarkedPlaces.length > 0 ? (
+                    <div className="cc-saved-list">
+                      {bookmarkedPlaces.map((b) => {
+                        const isAdded = places.find((p) => p.id === b.id);
+                        return (
+                          <div key={b.id} className="cc-saved-item" onClick={() => !isAdded && handleAddPlace(b)}>
+                            <div className="cc-saved-item-info">
+                              <span className="cc-saved-item-name">{b.name}</span>
+                              <span className="cc-saved-item-addr">{b.address}</span>
+                            </div>
+                            <span className="cc-saved-item-btn">{isAdded ? '추가됨' : '추가'}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="cc-saved-empty">저장한 빵집이 없습니다.</p>
+                  )}
+                </div>
+              </div>
+            )}
 
-            {/* 지도 위 빵집 정보 팝업 (마커 클릭 시) */}
+            {/* 지도 위 빵집 팝업 */}
             {selectedMapShop && (
               <div className="cc-map-popup">
                 <div className="cc-popup-info">
@@ -789,31 +910,57 @@ export default function CreateCourse() {
                     onDragEnd={handleDragEnd}
                     onDragOver={(e) => e.preventDefault()}
                   >
-                    {/* 장소 정보 행: 드래그핸들 + 번호 + 이름 + 삭제 */}
-                    <div className="cc-place-card-header">
-                      <span className="cc-place-drag-handle">☰</span>
-                      <div className="cc-place-num">{index + 1}</div>
-                      <span className="cc-place-name">{place.name}</span>
-                      <span className="cc-place-addr">{place.address}</span>
-                      <button
-                        className="cc-place-remove"
-                        onClick={() => handleRemovePlace(place.id)}
-                      >
-                        ✕
-                      </button>
+                    <div className="cc-place-thumb">
+                      {place.thumbnail ? (
+                        <img src={place.thumbnail} alt={place.name} />
+                      ) : (
+                        <span className="cc-place-thumb-placeholder">🍞</span>
+                      )}
                     </div>
-                    {/* 장소별 코멘트 입력 */}
-                    <input
-                      type="text"
-                      className="cc-comment-input"
-                      placeholder="이 장소에 대한 코멘트를 남겨주세요."
-                      value={placeComments[place.id] || ''}
-                      onChange={(e) => handleCommentChange(place.id, e.target.value)}
-                    />
+                    <div className="cc-place-card-body">
+                      <div className="cc-place-card-header">
+                        <span className="cc-place-drag-handle">☰</span>
+                        <span className="cc-place-name">{place.name}</span>
+                        <button
+                          className="cc-place-remove"
+                          onClick={() => handleRemovePlace(place.id)}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <span className="cc-place-addr">{place.address}</span>
+                      <input
+                        type="text"
+                        className="cc-comment-input"
+                        placeholder="이 장소에 대한 코멘트를 남겨주세요."
+                        value={placeComments[place.id] || ''}
+                        onChange={(e) => handleCommentChange(place.id, e.target.value)}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* ===== 댓글 섹션 ===== */}
+        <div className="cc-comments-section">
+          <div className="cc-comments-header">
+            <h2 className="cc-comments-title">댓글 0개</h2>
+            <span className="cc-comments-count">0건 작성</span>
+          </div>
+          <div className="cc-comments-input-wrap">
+            <div className="cc-comments-avatar" />
+            <input
+              type="text"
+              className="cc-comments-input"
+              placeholder="댓글 작성"
+            />
+            <div className="cc-comments-btns">
+              <button className="cc-comments-cancel-btn">취소</button>
+              <button className="cc-comments-submit-btn">작성완료</button>
+            </div>
           </div>
         </div>
       </div>

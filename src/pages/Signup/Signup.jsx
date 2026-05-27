@@ -1,18 +1,3 @@
-/* ===================================================
-   Signup 컴포넌트 (회원가입 페이지)
-   - 회원가입에 필요한 모든 정보를 입력하는 페이지
-   - DB USER 테이블 기준 필드:
-     ID(아이디), USER_PW(비밀번호), NAME(이름),
-     NICKNAME(닉네임), EMAIL(이메일)
-   - 기능:
-     1) 각 입력 필드별 유효성 검사 (형식 확인)
-     2) 아이디/닉네임 중복 확인 (서버 API 호출)
-     3) 이메일 인증번호 전송 + 확인
-     4) 비밀번호와 비밀번호 재확인 일치 여부
-     5) 모든 조건 통과 시 가입하기 버튼 활성화
-     6) 가입 성공 → 로그인 페이지로 이동
-   =================================================== */
-
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -21,84 +6,65 @@ import {
   checkNicknameDuplicate,
   sendEmailVerification,
   verifyEmailCode,
-  BASE_URL,
 } from '../../api/apiAxios';
 import './Signup.css';
 
 export default function Signup() {
-
-  /* --- 페이지 이동 도구 --- */
-  /* useNavigate: 다른 페이지로 이동할 때 사용하는 함수 */
   const navigate = useNavigate();
+  const [step, setStep] = useState(1);
 
-  /* ===================================================
-     상태(state) 관리
-     - 사용자가 입력하는 값들을 각각 저장
-     - 에러 메시지도 각 필드별로 저장
-     =================================================== */
-
-  /* --- 입력값 상태 --- */
-  const [userId, setUserId] = useState('');               /* 아이디 */
-  const [password, setPassword] = useState('');           /* 비밀번호 */
-  const [passwordConfirm, setPasswordConfirm] = useState(''); /* 비밀번호 재확인 */
-  const [name, setName] = useState('');                   /* 이름 (실명) */
-  const [nickname, setNickname] = useState('');            /* 닉네임 (별명) */
-  const [email, setEmail] = useState('');                 /* 이메일 주소 */
-  const [verifyCode, setVerifyCode] = useState('');       /* 이메일 인증번호 */
-
-  /* --- 에러 메시지 상태 --- */
-  /* 각 입력 필드 아래에 빨간 글씨로 표시할 에러 메시지 */
-  const [errors, setErrors] = useState({
-    userId: '',         /* 아이디 에러 */
-    password: '',       /* 비밀번호 에러 */
-    passwordConfirm: '', /* 비밀번호 재확인 에러 */
-    name: '',           /* 이름 에러 */
-    nickname: '',       /* 닉네임 에러 */
-    email: '',          /* 이메일 에러 */
-    verifyCode: '',     /* 인증번호 에러 */
-    general: '',        /* 전체 에러 (서버 에러 등) */
-  });
-
-  /* --- 확인/인증 완료 상태 --- */
-  const [isIdChecked, setIsIdChecked] = useState(false);           /* 아이디 중복확인 완료? */
-  const [isNicknameChecked, setIsNicknameChecked] = useState(false); /* 닉네임 중복확인 완료? */
-  const [isEmailSent, setIsEmailSent] = useState(false);       /* 이메일 인증번호 전송됨? */
-  const [isVerified, setIsVerified] = useState(false);         /* 이메일 인증 완료? */
-  const [isSubmitting, setIsSubmitting] = useState(false);     /* 가입 요청 중? (로딩) */
+  const [userId, setUserId] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [isIdChecked, setIsIdChecked] = useState(false);
 
-  /* --- 3분 타이머 상태 --- */
-  const [timeLeft, setTimeLeft] = useState(0);   /* 남은 시간 (초) */
-  const timerRef = useRef(null);                  /* 타이머 ID 저장 (나중에 멈출 때 사용) */
+  const [emailUsername, setEmailUsername] = useState('');
+  const [emailDomain, setEmailDomain] = useState('gmail.com');
+  const [customDomain, setCustomDomain] = useState('');
+  const [verifyCode, setVerifyCode] = useState('');
+  const [isEmailSent, setIsEmailSent] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const timerRef = useRef(null);
+  const [agreeAll, setAgreeAll] = useState(false);
+  const [agrees, setAgrees] = useState([false, false, false]);
 
-  /* --- 타이머 카운트다운 --- */
-  /* timeLeft가 0보다 크면 1초마다 1씩 줄어듦 */
+  const [nickname, setNickname] = useState('');
+  const [isNicknameChecked, setIsNicknameChecked] = useState(false);
+  const [, setProfileImage] = useState(null);
+  const [profilePreview, setProfilePreview] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
-    /* 남은 시간이 0이면 타이머 안 돌림 */
     if (timeLeft <= 0) return;
-    /* 1초 뒤에 남은 시간을 1 줄이는 타이머 */
-    timerRef.current = setTimeout(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-    /* 컴포넌트가 사라지면 타이머도 정리 */
+    timerRef.current = setTimeout(() => setTimeLeft(prev => prev - 1), 1000);
     return () => clearTimeout(timerRef.current);
   }, [timeLeft]);
 
-  /* --- 남은 시간을 "0:00" 형식으로 바꿔주는 함수 --- */
   const formatTime = (seconds) => {
-    const min = Math.floor(seconds / 60);  /* 분 */
-    const sec = seconds % 60;              /* 초 */
-    return `${min}:${sec < 10 ? '0' : ''}${sec}`;  /* 예: 2:05 */
+    const min = Math.floor(seconds / 60);
+    const sec = seconds % 60;
+    return `${min}:${sec < 10 ? '0' : ''}${sec}`;
   };
 
-  /* ===================================================
-     유효성 검사 함수들
-     - 사용자가 입력한 값이 올바른 형식인지 확인
-     - 틀리면 에러 메시지를 설정
-     =================================================== */
+  const getFullEmail = () => {
+    const domain = emailDomain === 'direct' ? customDomain : emailDomain;
+    return emailUsername && domain ? `${emailUsername}@${domain}` : '';
+  };
 
-  /* --- 아이디 유효성 검사 --- */
+  const getPasswordStrength = (pw) => {
+    if (!pw || pw.length < 8) return 0;
+    let score = 1;
+    if (/[a-zA-Z]/.test(pw) && /[0-9]/.test(pw)) score = 2;
+    if (score === 2 && /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pw)) score = 3;
+    return score;
+  };
+
   const validateUserId = (value) => {
     if (!value) return '아이디를 입력해주세요.';
     if (value.length < 4) return '아이디는 4자 이상이어야 합니다.';
@@ -107,40 +73,29 @@ export default function Signup() {
     return '';
   };
 
-  /* --- 비밀번호 유효성 검사 --- */
-  /* 규칙: 영문 + 숫자 + 특수문자 포함, 8~20자 */
   const validatePassword = (value) => {
     if (!value) return '비밀번호를 입력해주세요.';
     if (value.length < 8) return '비밀번호는 8자 이상이어야 합니다.';
-    if (value.length > 20) return '비밀번호는 20자 이하여야 합니다.';
-    /* 영문자가 하나라도 있는지 확인 */
+    if (value.length > 16) return '비밀번호는 16자 이하여야 합니다.';
     if (!/[a-zA-Z]/.test(value)) return '비밀번호에 영문자를 포함해주세요.';
-    /* 숫자가 하나라도 있는지 확인 */
     if (!/[0-9]/.test(value)) return '비밀번호에 숫자를 포함해주세요.';
-    /* 특수문자가 하나라도 있는지 확인 */
     if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(value)) return '비밀번호에 특수문자를 포함해주세요.';
     return '';
   };
 
-  /* --- 비밀번호 재확인 검사 --- */
-  /* 위에서 입력한 비밀번호와 같은지 확인 */
   const validatePasswordConfirm = (value) => {
     if (!value) return '비밀번호를 다시 입력해주세요.';
     if (value !== password) return '비밀번호가 일치하지 않습니다.';
     return '';
   };
 
-  /* --- 이름 유효성 검사 --- */
-  /* 규칙: 한글 2~10자 */
-  const validateName = (value) => {
-    if (!value) return '이름을 입력해주세요.';
-    if (value.length < 2) return '이름은 2자 이상이어야 합니다.';
-    if (!/^[가-힣]+$/.test(value)) return '이름은 한글만 입력할 수 있습니다.';
+  const validateEmail = () => {
+    const email = getFullEmail();
+    if (!email) return '이메일을 입력해주세요.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return '올바른 이메일 형식이 아닙니다.';
     return '';
   };
 
-  /* --- 닉네임 유효성 검사 --- */
-  /* 규칙: 한글, 영문, 숫자 조합, 2~12자 */
   const validateNickname = (value) => {
     if (!value) return '닉네임을 입력해주세요.';
     if (value.length < 2) return '닉네임은 2자 이상이어야 합니다.';
@@ -149,475 +104,491 @@ export default function Signup() {
     return '';
   };
 
-  /* --- 이메일 유효성 검사 --- */
-  /* 규칙: 이메일 형식 (xxx@xxx.xxx) */
-  const validateEmail = (value) => {
-    if (!value) return '이메일을 입력해주세요.';
-    /* 이메일 형식 정규식: @ 앞뒤로 글자가 있고, . 뒤에 2자 이상 */
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)) return '올바른 이메일 형식이 아닙니다.';
-    return '';
-  };
-
-  /* ===================================================
-     입력값 변경 핸들러들
-     - 사용자가 글자를 입력할 때마다 실행
-     - 값을 저장하고, 실시간으로 유효성 검사
-     - 중복확인/인증 상태도 초기화 (값이 바뀌었으니까)
-     =================================================== */
-
-  /* --- 아이디 입력 변경 --- */
-  const handleUserIdChange = (e) => {
-    const value = e.target.value;
-    setUserId(value);
-    setIsIdChecked(false);
-    setErrors((prev) => ({ ...prev, userId: value ? validateUserId(value) : '' }));
-  };
-
-  /* --- 비밀번호 입력 변경 --- */
-  const handlePasswordChange = (e) => {
-    const value = e.target.value;
-    setPassword(value);
-    setErrors((prev) => ({
-      ...prev,
-      password: value ? validatePassword(value) : '',
-      /* 비밀번호가 바뀌면 재확인도 다시 검사 */
-      passwordConfirm: passwordConfirm ? (value === passwordConfirm ? '' : '비밀번호가 일치하지 않습니다.') : '',
-    }));
-  };
-
-  /* --- 비밀번호 재확인 입력 변경 --- */
-  const handlePasswordConfirmChange = (e) => {
-    const value = e.target.value;
-    setPasswordConfirm(value);
-    setErrors((prev) => ({ ...prev, passwordConfirm: value ? validatePasswordConfirm(value) : '' }));
-  };
-
-  /* --- 이름 입력 변경 --- */
-  const handleNameChange = (e) => {
-    const value = e.target.value;
-    setName(value);
-    setErrors((prev) => ({ ...prev, name: value ? validateName(value) : '' }));
-  };
-
-  /* --- 닉네임 입력 변경 --- */
-  const handleNicknameChange = (e) => {
-    const value = e.target.value;
-    setNickname(value);
-    /* 닉네임이 바뀌면 중복확인을 다시 해야 하므로 초기화 */
-    setIsNicknameChecked(false);
-    setErrors((prev) => ({ ...prev, nickname: value ? validateNickname(value) : '' }));
-  };
-
-  /* --- 이메일 입력 변경 --- */
-  const handleEmailChange = (e) => {
-    const value = e.target.value;
-    setEmail(value);
-    /* 이메일이 바뀌면 인증을 다시 해야 하므로 초기화 */
-    setIsEmailSent(false);
-    setIsVerified(false);
-    setVerifyCode('');
-    setErrors((prev) => ({ ...prev, email: value ? validateEmail(value) : '' }));
-  };
-
-  /* ===================================================
-     버튼 클릭 핸들러들
-     =================================================== */
-
-  /* --- 아이디 중복확인 버튼 클릭 --- */
-  const handleCheckId = async () => {
-    const error = validateUserId(userId);
-    if (error) {
-      setErrors((prev) => ({ ...prev, userId: error }));
-      return;
-    }
-    try {
-      await checkIdDuplicate(userId);
-      setIsIdChecked(true);
-      setErrors((prev) => ({ ...prev, userId: '' }));
-    } catch (err) {
-      setErrors((prev) => ({ ...prev, userId: err.message }));
-    }
-  };
-
-  /* --- 닉네임 중복확인 버튼 클릭 --- */
-  const handleCheckNickname = async () => {
-    const error = validateNickname(nickname);
-    if (error) {
-      setErrors((prev) => ({ ...prev, nickname: error }));
-      return;
-    }
-
-    try {
-      await checkNicknameDuplicate(nickname);
-      setIsNicknameChecked(true);
-      setErrors((prev) => ({ ...prev, nickname: '' }));
-    } catch (err) {
-      /* 서버에서 에러가 오면 (예: 이미 사용 중인 닉네임) 에러 메시지 표시 */
-      setErrors((prev) => ({ ...prev, nickname: err.message }));
-    }
-  };
-
-  /* --- 이메일 인증번호 전송 버튼 클릭 --- */
   const handleSendEmail = async () => {
-    const error = validateEmail(email);
-    if (error) {
-      setErrors((prev) => ({ ...prev, email: error }));
-      return;
-    }
-
+    const error = validateEmail();
+    if (error) { setErrors(prev => ({ ...prev, email: error })); return; }
     try {
-      await sendEmailVerification(email);
+      await sendEmailVerification(getFullEmail());
       setIsEmailSent(true);
-      setTimeLeft(180); /* 3분 = 180초 타이머 시작 */
-      setErrors((prev) => ({ ...prev, email: '' }));
+      setTimeLeft(180);
+      setErrors(prev => ({ ...prev, email: '' }));
     } catch (err) {
-      /* 서버에서 에러가 오면 에러 메시지 표시 */
-      setErrors((prev) => ({ ...prev, email: err.message }));
+      setErrors(prev => ({ ...prev, email: err.message }));
     }
   };
 
-  /* --- 인증번호 확인 버튼 클릭 --- */
   const handleVerifyCode = async () => {
-    if (!verifyCode) {
-      setErrors((prev) => ({ ...prev, verifyCode: '인증번호를 입력해주세요.' }));
-      return;
-    }
-    /* 타이머가 만료되었으면 인증 불가 */
-    if (timeLeft <= 0) {
-      setErrors((prev) => ({ ...prev, verifyCode: '인증 시간이 만료되었습니다. 다시 전송해주세요.' }));
-      return;
-    }
-
+    if (!verifyCode) { setErrors(prev => ({ ...prev, verifyCode: '인증번호를 입력해주세요.' })); return; }
+    if (timeLeft <= 0) { setErrors(prev => ({ ...prev, verifyCode: '인증 시간이 만료되었습니다.' })); return; }
     try {
-      await verifyEmailCode(email, verifyCode);
+      await verifyEmailCode(getFullEmail(), verifyCode);
       setIsVerified(true);
-      clearTimeout(timerRef.current); /* 인증 성공하면 타이머 멈춤 */
-      setErrors((prev) => ({ ...prev, verifyCode: '' }));
+      clearTimeout(timerRef.current);
+      setErrors(prev => ({ ...prev, verifyCode: '' }));
     } catch (err) {
-      /* 인증코드가 틀리면 에러 메시지 표시 */
-      setErrors((prev) => ({ ...prev, verifyCode: err.message }));
+      setErrors(prev => ({ ...prev, verifyCode: err.message }));
     }
   };
 
-  /* --- 인증번호 재전송 버튼 클릭 --- */
   const handleResendEmail = async () => {
     try {
-      await sendEmailVerification(email);
-      setTimeLeft(180); /* 3분 타이머 다시 시작 */
+      await sendEmailVerification(getFullEmail());
+      setTimeLeft(180);
       setVerifyCode('');
-      setErrors((prev) => ({ ...prev, email: '', verifyCode: '' }));
+      setErrors(prev => ({ ...prev, email: '', verifyCode: '' }));
     } catch (err) {
-      setErrors((prev) => ({ ...prev, email: err.message }));
+      setErrors(prev => ({ ...prev, email: err.message }));
     }
   };
 
-  /* ===================================================
-     가입하기 버튼 클릭 (폼 제출)
-     =================================================== */
-  const handleSignup = async (e) => {
-    /* 페이지 새로고침 방지 */
-    e.preventDefault();
+  const handleAgreeAll = () => {
+    const next = !agreeAll;
+    setAgreeAll(next);
+    setAgrees([next, next, next]);
+  };
 
-    /* --- 모든 필드 유효성 검사 한번에 실행 --- */
-    const newErrors = {
-      userId: validateUserId(userId),
-      password: validatePassword(password),
-      passwordConfirm: validatePasswordConfirm(passwordConfirm),
-      name: validateName(name),
-      nickname: validateNickname(nickname),
-      email: validateEmail(email),
-      verifyCode: '',
-      general: '',
-    };
+  const handleAgreeItem = (index) => {
+    const next = [...agrees];
+    next[index] = !next[index];
+    setAgrees(next);
+    setAgreeAll(next.every(Boolean));
+  };
 
-    /* 아이디 중복확인 안 했으면 에러 */
-    if (!newErrors.userId && !isIdChecked) {
-      newErrors.userId = '아이디 중복확인을 해주세요.';
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      setErrors(prev => ({ ...prev, profileImage: 'jpg, png 파일만 업로드 가능합니다.' }));
+      return;
     }
+    setProfileImage(file);
+    setProfilePreview(URL.createObjectURL(file));
+    setErrors(prev => ({ ...prev, profileImage: '' }));
+  };
 
-    /* 닉네임 중복확인 안 했으면 에러 */
+  const handleImageReset = () => {
+    setProfileImage(null);
+    setProfilePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleNext = async () => {
+    if (step === 1) {
+      const newErrors = {};
+      newErrors.userId = validateUserId(userId);
+      newErrors.password = validatePassword(password);
+      newErrors.passwordConfirm = validatePasswordConfirm(passwordConfirm);
+
+      if (!newErrors.userId && !isIdChecked) {
+        try {
+          await checkIdDuplicate(userId);
+          setIsIdChecked(true);
+        } catch (err) {
+          newErrors.userId = err.message;
+        }
+      }
+
+      setErrors(newErrors);
+      if (Object.values(newErrors).some(e => e)) return;
+      setStep(2);
+    } else if (step === 2) {
+      const newErrors = {};
+      newErrors.email = validateEmail();
+      if (!newErrors.email && !isVerified) newErrors.email = '이메일 인증을 완료해주세요.';
+      if (!agrees[0] || !agrees[1]) newErrors.agree = '필수 약관에 동의해주세요.';
+      setErrors(newErrors);
+      if (Object.values(newErrors).some(e => e)) return;
+      setStep(3);
+    }
+  };
+
+  const handlePrev = () => {
+    if (step > 1) setStep(step - 1);
+  };
+
+  const handleSubmit = async () => {
+    const newErrors = {};
+    newErrors.nickname = validateNickname(nickname);
+
     if (!newErrors.nickname && !isNicknameChecked) {
-      newErrors.nickname = '닉네임 중복확인을 해주세요.';
+      try {
+        await checkNicknameDuplicate(nickname);
+        setIsNicknameChecked(true);
+      } catch (err) {
+        newErrors.nickname = err.message;
+      }
     }
 
-    /* 이메일 인증 안 했으면 에러 */
-    if (!newErrors.email && !isVerified) {
-      newErrors.email = '이메일 인증을 완료해주세요.';
-    }
-
-    /* 에러 상태 업데이트 */
     setErrors(newErrors);
+    if (Object.values(newErrors).some(e => e)) return;
 
-    /* 에러가 하나라도 있으면 가입 중단 */
-    const hasError = Object.values(newErrors).some((msg) => msg !== '');
-    if (hasError) return;
-
-    /* --- 서버에 회원가입 요청 --- */
     setIsSubmitting(true);
-
     try {
-      /* API 호출: 서버에 회원 정보 전송 */
-      /* 이메일 주소가 곧 아이디! */
       await signup({
         id: userId,
         password: password,
-        name: name,
+        name: nickname,
         nickname: nickname,
-        email: email,
+        email: getFullEmail(),
       });
-
-      /* 가입 성공! → 로그인 페이지로 이동 */
       alert('회원가입이 완료되었습니다! 로그인해주세요.');
       navigate('/login');
     } catch (err) {
-      /* 서버에서 에러가 오면 (예: 이미 가입된 이메일) 에러 메시지 표시 */
-      setErrors((prev) => ({ ...prev, general: err.message }));
+      setErrors(prev => ({ ...prev, general: err.message }));
     } finally {
-      /* 로딩 상태 해제 (성공이든 실패든) */
       setIsSubmitting(false);
     }
   };
 
-  /* --- 소셜 가입 --- */
-  const handleNaverSignup = () => {
-    /* 네이버 로그인 페이지로 이동 (계정 없으면 자동 가입됨) */
-    window.location.href = BASE_URL + '/api/user/naver/login';
-  };
+  const passwordStrength = getPasswordStrength(password);
+  const strengthLabels = ['', '취약', '적정', '안전'];
+  const strengthColors = ['', '#ef4444', '#f59e0b', '#22c55e'];
 
-  const handleKakaoSignup = () => {
-    /* 카카오 로그인 페이지로 이동 (계정 없으면 자동 가입됨) */
-    window.location.href = BASE_URL + '/api/user/kakao/login';
-  };
+  const domainOptions = [
+    { value: 'gmail.com', label: 'gmail.com' },
+    { value: 'naver.com', label: 'naver.com' },
+    { value: 'daum.net', label: 'daum.net' },
+    { value: 'hanmail.net', label: 'hanmail.net' },
+    { value: 'direct', label: '직접입력' },
+  ];
+
+  const agreeLabels = [
+    { text: '이용약관 동의', required: true },
+    { text: '개인정보 수집 및 이용 동의', required: true },
+    { text: '마케팅 정보 수신 동의', required: false },
+  ];
+
+  const steps = [
+    { num: 1, label: '정보' },
+    { num: 2, label: '인증' },
+    { num: 3, label: '프로필' },
+  ];
 
   return (
-    <div className="signup-wrapper">
-      {/* ===== 회원가입 카드 ===== */}
-      <div className="signup-card">
-
-        {/* --- 제목 --- */}
-        <h2 className="signup-title">회원가입</h2>
-
-        {/* --- 회원가입 폼 --- */}
-        <form className="signup-form" onSubmit={handleSignup}>
-
-          {/* ───── 이메일 입력 + 전송 버튼 (= 아이디) ───── */}
-          <div className="signup-input-group">
-            <div className="signup-input-row">
-              <input
-                type="email"
-                className={`signup-input ${errors.email ? 'error' : ''}`}
-                placeholder="이메일 주소"
-                value={email}
-                onChange={handleEmailChange}
-                /* 인증 완료되면 수정 못하게 잠금 */
-                disabled={isVerified}
-              />
-              <button
-                type="button"
-                className={`signup-side-btn ${isEmailSent && timeLeft > 0 ? 'done' : ''}`}
-                onClick={handleSendEmail}
-                disabled={isEmailSent && timeLeft > 0}
-              >
-                {isEmailSent && timeLeft > 0 ? '전송완료' : isEmailSent ? '재전송' : '전송'}
-              </button>
+    <div className="signup-page">
+      <div className="signup-container">
+        <div className="signup-stepper">
+          {steps.map((s, i) => (
+            <div key={s.num} className={`signup-step ${step >= s.num ? 'active' : ''} ${step === s.num ? 'current' : ''}`}>
+              {i > 0 && <div className={`signup-step-line ${step > i ? 'active' : ''}`} />}
+              <div className="signup-step-circle">{s.num}</div>
+              <span className="signup-step-label">{s.label}</span>
             </div>
-            {errors.email && <p className="signup-error">{errors.email}</p>}
-          </div>
+          ))}
+        </div>
 
-          {/* ───── 인증번호 입력 + 타이머 + 확인/재전송 버튼 ───── */}
-          {/* 이메일을 전송한 후에만 보여줌 */}
-          {isEmailSent && (
-            <div className="signup-input-group">
-              <div className="signup-input-row">
+        <h1 className="signup-title">회원가입</h1>
+
+        {step === 1 && (
+          <div className="signup-step-content">
+            <div className="signup-field">
+              <label className="signup-label">아이디</label>
+              <div className="signup-input-wrap">
                 <input
                   type="text"
-                  className={`signup-input ${errors.verifyCode ? 'error' : ''}`}
-                  placeholder="인증번호 6자리"
-                  value={verifyCode}
+                  className={`signup-input ${errors.userId ? 'error' : ''}`}
+                  placeholder="영문, 숫자 4~20자"
+                  value={userId}
                   onChange={(e) => {
-                    setVerifyCode(e.target.value);
-                    setErrors((prev) => ({ ...prev, verifyCode: '' }));
+                    setUserId(e.target.value);
+                    setIsIdChecked(false);
+                    setErrors(prev => ({ ...prev, userId: '' }));
                   }}
-                  /* 인증 완료되면 수정 못하게 잠금 */
-                  disabled={isVerified}
+                  onBlur={async () => {
+                    if (!userId) return;
+                    const error = validateUserId(userId);
+                    if (error) { setErrors(prev => ({ ...prev, userId: error })); return; }
+                    try {
+                      await checkIdDuplicate(userId);
+                      setIsIdChecked(true);
+                      setErrors(prev => ({ ...prev, userId: '' }));
+                    } catch (err) {
+                      setErrors(prev => ({ ...prev, userId: err.message }));
+                    }
+                  }}
                 />
-                {/* 타이머 만료 전: 확인 버튼 / 만료 후: 재전송 버튼 */}
-                {!isVerified && timeLeft <= 0 ? (
-                  <button type="button" className="signup-side-btn" onClick={handleResendEmail}>
-                    재전송
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className={`signup-side-btn ${isVerified ? 'done' : ''}`}
-                    onClick={handleVerifyCode}
-                    disabled={isVerified}
-                  >
-                    {isVerified ? '인증완료' : '확인'}
+                {userId && (
+                  <button type="button" className="signup-clear-btn" onClick={() => { setUserId(''); setIsIdChecked(false); }}>
+                    <i className="fi fi-rs-cross-small"></i>
                   </button>
                 )}
               </div>
-              {/* 타이머: 인증번호 입력칸 아래에 남은 시간 표시 */}
-              {!isVerified && timeLeft > 0 && (
-                <p style={{
-                  fontSize: '13px', fontWeight: 700, margin: '6px 0 0',
-                  color: timeLeft <= 30 ? '#ef4444' : '#c96442',
-                }}>
-                  남은 시간 {formatTime(timeLeft)}
-                </p>
+              {errors.userId && <p className="signup-error">{errors.userId}</p>}
+              {isIdChecked && !errors.userId && <p className="signup-success">사용할 수 있는 아이디입니다.</p>}
+            </div>
+
+            <div className="signup-field">
+              <label className="signup-label">비밀번호</label>
+              <div className="signup-input-wrap">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className={`signup-input ${errors.password ? 'error' : ''}`}
+                  placeholder="8~16자의 영문 대소문자, 숫자, 특수문자"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setErrors(prev => ({
+                      ...prev,
+                      password: '',
+                      passwordConfirm: passwordConfirm && e.target.value !== passwordConfirm ? '비밀번호가 일치하지 않습니다.' : '',
+                    }));
+                  }}
+                />
+                <button type="button" className="signup-eye-btn" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
+                  <i className={showPassword ? 'fi fi-rs-eye' : 'fi fi-rs-crossed-eye'}></i>
+                </button>
+              </div>
+              {password && (
+                <div className="signup-strength">
+                  {passwordStrength > 0 && (
+                    <span className="signup-strength-label" style={{ color: strengthColors[passwordStrength] }}>
+                      {strengthLabels[passwordStrength]}
+                    </span>
+                  )}
+                  <div className="signup-strength-bar">
+                    {[1, 2, 3].map(level => (
+                      <div
+                        key={level}
+                        className="signup-strength-segment"
+                        style={{ background: passwordStrength >= level ? strengthColors[passwordStrength] : '#e0e0e0' }}
+                      />
+                    ))}
+                  </div>
+                </div>
               )}
-              {errors.verifyCode && <p className="signup-error">{errors.verifyCode}</p>}
-              {isVerified && (
-                <p className="signup-success">이메일 인증이 완료되었습니다.</p>
+              <p className="signup-helper">8~16자의 영문 대소문자, 숫자, 특수문자만 가능합니다.</p>
+              {errors.password && <p className="signup-error">{errors.password}</p>}
+            </div>
+
+            <div className="signup-field">
+              <label className="signup-label">비밀번호 확인</label>
+              <div className="signup-input-wrap">
+                <input
+                  type={showPasswordConfirm ? 'text' : 'password'}
+                  className={`signup-input ${errors.passwordConfirm ? 'error' : ''}`}
+                  placeholder="비밀번호를 다시 입력해주세요"
+                  value={passwordConfirm}
+                  onChange={(e) => {
+                    setPasswordConfirm(e.target.value);
+                    setErrors(prev => ({
+                      ...prev,
+                      passwordConfirm: e.target.value && e.target.value !== password ? '비밀번호가 일치하지 않습니다.' : '',
+                    }));
+                  }}
+                />
+                <button type="button" className="signup-eye-btn" onClick={() => setShowPasswordConfirm(!showPasswordConfirm)} tabIndex={-1}>
+                  <i className={showPasswordConfirm ? 'fi fi-rs-eye' : 'fi fi-rs-crossed-eye'}></i>
+                </button>
+              </div>
+              {errors.passwordConfirm && <p className="signup-error">{errors.passwordConfirm}</p>}
+              {passwordConfirm && !errors.passwordConfirm && password === passwordConfirm && (
+                <p className="signup-success">비밀번호가 일치합니다.</p>
               )}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* ───── 아이디 입력 + 중복확인 ───── */}
-          <div className="signup-input-group">
-            <div className="signup-input-row">
-              <input
-                type="text"
-                className={`signup-input ${errors.userId ? 'error' : ''}`}
-                placeholder="아이디 (영문, 숫자 4~20자)"
-                value={userId}
-                onChange={handleUserIdChange}
-              />
-              <button
-                type="button"
-                className={`signup-side-btn ${isIdChecked ? 'done' : ''}`}
-                onClick={handleCheckId}
-                disabled={isIdChecked}
-              >
-                {isIdChecked ? '확인완료' : '중복확인'}
-              </button>
+        {step === 2 && (
+          <div className="signup-step-content">
+            <div className="signup-field">
+              <label className="signup-label">이메일</label>
+              <div className="signup-email-row">
+                <input
+                  type="text"
+                  className="signup-input signup-email-input"
+                  placeholder="이메일"
+                  value={emailUsername}
+                  onChange={(e) => {
+                    setEmailUsername(e.target.value);
+                    setIsEmailSent(false);
+                    setIsVerified(false);
+                    setErrors(prev => ({ ...prev, email: '' }));
+                  }}
+                  disabled={isVerified}
+                />
+                <span className="signup-email-at">@</span>
+                {emailDomain === 'direct' ? (
+                  <input
+                    type="text"
+                    className="signup-input signup-email-input"
+                    placeholder="도메인 입력"
+                    value={customDomain}
+                    onChange={(e) => {
+                      setCustomDomain(e.target.value);
+                      setIsEmailSent(false);
+                      setIsVerified(false);
+                    }}
+                    disabled={isVerified}
+                  />
+                ) : null}
+                <select
+                  className="signup-domain-select"
+                  value={emailDomain}
+                  onChange={(e) => {
+                    setEmailDomain(e.target.value);
+                    setIsEmailSent(false);
+                    setIsVerified(false);
+                  }}
+                  disabled={isVerified}
+                >
+                  {domainOptions.map(d => (
+                    <option key={d.value} value={d.value}>{d.label}</option>
+                  ))}
+                </select>
+                {!isVerified && (
+                  <button
+                    type="button"
+                    className={`signup-send-btn ${isEmailSent && timeLeft > 0 ? 'done' : ''}`}
+                    onClick={handleSendEmail}
+                    disabled={isVerified}
+                  >
+                    {isEmailSent && timeLeft > 0 ? '전송완료' : isEmailSent ? '재전송' : '인증번호 발송'}
+                  </button>
+                )}
+              </div>
+              {errors.email && <p className="signup-error">{errors.email}</p>}
+              {isVerified && <p className="signup-success">이메일 인증이 완료되었습니다.</p>}
             </div>
-            {errors.userId && <p className="signup-error">{errors.userId}</p>}
-            {isIdChecked && !errors.userId && (
-              <p className="signup-success">사용 가능한 아이디입니다.</p>
+
+            {isEmailSent && !isVerified && (
+              <div className="signup-field">
+                <div className="signup-verify-row">
+                  <input
+                    type="text"
+                    className="signup-input signup-verify-input"
+                    placeholder="인증번호 6자리"
+                    value={verifyCode}
+                    onChange={(e) => { setVerifyCode(e.target.value); setErrors(prev => ({ ...prev, verifyCode: '' })); }}
+                  />
+                  {timeLeft > 0 && (
+                    <span className="signup-timer">{formatTime(timeLeft)}</span>
+                  )}
+                  {timeLeft <= 0 ? (
+                    <button type="button" className="signup-verify-sm-btn" onClick={handleResendEmail}>재발송</button>
+                  ) : (
+                    <button type="button" className="signup-verify-sm-btn primary" onClick={handleVerifyCode}>확인</button>
+                  )}
+                </div>
+                {errors.verifyCode && <p className="signup-error">{errors.verifyCode}</p>}
+              </div>
             )}
-          </div>
 
-          {/* ───── 비밀번호 입력 ───── */}
-          <div className="signup-input-group signup-password-group">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              className={`signup-input ${errors.password ? 'error' : ''}`}
-              placeholder="비밀번호 (영문+숫자+특수문자 8~20자)"
-              value={password}
-              onChange={handlePasswordChange}
-            />
-            <button
-              type="button"
-              className="signup-eye-btn"
-              onClick={() => setShowPassword(!showPassword)}
-              tabIndex={-1}
-            >
-              {showPassword ? <i className="fi fi-rs-eye"></i> : <i className="fi fi-rs-crossed-eye"></i>}
-            </button>
-            {errors.password && <p className="signup-error">{errors.password}</p>}
-          </div>
-
-          {/* ───── 비밀번호 재확인 입력 ───── */}
-          <div className="signup-input-group signup-password-group">
-            <input
-              type={showPasswordConfirm ? 'text' : 'password'}
-              className={`signup-input ${errors.passwordConfirm ? 'error' : ''}`}
-              placeholder="비밀번호 재확인"
-              value={passwordConfirm}
-              onChange={handlePasswordConfirmChange}
-            />
-            <button
-              type="button"
-              className="signup-eye-btn"
-              onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
-              tabIndex={-1}
-            >
-              {showPasswordConfirm ? <i className="fi fi-rs-eye"></i> : <i className="fi fi-rs-crossed-eye"></i>}
-            </button>
-            {errors.passwordConfirm && <p className="signup-error">{errors.passwordConfirm}</p>}
-            {passwordConfirm && !errors.passwordConfirm && (
-              <p className="signup-success">비밀번호가 일치합니다.</p>
-            )}
-          </div>
-
-          {/* ───── 이름 입력 ───── */}
-          <div className="signup-input-group">
-            <input
-              type="text"
-              className={`signup-input ${errors.name ? 'error' : ''}`}
-              placeholder="이름 (실명)"
-              value={name}
-              onChange={handleNameChange}
-            />
-            {errors.name && <p className="signup-error">{errors.name}</p>}
-          </div>
-
-          {/* ───── 닉네임 입력 + 중복확인 버튼 ───── */}
-          <div className="signup-input-group">
-            <div className="signup-input-row">
-              <input
-                type="text"
-                className={`signup-input ${errors.nickname ? 'error' : ''}`}
-                placeholder="닉네임 (한글, 영문, 숫자 2~12자)"
-                value={nickname}
-                onChange={handleNicknameChange}
-              />
-              <button
-                type="button"
-                className={`signup-side-btn ${isNicknameChecked ? 'done' : ''}`}
-                onClick={handleCheckNickname}
-                disabled={isNicknameChecked}
-              >
-                {isNicknameChecked ? '확인완료' : '중복확인'}
-              </button>
+            <div className="signup-field signup-agree-section">
+              <div className="signup-agree-all" onClick={handleAgreeAll}>
+                <div className={`signup-checkbox ${agreeAll ? 'checked' : ''}`}>
+                  {agreeAll && <i className="fi fi-rs-check"></i>}
+                </div>
+                <span className="signup-agree-all-text">전체동의</span>
+              </div>
+              <div className="signup-agree-divider" />
+              {agreeLabels.map((item, i) => (
+                <div key={i} className="signup-agree-item">
+                  <div className="signup-agree-left" onClick={() => handleAgreeItem(i)}>
+                    <div className={`signup-checkbox ${agrees[i] ? 'checked' : ''}`}>
+                      {agrees[i] && <i className="fi fi-rs-check"></i>}
+                    </div>
+                    <span>{item.required ? '[필수]' : '[선택]'} {item.text}</span>
+                  </div>
+                  <button type="button" className="signup-agree-detail">상세보기</button>
+                </div>
+              ))}
+              {errors.agree && <p className="signup-error">{errors.agree}</p>}
             </div>
-            {errors.nickname && <p className="signup-error">{errors.nickname}</p>}
-            {isNicknameChecked && !errors.nickname && (
-              <p className="signup-success">사용 가능한 닉네임입니다.</p>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="signup-step-content">
+            <div className="signup-field signup-profile-section">
+              <label className="signup-label">프로필 이미지</label>
+              <div className="signup-profile-previews">
+                <div className="signup-profile-circle large">
+                  {profilePreview ? <img src={profilePreview} alt="profile" /> : <i className="fi fi-rs-user"></i>}
+                </div>
+                <div className="signup-profile-circle medium">
+                  {profilePreview ? <img src={profilePreview} alt="profile" /> : <i className="fi fi-rs-user"></i>}
+                </div>
+                <div className="signup-profile-circle small">
+                  {profilePreview ? <img src={profilePreview} alt="profile" /> : <i className="fi fi-rs-user"></i>}
+                </div>
+              </div>
+              <div className="signup-profile-actions">
+                <button type="button" className="signup-profile-btn" onClick={handleImageReset}>초기화</button>
+                <button type="button" className="signup-profile-btn primary" onClick={() => fileInputRef.current?.click()}>업로드</button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  style={{ display: 'none' }}
+                  onChange={handleImageUpload}
+                />
+              </div>
+              <p className="signup-helper">jpg, png 파일만 업로드 가능합니다.</p>
+              {errors.profileImage && <p className="signup-error">{errors.profileImage}</p>}
+            </div>
+
+            <div className="signup-field">
+              <label className="signup-label">닉네임</label>
+              <div className="signup-input-wrap">
+                <input
+                  type="text"
+                  className={`signup-input ${errors.nickname ? 'error' : ''}`}
+                  placeholder="한글, 영문, 숫자 2~12자"
+                  value={nickname}
+                  onChange={(e) => {
+                    setNickname(e.target.value);
+                    setIsNicknameChecked(false);
+                    setErrors(prev => ({ ...prev, nickname: '' }));
+                  }}
+                  onBlur={async () => {
+                    if (!nickname) return;
+                    const error = validateNickname(nickname);
+                    if (error) { setErrors(prev => ({ ...prev, nickname: error })); return; }
+                    try {
+                      await checkNicknameDuplicate(nickname);
+                      setIsNicknameChecked(true);
+                      setErrors(prev => ({ ...prev, nickname: '' }));
+                    } catch (err) {
+                      setErrors(prev => ({ ...prev, nickname: err.message }));
+                    }
+                  }}
+                />
+                {nickname && (
+                  <button type="button" className="signup-clear-btn" onClick={() => { setNickname(''); setIsNicknameChecked(false); }}>
+                    <i className="fi fi-rs-cross-small"></i>
+                  </button>
+                )}
+              </div>
+              {errors.nickname && <p className="signup-error">{errors.nickname}</p>}
+              {isNicknameChecked && !errors.nickname && <p className="signup-success">사용할 수 있는 닉네임입니다.</p>}
+            </div>
+
+            {errors.general && (
+              <div className="signup-general-error">{errors.general}</div>
             )}
           </div>
+        )}
 
-          {/* ───── 전체 에러 메시지 ───── */}
-          {errors.general && (
-            <p className="signup-error signup-general-error">{errors.general}</p>
+        <div className="signup-bottom-btns">
+          {step === 1 ? (
+            <>
+              <button type="button" className="signup-bottom-btn cancel" onClick={() => navigate(-1)}>취소</button>
+              <button type="button" className="signup-bottom-btn next" onClick={handleNext}>다음</button>
+            </>
+          ) : step === 2 ? (
+            <>
+              <button type="button" className="signup-bottom-btn cancel" onClick={handlePrev}>이전</button>
+              <button type="button" className="signup-bottom-btn next" onClick={handleNext}>다음</button>
+            </>
+          ) : (
+            <>
+              <button type="button" className="signup-bottom-btn cancel" onClick={handlePrev}>이전</button>
+              <button type="button" className="signup-bottom-btn next" onClick={handleSubmit} disabled={isSubmitting}>
+                {isSubmitting ? '가입 중...' : '완료'}
+              </button>
+            </>
           )}
-
-          {/* ───── 가입하기 버튼 ───── */}
-          {/* isSubmitting이 true면 로딩 중 표시 */}
-          <button
-            type="submit"
-            className="signup-btn"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? '가입 중...' : '가입하기'}
-          </button>
-
-        </form>
-
-        {/* --- 이미 계정이 있으면 로그인으로 --- */}
-        <p className="signup-login-link">
-          이미 계정이 있으신가요?{' '}
-          <span onClick={() => navigate('/login')}>로그인</span>
-        </p>
-
-        {/* --- 소셜 가입 구분선 ("or") --- */}
-        <div className="signup-divider">
-          <span>or</span>
         </div>
-
-        {/* --- 소셜 가입 버튼들 --- */}
-        <div className="signup-social">
-          {/* 네이버 계정으로 가입 */}
-          <button className="social-signup-btn naver-signup-btn" onClick={handleNaverSignup}>
-            네이버 계정으로 가입하기
-          </button>
-          {/* 카카오 계정으로 가입 */}
-          <button className="social-signup-btn kakao-signup-btn" onClick={handleKakaoSignup}>
-            카카오 계정으로 가입하기
-          </button>
-        </div>
-
       </div>
     </div>
   );

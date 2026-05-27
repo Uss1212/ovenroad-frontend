@@ -533,6 +533,20 @@ export async function saveExternalPlace(placeId) {
   });
 }
 
+/* --- 빵집 좋아요/북마크 --- */
+export async function togglePlaceLike(placeNum) {
+  return request(`/api/places/${placeNum}/like`, { method: 'POST' });
+}
+export async function togglePlaceBookmark(placeNum) {
+  return request(`/api/places/${placeNum}/bookmark`, { method: 'POST' });
+}
+export async function getPlaceStatus(placeNum) {
+  return request(`/api/places/${placeNum}/status`);
+}
+export async function getMyBookmarkedPlaces() {
+  return request('/api/places/my/bookmarks');
+}
+
 /* --- 리뷰 삭제 --- */
 /* reviewNum: 리뷰 번호, userNum: 작성자 번호 */
 export async function deleteReview(reviewNum, userNum) {

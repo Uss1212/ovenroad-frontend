@@ -13,6 +13,8 @@ import {
   getMyPosts,
   toggleCourseLike,
   toggleCourseScrap,
+  togglePlaceBookmark,
+  getMyBookmarkedPlaces,
   deleteReview,
   getMyDrafts,
   deleteDraft,
@@ -49,6 +51,7 @@ export default function MyPage() {
   const [scrapedCourses, setScrapedCourses] = useState([]);
   const [myDrafts, setMyDrafts] = useState([]);
   const [myPosts, setMyPosts] = useState([]);
+  const [bookmarkedPlaces, setBookmarkedPlaces] = useState([]);
   const [tabLoading, setTabLoading] = useState(false);
   const profileImageRef = useRef(null);
 
@@ -59,6 +62,7 @@ export default function MyPage() {
     { id: 'reviews', label: '내가 남긴 리뷰', icon: '⭐' },
     { id: 'liked', label: '좋아요한 코스', icon: '❤️' },
     { id: 'scraped', label: '저장된 코스', icon: '🔖' },
+    { id: 'bookmarkedPlaces', label: '저장한 빵집', icon: '📌' },
     { id: 'qna', label: '내가 작성한 질문', icon: '💬' },
   ];
 
@@ -106,6 +110,9 @@ export default function MyPage() {
         } else if (activeMenu === 'scraped') {
           const data = await getScrapedCourses(userNum);
           setScrapedCourses(data);
+        } else if (activeMenu === 'bookmarkedPlaces') {
+          const data = await getMyBookmarkedPlaces();
+          setBookmarkedPlaces(data);
         } else if (activeMenu === 'qna') {
           const data = await getMyPosts(userNum);
           setMyPosts(data);
@@ -136,6 +143,15 @@ export default function MyPage() {
       setScrapedCourses(prev => prev.filter(c => c.COURSE_NUM !== courseNum));
     } catch (err) {
       console.error('스크랩 취소 실패:', err);
+    }
+  };
+
+  const handleUnbookmarkPlace = async (placeNum) => {
+    try {
+      await togglePlaceBookmark(placeNum);
+      setBookmarkedPlaces(prev => prev.filter(p => p.PLACE_NUM !== placeNum));
+    } catch (err) {
+      console.error('북마크 해제 실패:', err);
     }
   };
 
@@ -763,6 +779,48 @@ export default function MyPage() {
                     <button className="mypage-empty-btn" onClick={() => navigate('/courses')}>
                       코스 둘러보기
                     </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeMenu === 'bookmarkedPlaces' && (
+              <div>
+                {tabLoading ? (
+                  <p style={{ textAlign: 'center', color: '#999', padding: '40px' }}>불러오는 중...</p>
+                ) : bookmarkedPlaces.length > 0 ? (
+                  <div className="my-card-list">
+                    {bookmarkedPlaces.map((place) => (
+                      <div
+                        key={place.PLACE_NUM}
+                        className="my-card"
+                        onClick={() => navigate(`/place/${place.PLACE_NUM}`)}
+                      >
+                        <div className="my-card-thumb">
+                          {place.thumbnailImage ? (
+                            <img src={place.thumbnailImage.startsWith('http') ? place.thumbnailImage : `${BASE_URL}${place.thumbnailImage}`} alt={place.PLACE_NAME} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                          ) : '🍞'}
+                        </div>
+                        <div className="my-card-info">
+                          <span className="my-card-title">{place.PLACE_NAME}</span>
+                          <span className="my-card-meta">{place.ADDRESS}</span>
+                        </div>
+                        <div className="my-card-actions">
+                          <button
+                            className="my-card-unlike-btn"
+                            onClick={(e) => { e.stopPropagation(); handleUnbookmarkPlace(place.PLACE_NUM); }}
+                          >
+                            📌 해제
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mypage-empty">
+                    <span className="mypage-empty-icon">📌</span>
+                    <p className="mypage-empty-title">저장한 빵집이 없어요</p>
+                    <p className="mypage-empty-desc">빵집 상세페이지에서 북마크를 눌러보세요!</p>
                   </div>
                 )}
               </div>

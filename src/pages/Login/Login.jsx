@@ -1,153 +1,135 @@
-/* ===================================================
-   Login 컴포넌트 (로그인 카드)
-   - 로그인 페이지의 메인 영역 (바디 부분)
-   - 화면 가운데에 흰색 카드가 떠있는 구조
-   - 이메일/비밀번호 입력 → 로그인 버튼
-   - 아이디/비밀번호 찾기, 회원가입 링크
-   - 소셜 로그인: 카카오톡, 네이버
-   =================================================== */
-
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; /* 페이지 이동 도구 */
-import { login, BASE_URL } from '../../api/apiAxios';  /* 로그인 API 함수 + 서버 주소 */
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { login, BASE_URL } from '../../api/apiAxios';
 import './Login.css';
 
 export default function Login() {
-
-  /* --- 페이지 이동 도구 --- */
   const navigate = useNavigate();
 
-  /* --- 상태(state) 관리 --- */
-  const [userId, setUserId] = useState('');          /* 아이디 */
-  const [password, setPassword] = useState('');     /* 비밀번호 */
-  const [error, setError] = useState('');           /* 에러 메시지 */
-  const [isLoading, setIsLoading] = useState(false); /* 로딩 중? */
+  const [userId, setUserId] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  /* --- 로그인 버튼 클릭 시 실행되는 함수 --- */
+  useEffect(() => {
+    document.body.classList.add('login-active');
+    return () => document.body.classList.remove('login-active');
+  }, []);
+
   const handleLogin = async (e) => {
-    /* 페이지 새로고침 방지 */
     e.preventDefault();
     setError('');
-
-    /* 입력값 확인 */
     if (!userId || !password) {
       setError('아이디와 비밀번호를 입력해주세요.');
       return;
     }
-
     setIsLoading(true);
-
     try {
-      /* 서버에 로그인 요청 */
       const data = await login(userId, password);
-
-      /* 로그인 성공 → JWT 토큰과 사용자 정보를 localStorage에 저장 */
       if (data.token) localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-
-      /* 메인 페이지로 이동 */
       navigate('/');
     } catch (err) {
-      /* 로그인 실패 → 에러 메시지 표시 */
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  /* --- 카카오 로그인 버튼 클릭 --- */
-  /* 클릭하면 → 백엔드 서버로 이동 → 카카오 로그인 페이지로 자동 이동됨 */
   const handleKakaoLogin = () => {
     window.location.href = BASE_URL + '/api/user/kakao/login';
   };
 
-  /* --- 네이버 로그인 버튼 클릭 --- */
-  /* 클릭하면 → 백엔드 서버로 이동 → 네이버 로그인 페이지로 자동 이동됨 */
   const handleNaverLogin = () => {
     window.location.href = BASE_URL + '/api/user/naver/login';
   };
 
   return (
-    <div className="login-wrapper">
-      {/* ===== 로그인 카드 ===== */}
-      {/* 화면 가운데에 위치하는 흰색 카드 */}
-      <div className="login-card">
+    <div className="login-page">
+      <div className="login-left">
+        <div className="login-hero-content">
+          <h1 className="login-hero-title">OVEN ROAD</h1>
+          <p className="login-hero-subtitle">나만의 빵집 코스 공유 플랫폼</p>
+        </div>
+      </div>
 
-        {/* --- 제목 --- */}
-        <h2 className="login-title">로그인</h2>
+      <div className="login-right">
+        <div className="login-card">
+          <h2 className="login-title">로그인</h2>
 
-        {/* --- 로그인 폼 --- */}
-        {/* form 태그: Enter 키를 눌러도 로그인이 실행됨 */}
-        <form className="login-form" onSubmit={handleLogin}>
+          <form className="login-form" onSubmit={handleLogin}>
+            <div className="login-field">
+              <label className="login-label">아이디</label>
+              <input
+                type="text"
+                className="login-input"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+              />
+            </div>
 
-          {/* 아이디 입력 필드 */}
-          <div className="login-input-group">
-            <input
-              type="text"
-              className="login-input"
-              placeholder="아이디"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-            />
+            <div className="login-field">
+              <label className="login-label">비밀번호</label>
+              <div className="login-input-wrap">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="login-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="login-eye-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                >
+                  {showPassword ? <i className="fi fi-rs-eye"></i> : <i className="fi fi-rs-crossed-eye"></i>}
+                </button>
+              </div>
+            </div>
+
+            <div className="login-options">
+              <label className="login-checkbox-label">
+                <input type="checkbox" className="login-checkbox" />
+                <span className="login-checkbox-circle"></span>
+                <span>아이디 저장</span>
+              </label>
+              <label className="login-checkbox-label">
+                <input type="checkbox" className="login-checkbox" />
+                <span className="login-checkbox-circle"></span>
+                <span>자동 로그인</span>
+              </label>
+            </div>
+
+            {error && <p className="login-error">{error}</p>}
+
+            <button type="submit" className="login-btn" disabled={isLoading}>
+              {isLoading ? '로그인 중...' : '로그인'}
+            </button>
+          </form>
+
+          <div className="login-links">
+            <a className="login-link" onClick={() => navigate('/find-account')}>아이디 찾기</a>
+            <span className="login-link-divider">|</span>
+            <a className="login-link" onClick={() => navigate('/find-account')}>비밀번호 찾기</a>
+            <span className="login-link-divider">|</span>
+            <a className="login-link" onClick={() => navigate('/signup')}>회원가입</a>
           </div>
 
-          {/* 비밀번호 입력 필드 */}
-          <div className="login-input-group login-password-group">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              className="login-input"
-              placeholder="비밀번호"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <button
-              type="button"
-              className="login-eye-btn"
-              onClick={() => setShowPassword(!showPassword)}
-              tabIndex={-1}
-            >
-              {showPassword ? <i className="fi fi-rs-eye"></i> : <i className="fi fi-rs-crossed-eye"></i>}
+          <div className="login-divider">
+            <span>간편로그인</span>
+          </div>
+
+          <div className="login-social">
+            <button type="button" className="social-btn naver-btn" onClick={handleNaverLogin}>
+              네이버로 시작하기
+            </button>
+            <button type="button" className="social-btn kakao-btn" onClick={handleKakaoLogin}>
+              카카오로 시작하기
             </button>
           </div>
-
-          {/* 에러 메시지 (있을 때만 표시) */}
-          {error && <p className="login-error">{error}</p>}
-
-          {/* 로그인 버튼 */}
-          <button type="submit" className="login-btn" disabled={isLoading}>
-            {isLoading ? '로그인 중...' : '로그인'}
-          </button>
-
-        </form>
-
-        {/* --- 아이디/비밀번호 찾기 + 회원가입 링크 --- */}
-        <div className="login-links">
-          <a className="login-link" onClick={() => navigate('/find-account')} style={{ cursor: 'pointer' }}>아이디/비밀번호 찾기</a>
-          <span className="login-link-divider">|</span>
-          <a className="login-link" onClick={() => navigate('/signup')} style={{ cursor: 'pointer' }}>회원가입</a>
         </div>
-
-        {/* --- 소셜 로그인 구분선 --- */}
-        <div className="login-divider">
-          <span>또는</span>
-        </div>
-
-        {/* --- 소셜 로그인 버튼들 --- */}
-        <div className="login-social">
-
-          {/* 카카오톡 로그인 버튼 */}
-          <button className="social-btn kakao-btn" onClick={handleKakaoLogin}>
-            카카오톡으로 시작하기
-          </button>
-
-          {/* 네이버 로그인 버튼 */}
-          <button className="social-btn naver-btn" onClick={handleNaverLogin}>
-            네이버로 시작하기
-          </button>
-
-        </div>
-
       </div>
     </div>
   );

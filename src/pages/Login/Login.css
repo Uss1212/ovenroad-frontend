@@ -1,193 +1,324 @@
-/* ===================================================
-   Login 스타일 (로그인 카드)
-   - 화면 가운데에 흰색 카드
-   - 밑줄 스타일 입력 필드
-   - 둥근 버튼들
-   - 카카오: 노란색, 네이버: 초록색
-   =================================================== */
+/* 로그인 페이지 - 전체 화면 배경 + 카드 오버레이 */
+/* 로그인 페이지일 때 헤더 투명 + 위로 올림 */
+body.login-active .header {
+  background: transparent;
+  border-bottom: none;
+  z-index: 10000;
+  position: fixed;
+}
 
-/* --- 로그인 영역 전체 --- */
-/* 화면 가운데에 카드를 배치하기 위한 래퍼 */
-/* min-height: 화면 전체 높이에서 헤더(52px) 뺀 만큼 */
-.login-wrapper {
+body.login-active .header-create-btn {
+  border-color: #ffffff;
+  color: #ffffff;
+  background: transparent;
+}
+
+body.login-active .header-create-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+body.login-active .header-login-btn {
+  color: #ffffff;
+}
+
+
+.login-page {
+  position: relative;
+  z-index: 9999;
+  min-height: calc(100vh + 84px);
+  margin-top: -84px;
+  padding-top: 84px;
+  background: url('../../assets/img/hero.png') center/cover no-repeat;
+  display: flex;
+}
+
+.login-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+/* 왼쪽 - 히어로 텍스트 */
+.login-left {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  padding: 250px 60px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.login-hero-title {
+  font-size: 64px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.2;
+  font-family: 'Inter', sans-serif;
+}
+
+.login-hero-subtitle {
+  font-size: 22px;
+  font-weight: 400;
+  color: #ffffff;
+  margin: 16px 0 0;
+}
+
+/* 오른쪽 - 로그인 카드 영역 (배경 투명, 이미지 보임) */
+.login-right {
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 52px);
-  background: #f8f8f8;
+  position: relative;
+  z-index: 1;
 }
 
-/* --- 로그인 카드 --- */
-/* 흰색 배경 + 둥근 모서리 + 그림자 */
+/* 로그인 카드 */
 .login-card {
-  width: 500px;
-  padding: 50px 40px;
+  width: 584px;
+  padding: 40px;
   background: #ffffff;
   border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
-/* --- 제목: "로그인" --- */
+/* 제목 */
 .login-title {
-  font-size: 22px;
+  font-size: 30px;
   font-weight: 700;
-  color: #111111;
-  text-align: center;
-  margin: 0 0 40px;
+  color: #333333;
+  margin: 0 0 60px;
+  font-family: 'Inter', sans-serif;
 }
 
-/* --- 로그인 폼 --- */
+/* 폼 */
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
-/* --- 입력 필드 그룹 --- */
-.login-input-group {
-  padding: 8px 0;
+/* 입력 필드 그룹 */
+.login-field {
+  margin-bottom: 0;
 }
 
-/* --- 입력 필드 (이메일, 비밀번호) --- */
-/* 밑줄만 있는 깔끔한 스타일 (와이어프레임 참고) */
-/* border: 위/좌/우는 없고, 아래만 1px 선 */
+.login-field + .login-field {
+  margin-top: 40px;
+}
+
+/* 라벨 */
+.login-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 400;
+  color: #666666;
+  margin-bottom: 8px;
+}
+
+/* 입력 필드 */
 .login-input {
   width: 100%;
-  padding: 12px 0;
-  font-size: 14px;
+  padding: 8px 0;
+  font-size: 17px;
+  font-weight: 500;
   font-family: inherit;
-  color: #111111;
+  color: #333333;
   border: none;
-  border-bottom: 1px solid #dddddd;
+  border-bottom: 1px solid #AFACAC;
   outline: none;
   background: transparent;
   transition: border-color 0.2s;
 }
 
-/* 입력 필드에 커서가 들어가면 밑줄 색이 진해짐 */
 .login-input:focus {
-  border-bottom-color: #111111;
+  border-bottom-color: #333333;
 }
 
-/* placeholder(힌트 텍스트) 색상 */
 .login-input::placeholder {
-  color: #aaaaaa;
+  color: #AFACAC;
 }
 
-/* --- 비밀번호 눈 아이콘 --- */
-.login-password-group {
+/* 비밀번호 입력 래퍼 */
+.login-input-wrap {
   position: relative;
 }
 
+.login-input-wrap .login-input {
+  padding-right: 28px;
+}
+
+/* 눈 아이콘 버튼 */
 .login-eye-btn {
   position: absolute;
-  right: 0;
+  right: 4px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 18px;
-  padding: 4px 8px;
-  color: #888;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  color: #666666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
 }
 
-/* --- 로그인 에러 메시지 --- */
+/* 체크박스 옵션 */
+.login-options {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.login-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #666666;
+  cursor: pointer;
+}
+
+.login-checkbox {
+  display: none;
+}
+
+.login-checkbox-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid #AFACAC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.login-checkbox:checked + .login-checkbox-circle {
+  background: #333333;
+  border-color: #333333;
+}
+
+.login-checkbox:checked + .login-checkbox-circle::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+/* 에러 메시지 */
 .login-error {
   color: #ef4444;
   font-size: 13px;
   text-align: center;
-  margin-top: 8px;
+  margin: 8px 0 0;
 }
 
-/* --- 로그인 버튼 --- */
-/* 와이어프레임: 둥근 버튼 (border-radius 28) */
+/* 로그인 버튼 */
 .login-btn {
   width: 100%;
-  padding: 16px;
-  margin-top: 24px;
+  height: 60px;
+  margin-top: 40px;
   border: none;
-  border-radius: 28px;
-  background: #111111;
+  border-radius: 6px;
+  background: #333333;
   color: #ffffff;
   font-size: 17px;
-  font-weight: 700;
+  font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   transition: background 0.2s;
 }
 
-/* 버튼에 마우스 올리면 살짝 밝아짐 */
 .login-btn:hover {
-  background: #333333;
+  background: #222222;
 }
 
-/* --- 아이디/비밀번호 찾기 + 회원가입 링크 --- */
+.login-btn:disabled {
+  background: #DFDFDF;
+  color: #666666;
+  cursor: default;
+}
+
+/* 링크 영역 */
 .login-links {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
-/* 각 링크 스타일 */
 .login-link {
-  font-size: 13px;
-  color: #888888;
+  font-size: 14px;
+  font-weight: 400;
+  color: #666666;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .login-link:hover {
-  color: #111111;
+  color: #333333;
 }
 
-/* 링크 사이 구분선 "|" */
 .login-link-divider {
-  font-size: 13px;
-  color: #dddddd;
+  font-size: 12px;
+  color: #AFACAC;
+  margin: 0 12px;
 }
 
-/* --- 소셜 로그인 구분선 ("또는") --- */
-/* 왼쪽 선 --- 또는 --- 오른쪽 선 형태 */
+/* 간편로그인 구분선 */
 .login-divider {
   display: flex;
   align-items: center;
-  margin: 32px 0 24px;
+  margin: 60px 0 24px;
 }
 
-/* 구분선 양쪽의 선 */
 .login-divider::before,
 .login-divider::after {
   content: '';
   flex: 1;
   height: 1px;
-  background: #eeeeee;
+  background: #AFACAC;
 }
 
-/* "또는" 텍스트 */
 .login-divider span {
   padding: 0 16px;
-  font-size: 12px;
-  color: #aaaaaa;
+  font-size: 14px;
+  font-weight: 400;
+  color: #666666;
+  white-space: nowrap;
 }
 
-/* --- 소셜 로그인 버튼 영역 --- */
+/* 소셜 로그인 버튼 영역 */
 .login-social {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
-/* --- 소셜 로그인 버튼 공통 --- */
+/* 소셜 버튼 공통 */
 .social-btn {
   width: 100%;
-  padding: 14px;
-  border-radius: 28px;
-  font-size: 14px;
-  font-weight: 600;
+  height: 60px;
+  border-radius: 6px;
+  font-size: 17px;
+  font-weight: 400;
   font-family: inherit;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   transition: opacity 0.2s;
 }
 
@@ -195,18 +326,16 @@
   opacity: 0.85;
 }
 
-/* --- 카카오톡 버튼 --- */
-/* 카카오 공식 색상: 노란색 배경 + 검정 글씨 */
-.kakao-btn {
-  background: #fee500;
-  color: #3c1e1e;
-  border: none;
-}
-
-/* --- 네이버 버튼 --- */
-/* 네이버 공식 색상: 초록색 배경 + 흰색 글씨 */
+/* 네이버 버튼 */
 .naver-btn {
   background: #03c75a;
   color: #ffffff;
+  border: none;
+}
+
+/* 카카오 버튼 */
+.kakao-btn {
+  background: #fee500;
+  color: #000000;
   border: none;
 }
