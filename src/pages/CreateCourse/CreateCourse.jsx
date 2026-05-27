@@ -41,6 +41,8 @@ export default function CreateCourse() {
   const [uploadedImageUrls, setUploadedImageUrls] = useState([]);
   /* ref로도 동일하게 관리 (state는 비동기라서 임시저장 시 최신값을 바로 읽기 위해) */
   const uploadedImageUrlsRef = useRef([]);
+  /* 에디터 이미지 업로드 URL (캡션과 매칭용) */
+  const editorImageUrlsRef = useRef([]);
   /* 현재 업로드 진행 중인 개수 */
   const pendingUploadsRef = useRef(0);
   /* 대표이미지 인덱스 (기본값: 첫 번째 이미지) */
@@ -111,6 +113,7 @@ export default function CreateCourse() {
      마이페이지에서 "이어서 작성" 클릭 시 임시저장 데이터 복원
      ============================================ */
   useEffect(() => {
+    console.log('[DEBUG] location.state:', location.state);
     if (location.state) {
       const s = location.state;
       if (s.title) setTitle(s.title);
@@ -121,9 +124,14 @@ export default function CreateCourse() {
       if (s.draftNum) setDraftNum(s.draftNum);
       if (s.courseNum) setEditCourseNum(s.courseNum);
       if (s.coverImages && s.coverImages.length > 0) {
-        uploadedImageUrlsRef.current = s.coverImages;
-        setUploadedImageUrls(s.coverImages);
-        setCoverImages(s.coverImages.map(url => url.startsWith('http') ? url : `${BASE_URL}${url}`));
+        const isNewFormat = typeof s.coverImages[0] === 'object';
+        const urls = isNewFormat ? s.coverImages.map(img => img.url) : s.coverImages;
+        const captions = isNewFormat ? s.coverImages.map(img => img.caption || '') : s.coverImages.map(() => '');
+        uploadedImageUrlsRef.current = urls;
+        editorImageUrlsRef.current = urls;
+        setUploadedImageUrls(urls);
+        setCoverImages(urls.map(url => url.startsWith('http') ? url : `${BASE_URL}${url}`));
+        setEditorImages(urls.map((url, i) => ({ preview: url, caption: captions[i] })));
       }
     }
   }, []);
@@ -255,6 +263,7 @@ export default function CreateCourse() {
       if (uploadResult?.imageUrl) {
         const url = uploadResult.imageUrl.startsWith('http') ? uploadResult.imageUrl : `${BASE_URL}${uploadResult.imageUrl}`;
         uploadedImageUrlsRef.current = [...uploadedImageUrlsRef.current, url];
+        editorImageUrlsRef.current = [...editorImageUrlsRef.current, url];
         setUploadedImageUrls([...uploadedImageUrlsRef.current]);
       }
     } catch (err) {
@@ -271,6 +280,7 @@ export default function CreateCourse() {
 
   const handleRemoveEditorImage = (index) => {
     setEditorImages(prev => prev.filter((_, i) => i !== index));
+    editorImageUrlsRef.current = editorImageUrlsRef.current.filter((_, i) => i !== index);
     if (mainEditorImageIndex === index) {
       setMainEditorImageIndex(null);
       setCoverImages([]);
@@ -411,7 +421,10 @@ export default function CreateCourse() {
       content: editorContent || description.trim(),
       tags,
       coverImage: uploadedImageUrls.length > 0 ? uploadedImageUrls[mainImageIndex] || uploadedImageUrls[0] : null,
-      coverImages: uploadedImageUrls,
+      coverImages: editorImageUrlsRef.current.map((url, i) => ({
+        url,
+        caption: editorImages[i]?.caption || ''
+      })),
       places: places.map((place, index) => ({
         placeNum: place.id,
         order: index + 1,
@@ -466,7 +479,10 @@ export default function CreateCourse() {
         tags,
         places: places.map((p) => ({ id: p.id, name: p.name, address: p.address, lat: p.lat, lng: p.lng })),
         placeComments,
-        coverImages: uploadedImageUrlsRef.current,
+        coverImages: editorImageUrlsRef.current.map((url, i) => ({
+          url,
+          caption: editorImages[i]?.caption || ''
+        })),
       });
       /* 새로 생성된 경우 draftNum 기억 (다음 저장 시 중복 방지) */
       if (result.draftNum) setDraftNum(result.draftNum);

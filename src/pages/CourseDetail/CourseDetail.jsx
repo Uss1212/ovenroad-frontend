@@ -129,14 +129,20 @@ export default function CourseDetail() {
     } catch (err) { console.error('댓글 삭제 실패:', err); }
   };
 
+  const courseImages = (() => {
+    if (!course?.COVER_IMAGES) return [];
+    try {
+      const parsed = JSON.parse(course.COVER_IMAGES);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.map(img => {
+        if (typeof img === 'string') return { url: imgUrl(img), caption: '' };
+        return { url: imgUrl(img.url), caption: img.caption || '' };
+      });
+    } catch { return []; }
+  })();
+
   const galleryImages = (() => {
-    const imgs = [];
-    if (course?.COVER_IMAGES) {
-      try {
-        const parsed = JSON.parse(course.COVER_IMAGES);
-        if (Array.isArray(parsed)) parsed.forEach(img => imgs.push(imgUrl(img)));
-      } catch {}
-    }
+    const imgs = courseImages.map(ci => ci.url);
     if (imgs.length === 0 && course?.COVER_IMAGE) {
       imgs.push(imgUrl(course.COVER_IMAGE));
     }
@@ -321,24 +327,15 @@ export default function CourseDetail() {
         </div>
       )}
 
-      {/* Place cards - centered vertical */}
-      {places.length > 0 && (
+      {/* 코스 이미지 + 캡션 카드 */}
+      {courseImages.length > 0 && (
         <div className="cd-places-section">
-          {places.map((place, index) => (
-            <div key={place.PLACE_NUM || index} className="cd-place-card" onClick={() => navigate(`/place/${place.PLACE_NUM}`)}>
+          {courseImages.map((img, index) => (
+            <div key={index} className="cd-place-card">
               <div className="cd-place-card-img">
-                {place.images && place.images.length > 0 ? (
-                  <img src={imgUrl(place.images[0])} alt={place.PLACE_NAME} />
-                ) : (
-                  <div className="cd-place-card-placeholder">🍞</div>
-                )}
+                <img src={img.url} alt={img.caption || `코스 사진 ${index + 1}`} />
               </div>
-              <p className="cd-place-card-name">{place.PLACE_NAME}</p>
-              {(place.MEMO || course.CONTENT) && (
-                <p className="cd-place-card-desc">
-                  {place.MEMO || ''}
-                </p>
-              )}
+              {img.caption && <p className="cd-place-card-name">{img.caption}</p>}
             </div>
           ))}
         </div>
