@@ -8,7 +8,7 @@ export default function HeroBanner() {
   const navigate = useNavigate();
 
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [activeBadge, setActiveBadge] = useState(null);
+  const [activeBadges, setActiveBadges] = useState(new Set(['all']));
   const [userLocation, setUserLocation] = useState({ lat: 37.5565, lng: 126.9225 });
   const [recommendedBakeries, setRecommendedBakeries] = useState([]);
   const [externalBakeries, setExternalBakeries] = useState([]);
@@ -272,8 +272,8 @@ export default function HeroBanner() {
     const filtered = markersRef.current.filter(marker => {
       const b = marker._bakeryData;
       if (!b) return false;
-      if (activeBadge === null) return true;
-      return b.badges?.includes(activeBadge);
+      if (activeBadges.has('all')) return true;
+      return (b.badges || []).some(badge => activeBadges.has(badge));
     });
 
     if (clusterRef.current) clusterRef.current.setMap(null);
@@ -296,13 +296,12 @@ export default function HeroBanner() {
         },
       });
     }
-  }, [activeBadge]);
+  }, [activeBadges]);
 
   const handleSearch = () => {
     setShowSuggestions(false);
     const params = new URLSearchParams();
     if (searchKeyword) params.set('search', searchKeyword);
-    if (activeBadge && activeBadge !== 'all') params.set('badge', activeBadge);
     navigate(`/places?${params.toString()}`);
   };
 
@@ -526,8 +525,13 @@ export default function HeroBanner() {
       {/* 뱃지 필터 — 지도 위 floating */}
       <div className="hero-badge-filters">
         <button
-          className={`hero-badge-btn ${activeBadge === null ? 'active' : ''}`}
-          onClick={() => setActiveBadge(null)}
+          className={`hero-badge-btn ${activeBadges.has('all') ? 'active' : ''}`}
+          onClick={() => setActiveBadges(prev => {
+            const next = new Set(prev);
+            if (next.has('all')) next.delete('all');
+            else next.add('all');
+            return next;
+          })}
           style={{ '--badge-color': '#44403c' }}
         >
           <span className="hero-badge-name">전체</span>
@@ -535,8 +539,13 @@ export default function HeroBanner() {
         {badges.map(badge => (
           <button
             key={badge.id}
-            className={`hero-badge-btn ${activeBadge === badge.id ? 'active' : ''}`}
-            onClick={() => setActiveBadge(activeBadge === badge.id ? null : badge.id)}
+            className={`hero-badge-btn ${activeBadges.has(badge.id) ? 'active' : ''}`}
+            onClick={() => setActiveBadges(prev => {
+              const next = new Set(prev);
+              if (next.has(badge.id)) next.delete(badge.id);
+              else next.add(badge.id);
+              return next;
+            })}
             style={{ '--badge-color': badge.color }}
           >
             <img src={badge.img} alt={badge.name} className="hero-badge-img" />

@@ -50,10 +50,10 @@ export default function RegionCourse() {
   };
 
   const selectedLabel = REGIONS.find(r => r.value === region)?.label || '서울 전체';
-  const featuredThumb = getThumbnail(featured);
-  const featuredAvatar = getAuthorAvatar(featured);
-  const featuredAuthor = featured.author || featured.NICKNAME || '작성자';
-  const featuredTags = getTags(featured, 4);
+  const featuredThumb = featured ? getThumbnail(featured) : null;
+  const featuredAvatar = featured ? getAuthorAvatar(featured) : null;
+  const featuredAuthor = featured ? (featured.author || featured.NICKNAME || '작성자') : '';
+  const featuredTags = featured ? getTags(featured, 4) : [];
 
   return (
     <section className="rc-section">
