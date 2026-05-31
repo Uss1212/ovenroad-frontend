@@ -325,20 +325,14 @@ export default function HeroBanner() {
   return (
     <section className="hero-section">
 
-      {/* 지도 — 전체 배경 */}
-      <div className="hero-map-bg" ref={mapRef} />
-
-      {/* ===== 왼쪽 플로팅 패널 ===== */}
+      {/* ===== 왼쪽 패널 ===== */}
       <div className="hero-left">
-
         {selectedBakery ? (
           /* ── 장소 상세 패널 ── */
           <div className="hero-place-panel">
             <button className="hero-place-back-btn" onClick={() => setSelectedBakery(null)}>
               ← 검색으로 돌아가기
             </button>
-
-            {/* 이미지 영역 */}
             {displayImages.length > 0 ? (
               <div className={`hero-place-imgs hero-place-imgs-${Math.min(displayImages.length, 4)}`}>
                 {displayImages.map((url, i) => (
@@ -350,12 +344,8 @@ export default function HeroBanner() {
             ) : (
               <div className="hero-place-img-placeholder">🍞</div>
             )}
-
-            {/* 정보 */}
             <div className="hero-place-info">
               <h3 className="hero-place-name">{selectedBakery.name}</h3>
-
-              {/* 뱃지 */}
               {selectedBakery.badges?.length > 0 && (
                 <div className="hero-place-badges">
                   {selectedBakery.badges.map(b => {
@@ -368,9 +358,7 @@ export default function HeroBanner() {
                   })}
                 </div>
               )}
-
               <p className="hero-place-address">📍 {selectedBakery.address || '주소 정보 없음'}</p>
-
               {Number(selectedBakery.rating) > 0 && (
                 <p className="hero-place-rating">
                   ⭐ {selectedBakery.rating}
@@ -379,7 +367,6 @@ export default function HeroBanner() {
                   )}
                 </p>
               )}
-
               {selectedGoogleInfo && (
                 <div className="hero-place-hours">
                   <div className="hero-place-open-status">
@@ -396,7 +383,6 @@ export default function HeroBanner() {
                   )}
                 </div>
               )}
-
               {selectedBakery.menuTags?.length > 0 && (
                 <div className="hero-place-tags">
                   {selectedBakery.menuTags.map(t => (
@@ -404,7 +390,6 @@ export default function HeroBanner() {
                   ))}
                 </div>
               )}
-
               {!selectedBakery.isExternal && (
                 <button
                   className="hero-place-detail-btn"
@@ -427,7 +412,6 @@ export default function HeroBanner() {
                 빵집 이름이나 지점을 정확히 입력해주세요 (예: 어니언 성수)
               </p>
             </div>
-
             <div className="hero-search-area" ref={searchWrapRef}>
               <div className="hero-search-wrap">
                 <input
@@ -443,7 +427,6 @@ export default function HeroBanner() {
                   <i className="fi fi-rr-search"></i>
                 </button>
               </div>
-
               {showSuggestions && searchSuggestions.length > 0 && (
                 <div className="hero-suggestions">
                   {searchSuggestions.map(b => (
@@ -480,7 +463,6 @@ export default function HeroBanner() {
                 </div>
               )}
             </div>
-
             <div className="hero-trending">
               <p className="hero-trending-label">지금 뜨는 빵집</p>
               <div className="hero-trending-list">
@@ -522,48 +504,53 @@ export default function HeroBanner() {
         )}
       </div>
 
-      {/* 뱃지 필터 — 지도 위 floating */}
-      <div className="hero-badge-filters">
-        <button
-          className={`hero-badge-btn ${activeBadges.has('all') ? 'active' : ''}`}
-          onClick={() => setActiveBadges(prev => {
-            const next = new Set(prev);
-            if (next.has('all')) next.delete('all');
-            else next.add('all');
-            return next;
-          })}
-          style={{ '--badge-color': '#44403c' }}
-        >
-          <span className="hero-badge-name">전체</span>
-        </button>
-        {badges.map(badge => (
+      {/* ===== 지도 컨테이너 ===== */}
+      <div className="hero-map-container">
+        <div className="hero-map-bg" ref={mapRef} />
+
+        {/* 뱃지 필터 */}
+        <div className="hero-badge-filters">
           <button
-            key={badge.id}
-            className={`hero-badge-btn ${activeBadges.has(badge.id) ? 'active' : ''}`}
+            className={`hero-badge-btn ${activeBadges.has('all') ? 'active' : ''}`}
             onClick={() => setActiveBadges(prev => {
               const next = new Set(prev);
-              if (next.has(badge.id)) next.delete(badge.id);
-              else next.add(badge.id);
+              if (next.has('all')) next.delete('all');
+              else next.add('all');
               return next;
             })}
-            style={{ '--badge-color': badge.color }}
+            style={{ '--badge-color': '#44403c' }}
           >
-            <img src={badge.img} alt={badge.name} className="hero-badge-img" />
-            <span className="hero-badge-name">{badge.name}</span>
+            <span className="hero-badge-name">전체</span>
           </button>
-        ))}
-      </div>
+          {badges.map(badge => (
+            <button
+              key={badge.id}
+              className={`hero-badge-btn ${activeBadges.has(badge.id) ? 'active' : ''}`}
+              onClick={() => setActiveBadges(prev => {
+                const next = new Set(prev);
+                if (next.has(badge.id)) next.delete(badge.id);
+                else next.add(badge.id);
+                return next;
+              })}
+              style={{ '--badge-color': badge.color }}
+            >
+              <img src={badge.img} alt={badge.name} className="hero-badge-img" />
+              <span className="hero-badge-name">{badge.name}</span>
+            </button>
+          ))}
+        </div>
 
-      {/* 줌 컨트롤 */}
-      <div className="hero-zoom-controls">
-        <button className="hero-zoom-btn" onClick={() => {
-          const map = mapInstanceRef.current;
-          if (map) map.setZoom(map.getZoom() + 1);
-        }}>+</button>
-        <button className="hero-zoom-btn" onClick={() => {
-          const map = mapInstanceRef.current;
-          if (map) map.setZoom(map.getZoom() - 1);
-        }}>−</button>
+        {/* 줌 컨트롤 */}
+        <div className="hero-zoom-controls">
+          <button className="hero-zoom-btn" onClick={() => {
+            const map = mapInstanceRef.current;
+            if (map) map.setZoom(map.getZoom() + 1);
+          }}>+</button>
+          <button className="hero-zoom-btn" onClick={() => {
+            const map = mapInstanceRef.current;
+            if (map) map.setZoom(map.getZoom() - 1);
+          }}>−</button>
+        </div>
       </div>
 
     </section>
