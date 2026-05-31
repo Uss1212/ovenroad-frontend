@@ -525,6 +525,13 @@ export default function HeroBanner() {
 
       {/* 뱃지 필터 — 지도 위 floating */}
       <div className="hero-badge-filters">
+        <button
+          className={`hero-badge-btn ${activeBadge === null ? 'active' : ''}`}
+          onClick={() => setActiveBadge(null)}
+          style={{ '--badge-color': '#44403c' }}
+        >
+          <span className="hero-badge-name">전체</span>
+        </button>
         {badges.map(badge => (
           <button
             key={badge.id}
