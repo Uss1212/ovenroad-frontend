@@ -26,9 +26,7 @@ export default function RegionCourse() {
       .catch(err => console.error('지역 코스 불러오기 실패:', err));
   }, [region]);
 
-  if (courses.length === 0) return null;
-
-  const featured = courses[0];
+  const featured = courses[0] || null;
   const listCourses = courses.slice(1, 6);
 
   const getThumbnail = (course) => {
@@ -90,6 +88,9 @@ export default function RegionCourse() {
         </div>
 
         {/* ── 본문: 좌(피처드) + 우(리스트) ── */}
+        {!featured ? (
+          <div className="rc-empty">해당 지역의 추천 코스가 없습니다.</div>
+        ) : (
         <div className="rc-body">
 
           {/* 왼쪽: 대표 코스 */}
@@ -102,6 +103,9 @@ export default function RegionCourse() {
               style={{ backgroundImage: featuredThumb ? `url(${featuredThumb})` : undefined }}
             >
               {!featuredThumb && <span className="rc-featured-placeholder">🍞</span>}
+
+              {/* 1위 뱃지 */}
+              <span className="rc-featured-rank">1</span>
 
               {/* 작성자 아바타 */}
               <div className="rc-featured-avatar">
@@ -134,7 +138,9 @@ export default function RegionCourse() {
 
           {/* 오른쪽: 순위 리스트 */}
           <div className="rc-list">
-            {listCourses.map((course, i) => {
+            {listCourses.length === 0 ? (
+              <div className="rc-list-empty">이 지역의 다른 추천 코스가 없습니다.</div>
+            ) : listCourses.map((course, i) => {
               const thumb = getThumbnail(course);
               const tags = getTags(course, 3);
               return (
@@ -177,6 +183,7 @@ export default function RegionCourse() {
           </div>
 
         </div>
+        )}
       </div>
     </section>
   );
