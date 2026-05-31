@@ -24,8 +24,8 @@
   position: absolute;
   top: 20px;
   left: 20px;
-  width: 432px;
-  max-height: 512px;
+  width: 520px;
+  max-height: 700px;
   z-index: 10;
   background: rgba(255, 255, 255, 0.97);
   backdrop-filter: blur(8px);
@@ -560,7 +560,7 @@
 .hero-badge-filters {
   position: absolute;
   top: 24px;
-  left: calc(20px + 432px + 24px);
+  left: calc(20px + 520px + 24px);
   z-index: 10;
   display: flex;
   gap: 8px;
@@ -658,6 +658,15 @@
 /* =========================================
    반응형
    ========================================= */
+@media (max-width: 1200px) {
+  .hero-left {
+    width: 440px;
+  }
+  .hero-badge-filters {
+    left: calc(20px + 440px + 16px);
+  }
+}
+
 @media (max-width: 1000px) {
   .hero-left {
     width: 360px;
