@@ -222,9 +222,8 @@ export default function CreateCourse() {
      태그 추가 (엔터 키로)
      ============================================ */
   const handleTagKeyDown = (e) => {
-    if (e.key === 'Enter' && tagInput.trim()) {
+    if (e.key === 'Enter' && !e.nativeEvent.isComposing && tagInput.trim()) {
       e.preventDefault();
-      /* 중복 태그 방지 */
       if (!tags.includes(tagInput.trim())) {
         setTags([...tags, tagInput.trim()]);
       }

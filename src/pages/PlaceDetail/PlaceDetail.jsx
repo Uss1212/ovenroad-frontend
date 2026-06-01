@@ -226,7 +226,6 @@ export default function PlaceDetail() {
             </button>
           </div>
         </div>
-        <p className="pd-store-address">{place.address}</p>
         <div className="pd-store-rating">
           <span className="pd-store-star">★</span> {place.rating}
         </div>

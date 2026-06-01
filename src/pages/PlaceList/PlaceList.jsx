@@ -178,7 +178,7 @@ export default function PlaceList() {
             const region = regionMatch ? regionMatch[1] : '';
 
             /* menuTags: 서버에서 "크로와상,식빵,소금빵" 형태로 옴 → 배열로 변환 */
-            const tags = p.menuTags ? p.menuTags.split(',').slice(0, 3) : [];
+            const tags = p.menuTags ? p.menuTags.split(',') : [];
 
             return {
               id: p.PLACE_NUM,
@@ -423,7 +423,7 @@ export default function PlaceList() {
                   {/* 메뉴 태그 (최대 3개) */}
                   {bakery.menuTags.length > 0 && (
                     <div className="pl-card-tags">
-                      {bakery.menuTags.map((tag, i) => (
+                      {bakery.menuTags.slice(0, 3).map((tag, i) => (
                         <span key={i} className="pl-card-tag">{tag}</span>
                       ))}
                     </div>
