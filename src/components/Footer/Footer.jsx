@@ -54,22 +54,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* ===== 4번 컬럼: SNS 아이콘들 ===== */}
-          <div className="footer-sns">
-            <div className="footer-link-title">SNS</div>
-            <div className="footer-sns-row">
-              <button className="footer-sns-btn" title="Instagram">
-                <span className="footer-sns-emoji">📷</span>
-              </button>
-              <button className="footer-sns-btn" title="YouTube">
-                <span className="footer-sns-emoji">🎬</span>
-              </button>
-              <button className="footer-sns-btn" title="Blog">
-                <span className="footer-sns-emoji">📝</span>
-              </button>
-            </div>
-          </div>
-
         </div>
 
         {/* ---- 하단 영역: 저작권 문구 ---- */}
