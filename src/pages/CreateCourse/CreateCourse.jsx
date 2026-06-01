@@ -79,6 +79,9 @@ export default function CreateCourse() {
   /* 이미지 업로드 input 참조 (숨겨진 input을 클릭하기 위해) */
   const fileInputRef = useRef(null);
 
+  /* 한글 IME 조합 중 여부 (태그 입력 오류 방지) */
+  const isComposingRef = useRef(false);
+
   /* 에디터 관련 */
   const editorRef = useRef(null);
   const editorFileInputRef = useRef(null);
@@ -222,7 +225,7 @@ export default function CreateCourse() {
      태그 추가 (엔터 키로)
      ============================================ */
   const handleTagKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.nativeEvent.isComposing && tagInput.trim()) {
+    if (e.key === 'Enter' && !isComposingRef.current && tagInput.trim()) {
       e.preventDefault();
       if (!tags.includes(tagInput.trim())) {
         setTags([...tags, tagInput.trim()]);
@@ -671,7 +674,7 @@ export default function CreateCourse() {
           <div className="cc-hero-overlay" />
 
           <div className="cc-hero-content">
-            <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
+            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" style={{ display: 'none' }} onChange={handleImageUpload} />
 
             {/* 제목 입력 */}
             <input
@@ -711,6 +714,8 @@ export default function CreateCourse() {
                   placeholder="태그 추가 (엔터로 자동 추가)"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
+                  onCompositionStart={() => { isComposingRef.current = true; }}
+                  onCompositionEnd={() => { isComposingRef.current = false; }}
                   onKeyDown={handleTagKeyDown}
                 />
               </div>
@@ -760,7 +765,7 @@ export default function CreateCourse() {
             data-placeholder="글을 작성해보세요..."
           />
         </div>
-        <input ref={editorFileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleEditorImage} />
+        <input ref={editorFileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" style={{ display: 'none' }} onChange={handleEditorImage} />
 
         {/* 에디터 툴바 */}
         <div className="cc-editor-toolbar">
@@ -935,6 +940,7 @@ export default function CreateCourse() {
                     <div className="cc-place-card-body">
                       <div className="cc-place-card-header">
                         <span className="cc-place-drag-handle">☰</span>
+                        <span className="cc-place-num-badge">{index + 1}</span>
                         <span className="cc-place-name">{place.name}</span>
                         <button
                           className="cc-place-remove"
@@ -959,25 +965,6 @@ export default function CreateCourse() {
           </div>
         </div>
 
-        {/* ===== 댓글 섹션 ===== */}
-        <div className="cc-comments-section">
-          <div className="cc-comments-header">
-            <h2 className="cc-comments-title">댓글 0개</h2>
-            <span className="cc-comments-count">0건 작성</span>
-          </div>
-          <div className="cc-comments-input-wrap">
-            <div className="cc-comments-avatar" />
-            <input
-              type="text"
-              className="cc-comments-input"
-              placeholder="댓글 작성"
-            />
-            <div className="cc-comments-btns">
-              <button className="cc-comments-cancel-btn">취소</button>
-              <button className="cc-comments-submit-btn">작성완료</button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
