@@ -35,9 +35,13 @@ async function request(url, options = {}) {
     /* --- 응답 처리 --- */
     /* response.ok: 서버가 200번대(성공) 코드를 보냈는지 확인 */
     if (!response.ok) {
-      /* 서버가 에러 메시지를 JSON으로 보냈을 수 있으니 파싱 시도 */
       const errorData = await response.json().catch(() => null);
-      /* 에러 객체를 만들어서 던짐 → catch에서 잡을 수 있음 */
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return;
+      }
       const error = new Error(errorData?.message || '요청에 실패했습니다.');
       error.status = response.status;
       error.data = errorData;
