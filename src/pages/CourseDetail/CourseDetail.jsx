@@ -327,20 +327,6 @@ export default function CourseDetail() {
         </div>
       )}
 
-      {/* 코스 이미지 + 캡션 카드 */}
-      {courseImages.length > 0 && (
-        <div className="cd-places-section">
-          {courseImages.map((img, index) => (
-            <div key={index} className="cd-place-card">
-              <div className="cd-place-card-img">
-                <img src={img.url} alt={img.caption || `코스 사진 ${index + 1}`} />
-              </div>
-              {img.caption && <p className="cd-place-card-name">{img.caption}</p>}
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Map + Place list */}
       {places.length > 0 && (
         <div className="cd-map-places">
@@ -348,6 +334,7 @@ export default function CourseDetail() {
           <div className="cd-place-list">
             {places.map((place, index) => (
               <div key={place.PLACE_NUM || index} className="cd-place-list-item">
+                <span className="cd-place-num">{index + 1}</span>
                 <div className="cd-place-list-thumb">
                   {place.images && place.images.length > 0 ? (
                     <img src={imgUrl(place.images[0])} alt={place.PLACE_NAME} />
