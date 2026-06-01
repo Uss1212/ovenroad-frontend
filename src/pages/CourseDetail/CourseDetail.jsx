@@ -259,6 +259,13 @@ export default function CourseDetail() {
 
         {/* Bottom: date + title + subtitle + tags */}
         <div className="cd-hero-content">
+          <div className="cd-hero-author">
+            {course.authorImage
+              ? <img src={course.authorImage} alt={course.author} className="cd-hero-author-img" />
+              : <div className="cd-hero-author-default">{(course.author || '?').charAt(0)}</div>
+            }
+            <span>{course.author || '알 수 없음'}</span>
+          </div>
           <p className="cd-hero-date">{formatDate(course.CREATED_TIME)}</p>
           <h1 className="cd-hero-title">{course.TITLE}</h1>
           {course.SUBTITLE && <p className="cd-hero-subtitle">{course.SUBTITLE}</p>}

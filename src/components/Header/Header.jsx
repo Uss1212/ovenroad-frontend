@@ -85,16 +85,15 @@ export default function Header() {
           <img src="/logo.png" alt="오븐로드" style={{ height: '44px' }} />
         </div>
 
+        {/* ===== 가운데 영역: 네비게이션 ===== */}
+        <nav className="header-nav">
+          <button className={`header-nav-item${location.pathname === '/places' ? ' active' : ''}`} onClick={() => navigate('/places')}>빵집 목록</button>
+          <button className={`header-nav-item${location.pathname === '/courses' ? ' active' : ''}`} onClick={() => navigate('/courses')}>코스 목록</button>
+          <button className={`header-nav-item${location.pathname === '/create' ? ' active' : ''}`} onClick={() => navigate('/create')}>코스 만들기</button>
+        </nav>
+
         {/* ===== 오른쪽 영역 ===== */}
         <div className="header-actions">
-
-          {/* "+ 코스 만들기" 버튼 */}
-          <button
-            className="header-create-btn"
-            onClick={() => navigate('/create')}
-          >
-            <i className="fi fi-rr-plus-small"></i> 코스 만들기
-          </button>
 
           {/* 로그인 상태에 따라 다르게 보여줌 */}
           {user ? (
@@ -126,7 +125,7 @@ export default function Header() {
                     className="header-dropdown-item"
                     onClick={() => { navigate('/notice'); setShowDropdown(false); }}
                   >
-                    📢 공지사항
+                    📢 공지·FAQ·문의
                   </button>
                   {(user.grade === 'admin' || user.grade === 1 || user.grade === '1') && (
                     <button

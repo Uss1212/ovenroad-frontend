@@ -115,9 +115,41 @@
   align-items: flex-start;
 }
 
+.cd-hero-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  color: rgba(255,255,255,0.9);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.cd-hero-author-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(255,255,255,0.6);
+}
+
+.cd-hero-author-default {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #b45309;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1.5px solid rgba(255,255,255,0.6);
+}
+
 .cd-hero-date {
   font-size: 14px;
-  color: #ffffff;
+  color: rgba(255,255,255,0.7);
   margin: 0 0 8px;
   font-weight: 500;
 }
