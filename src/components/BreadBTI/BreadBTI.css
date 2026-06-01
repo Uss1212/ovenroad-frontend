@@ -368,6 +368,44 @@
 
 .bti-btn-explore:hover { background: #78350f; transform: translateY(-2px); }
 
+/* 시작 화면 */
+.bti-start { text-align: center; padding: 20px 0 8px; }
+.bti-start-desc { font-size: 16px; color: #78716c; line-height: 1.7; margin-bottom: 28px; }
+.bti-btn-start {
+  padding: 14px 40px;
+  border-radius: 9999px;
+  border: none;
+  background: #b45309;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+.bti-btn-start:hover { background: #92400e; transform: translateY(-2px); }
+
+/* 로딩 */
+.bti-loading { text-align: center; padding: 40px 0; color: #78716c; font-size: 15px; }
+.bti-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid #e7e5e4;
+  border-top-color: #b45309;
+  border-radius: 50%;
+  animation: bti-spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes bti-spin { to { transform: rotate(360deg); } }
+
+/* 결과 키워드 태그 */
+.bti-result-keywords { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 16px 0 24px; }
+.bti-keyword-tag {
+  border: 1.5px solid;
+  border-radius: 9999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 /* 반응형 */
 @media (max-width: 1100px) {
   .bti-section { padding: 60px 32px; }
