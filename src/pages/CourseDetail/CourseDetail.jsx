@@ -241,7 +241,9 @@ export default function CourseDetail() {
 
       {/* Hero */}
       <div className="cd-hero">
-        <img src={heroImage} alt={course.TITLE} className="cd-hero-img" />
+        <img src={heroImage} alt={course.TITLE} className="cd-hero-img"
+          onError={e => { e.target.src = 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=900'; }}
+        />
         <div className="cd-hero-overlay" />
 
         {/* Top-right: scrap + like */}

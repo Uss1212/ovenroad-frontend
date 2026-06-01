@@ -267,10 +267,11 @@ export default function PlaceDetail() {
                       <div key={c.COURSE_NUM} className="pd-home-course-card" onClick={() => navigate(`/courses/${c.COURSE_NUM}`)}>
                         <div className="pd-home-course-img">
                           {courseImg ? (
-                            <img src={courseImg} alt={c.TITLE} />
-                          ) : (
-                            <div className="pd-home-course-placeholder">🗺️</div>
-                          )}
+                            <img src={courseImg} alt={c.TITLE}
+                              onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
+                            />
+                          ) : null}
+                          <div className="pd-home-course-placeholder" style={{ display: courseImg ? 'none' : 'flex' }}>🗺️</div>
                         </div>
                         <h4 className="pd-home-course-title">{c.TITLE}</h4>
                         <p className="pd-home-course-subtitle">{c.SUBTITLE || '오늘의 빵지순례에 시작하기'}</p>
@@ -289,10 +290,11 @@ export default function PlaceDetail() {
                     <div key={menu.MENU_NUM} className="pd-home-menu-card">
                       <div className="pd-home-menu-img">
                         {menu.IMAGE_URL ? (
-                          <img src={imgUrl(menu.IMAGE_URL)} alt={menu.MENU_NAME} />
-                        ) : (
-                          <div className="pd-home-menu-placeholder">🥐</div>
-                        )}
+                          <img src={imgUrl(menu.IMAGE_URL)} alt={menu.MENU_NAME}
+                            onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
+                          />
+                        ) : null}
+                        <div className="pd-home-menu-placeholder" style={{ display: menu.IMAGE_URL ? 'none' : 'flex' }}>🥐</div>
                       </div>
                       {idx < 2 && <span className="pd-menu-badge">대표</span>}
                       <p className="pd-home-menu-name">{menu.MENU_NAME}</p>
