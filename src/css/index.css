@@ -62,6 +62,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+button, input, select, textarea {
+  font-family: inherit;
+}
+
 /* 부드러운 스크롤 (링크 클릭 시 부드럽게 이동) */
 html {
   scroll-behavior: smooth;

@@ -592,7 +592,7 @@
   border: 1px solid #e0e0e0;
   border-radius: 16px;
   overflow: hidden;
-  height: 864px;
+  height: 600px;
 }
 
 /* 검색바 (지도 위에 플로팅 카드) */
@@ -1002,6 +1002,20 @@
   font-size: 14px;
   flex-shrink: 0;
   user-select: none;
+}
+
+.cc-place-num-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #c96442;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .cc-place-drag-handle:active {

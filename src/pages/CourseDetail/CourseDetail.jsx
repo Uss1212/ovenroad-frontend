@@ -241,7 +241,9 @@ export default function CourseDetail() {
 
       {/* Hero */}
       <div className="cd-hero">
-        <img src={heroImage} alt={course.TITLE} className="cd-hero-img" />
+        <img src={heroImage} alt={course.TITLE} className="cd-hero-img"
+          onError={e => { e.target.src = 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=900'; }}
+        />
         <div className="cd-hero-overlay" />
 
         {/* Top-right: scrap + like */}
@@ -257,6 +259,13 @@ export default function CourseDetail() {
 
         {/* Bottom: date + title + subtitle + tags */}
         <div className="cd-hero-content">
+          <div className="cd-hero-author">
+            {course.authorImage
+              ? <img src={course.authorImage} alt={course.author} className="cd-hero-author-img" />
+              : <div className="cd-hero-author-default">{(course.author || '?').charAt(0)}</div>
+            }
+            <span>{course.author || '알 수 없음'}</span>
+          </div>
           <p className="cd-hero-date">{formatDate(course.CREATED_TIME)}</p>
           <h1 className="cd-hero-title">{course.TITLE}</h1>
           {course.SUBTITLE && <p className="cd-hero-subtitle">{course.SUBTITLE}</p>}
@@ -327,24 +336,6 @@ export default function CourseDetail() {
         </div>
       )}
 
-      {/* 코스 이미지 + 캡션 카드 */}
-      {courseImages.length > 0 && (
-        <div className="cd-places-section">
-          {courseImages.map((img, index) => (
-            <div key={index} className="cd-place-card">
-              <div className="cd-place-card-img">
-                <img src={img.url} alt={img.caption || `코스 사진 ${index + 1}`} />
-              </div>
-              {img.caption && <p className="cd-place-card-name">{img.caption}</p>}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {course.CONTENT && (
-        <div className="cd-content-body" dangerouslySetInnerHTML={{ __html: course.CONTENT }} />
-      )}
-
       {/* Map + Place list */}
       {places.length > 0 && (
         <div className="cd-map-places">
@@ -352,6 +343,7 @@ export default function CourseDetail() {
           <div className="cd-place-list">
             {places.map((place, index) => (
               <div key={place.PLACE_NUM || index} className="cd-place-list-item">
+                <span className="cd-place-num">{index + 1}</span>
                 <div className="cd-place-list-thumb">
                   {place.images && place.images.length > 0 ? (
                     <img src={imgUrl(place.images[0])} alt={place.PLACE_NAME} />

@@ -6,64 +6,53 @@ import './BreadBTI.css';
 function BreadBTI() {
   const navigate = useNavigate();
 
+  const [phase, setPhase] = useState('idle'); // idle | loading-q | playing | loading-r | result
+  const [questions, setQuestions] = useState([]);
   const [step, setStep] = useState(0);
-  const [scores, setScores] = useState({ crispy: 0, sweet: 0, healthy: 0, cream: 0 });
-  const [history, setHistory] = useState([]); // [{step, scores}]
+  const [answers, setAnswers] = useState([]);
+  const [history, setHistory] = useState([]);
   const [result, setResult] = useState(null);
   const [recommendedBakeries, setRecommendedBakeries] = useState([]);
 
-  const typeMenuMap = {
-    crispy:  { keywords: ['크루아상', '크로와상', '소금빵', '페이스트리'], primary: '크루아상' },
-    sweet:   { keywords: ['케이크', '도넛', '머핀', '타르트', '마카롱'],   primary: '케이크' },
-    healthy: { keywords: ['식빵', '바게트', '치아바타', '사워도우', '통밀'], primary: '식빵' },
-    cream:   { keywords: ['크림빵', '슈크림', '에클레어', '생크림'],        primary: '크림빵' },
-  };
+  async function startBTI() {
+    setPhase('loading-q');
+    setAnswers([]);
+    setHistory([]);
+    setStep(0);
+    setResult(null);
+    setRecommendedBakeries([]);
+    try {
+      const res = await fetch(`${BASE_URL}/api/bti/questions`);
+      const data = await res.json();
+      setQuestions(data);
+      setPhase('playing');
+    } catch {
+      setPhase('idle');
+      alert('질문 불러오기에 실패했어요. 다시 시도해주세요.');
+    }
+  }
 
-  const questions = [
-    {
-      question: 'Q. 비 오는 주말 아침 당신의 선택은?',
-      options: [
-        { emoji: '🥐', name: '크루아상',   desc: '바스락! 소리까지 맛있는',   type: 'crispy' },
-        { emoji: '🍩', name: '초코도넛',   desc: '입안 가득 퍼지는 달콤함',   type: 'sweet'  },
-      ],
-    },
-    {
-      question: 'Q. 커피와 함께 먹을 빵을 고른다면?',
-      options: [
-        { emoji: '🥖', name: '바게트',     desc: '고소하고 담백한 맛',        type: 'healthy' },
-        { emoji: '🧁', name: '슈크림빵',   desc: '크림이 가득한 부드러움',    type: 'cream'  },
-      ],
-    },
-    {
-      question: 'Q. 친구 생일에 빵을 선물한다면?',
-      options: [
-        { emoji: '🎂', name: '생크림케이크', desc: '화려하고 달콤한 특별함',  type: 'cream'   },
-        { emoji: '🥐', name: '크루아상 세트', desc: '고급스러운 버터 페이스트리', type: 'crispy' },
-      ],
-    },
-    {
-      question: 'Q. 다이어트 중 빵이 먹고 싶다면?',
-      options: [
-        { emoji: '🍞', name: '통밀빵',     desc: '건강하고 담백한 선택',      type: 'healthy' },
-        { emoji: '🍰', name: '케이크 한 조각', desc: '어차피 먹을 거 달콤하게', type: 'sweet'  },
-      ],
-    },
-  ];
-
-  const results = {
-    crispy:  { emoji: '🥐', name: '바삭장인',   desc: '버터 풍미와 바삭한 식감을 사랑하는 당신!\n크루아상, 페이스트리, 소금빵이 인생빵이에요.', color: '#b45309' },
-    sweet:   { emoji: '🍩', name: '달달마스터', desc: '달콤한 빵 앞에서는 참을 수 없는 당신!\n케이크, 도넛, 마카롱이라면 언제든 환영이에요.', color: '#db2777' },
-    healthy: { emoji: '🍞', name: '건강빵러버', desc: '담백하고 건강한 빵을 추구하는 당신!\n통밀빵, 바게트, 치아바타가 최고예요.',              color: '#059669' },
-    cream:   { emoji: '🧁', name: '크림폭탄',   desc: '부드러운 크림이 없으면 빵이 아닌 당신!\n슈크림빵, 크림빵, 에클레어를 사랑해요.',        color: '#7c3aed' },
-  };
-
-  const totalQuestions = questions.length;
-  const currentQ = questions[Math.min(step, totalQuestions - 1)];
+  async function submitAnswers(finalAnswers) {
+    setPhase('loading-r');
+    try {
+      const res = await fetch(`${BASE_URL}/api/bti/result`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers: finalAnswers }),
+      });
+      const data = await res.json();
+      setResult(data);
+      setPhase('result');
+    } catch {
+      setPhase('idle');
+      alert('결과 분석에 실패했어요. 다시 시도해주세요.');
+    }
+  }
 
   useEffect(() => {
-    if (!result) return;
-    const menu = typeMenuMap[result].primary;
-    fetch(`${BASE_URL}/api/places?menu=${encodeURIComponent(menu)}`)
+    if (!result || !result.keywords?.length) return;
+    const keyword = result.keywords[0];
+    fetch(`${BASE_URL}/api/places?menu=${encodeURIComponent(keyword)}`)
       .then(r => r.json())
       .then(data => {
         const top3 = data
@@ -71,71 +60,81 @@ function BreadBTI() {
           .sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0))
           .slice(0, 3)
           .map(p => ({
-            id: p.PLACE_NUM, name: p.PLACE_NAME,
-            address: p.ADDRESS || '',
+            id: p.PLACE_NUM,
+            name: p.PLACE_NAME,
             rating: p.avgRating ? Number(p.avgRating).toFixed(1) : '0.0',
             image: p.thumbnailImage || null,
           }));
         setRecommendedBakeries(top3);
       })
-      .catch(err => console.error('추천 빵집 불러오기 실패:', err));
+      .catch(() => {});
   }, [result]);
 
-  function handleSelect(type) {
-    setHistory(h => [...h, { step, scores: { ...scores } }]);
-    const newScores = { ...scores, [type]: scores[type] + 1 };
-    setScores(newScores);
-    if (step + 1 >= totalQuestions) {
-      const winner = Object.entries(newScores).sort((a, b) => b[1] - a[1])[0][0];
-      setResult(winner);
+  function handleSelect(option) {
+    const currentQ = questions[step];
+    const newAnswer = { question: currentQ.question, chosen: { name: option.name, desc: option.desc } };
+    const newAnswers = [...answers, newAnswer];
+    setHistory(h => [...h, { step, answers }]);
+    setAnswers(newAnswers);
+
+    if (step + 1 >= questions.length) {
+      submitAnswers(newAnswers);
+    } else {
+      setStep(step + 1);
     }
-    setStep(step + 1);
   }
 
   function handleBack() {
     if (history.length === 0) return;
     const prev = history[history.length - 1];
     setStep(prev.step);
-    setScores(prev.scores);
+    setAnswers(prev.answers);
     setHistory(h => h.slice(0, -1));
-    setResult(null);
   }
 
-  function handleRetry() {
-    setStep(0);
-    setScores({ crispy: 0, sweet: 0, healthy: 0, cream: 0 });
-    setHistory([]);
-    setResult(null);
-    setRecommendedBakeries([]);
-  }
+  const totalQuestions = questions.length;
+  const currentQ = questions[step];
 
   return (
     <section className="bti-section">
       <div className="bti-box">
 
-        {/* 헤더 */}
         <div className="bti-header">
-          <span className="bti-badge">MINI GAME</span>
+          <span className="bti-badge">AI MINI GAME</span>
           <h2 className="bti-title">나의 빵BTI는 무엇일까?</h2>
-          <p className="bti-subtitle">당신의 취향을 저격할 빵은?</p>
+          <p className="bti-subtitle">AI가 분석하는 나만의 빵 유형</p>
         </div>
 
-        {!result ? (
+        {/* 시작 전 */}
+        {phase === 'idle' && (
+          <div className="bti-start">
+            <p className="bti-start-desc">매번 AI가 새로운 질문을 만들어요.<br />당신만의 빵 유형을 찾아보세요!</p>
+            <button className="bti-btn-start" onClick={startBTI}>시작하기 🍞</button>
+          </div>
+        )}
+
+        {/* 질문 로딩 */}
+        {phase === 'loading-q' && (
+          <div className="bti-loading">
+            <div className="bti-spinner" />
+            <p>AI가 질문을 만들고 있어요...</p>
+          </div>
+        )}
+
+        {/* 게임 진행 */}
+        {phase === 'playing' && currentQ && (
           <div className="bti-game">
-            {/* 프로그레스 바 */}
             <div className="bti-progress">
               <div className="bti-progress-bar">
                 <div className="bti-progress-fill" style={{ width: `${(step / totalQuestions) * 100}%` }} />
               </div>
             </div>
 
-            {/* 질문 */}
             <h3 className="bti-question" key={step}>{currentQ.question}</h3>
 
-            {/* 선택지 2개 */}
             <div className="bti-options">
               {currentQ.options.map((opt, i) => (
-                <button key={i} className="bti-option" onClick={() => handleSelect(opt.type)}>
+                <button key={i} className="bti-option" onClick={() => handleSelect(opt)}>
                   <div className="bti-option-img-area">
                     <span className="bti-emoji">{opt.emoji}</span>
                   </div>
@@ -147,7 +146,6 @@ function BreadBTI() {
               ))}
             </div>
 
-            {/* 페이지네이션 */}
             <div className="bti-pagination">
               <button
                 className="bti-pagination-arrow"
@@ -167,31 +165,37 @@ function BreadBTI() {
               ><i className="fi fi-rr-caret-right"></i></button>
             </div>
           </div>
-        ) : (
-          /* 결과 화면 */
+        )}
+
+        {/* 결과 분석 로딩 */}
+        {phase === 'loading-r' && (
+          <div className="bti-loading">
+            <div className="bti-spinner" />
+            <p>AI가 당신의 빵 유형을 분석하고 있어요...</p>
+          </div>
+        )}
+
+        {/* 결과 */}
+        {phase === 'result' && result && (
           <div className="bti-result">
-            <div className="bti-result-emoji">{results[result].emoji}</div>
+            <div className="bti-result-emoji">{result.emoji}</div>
             <h3 className="bti-result-title">
               당신은 확신의{' '}
-              <span style={{ color: results[result].color }}>{results[result].name}</span>!
+              <span style={{ color: result.color }}>{result.typeName}</span>!
             </h3>
-            <p className="bti-result-desc">{results[result].desc}</p>
+            <p className="bti-result-desc">{result.description}</p>
 
-            <div className="bti-score-bars">
-              {Object.entries(results).map(([key, val]) => (
-                <div key={key} className="bti-score-row">
-                  <span className="bti-score-label">{val.emoji} {val.name}</span>
-                  <div className="bti-score-track">
-                    <div className="bti-score-fill" style={{ width: `${(scores[key] / totalQuestions) * 100}%`, background: val.color }} />
-                  </div>
-                  <span className="bti-score-num">{scores[key]}</span>
-                </div>
-              ))}
-            </div>
+            {result.keywords?.length > 0 && (
+              <div className="bti-result-keywords">
+                {result.keywords.map((k, i) => (
+                  <span key={i} className="bti-keyword-tag" style={{ borderColor: result.color, color: result.color }}>#{k}</span>
+                ))}
+              </div>
+            )}
 
             {recommendedBakeries.length > 0 && (
               <div className="bti-recommend">
-                <p className="bti-recommend-title">{results[result].emoji} {results[result].name}을 위한 추천 빵집</p>
+                <p className="bti-recommend-title">{result.emoji} {result.typeName}을 위한 추천 빵집</p>
                 <div className="bti-recommend-list">
                   {recommendedBakeries.map(b => (
                     <div key={b.id} className="bti-recommend-card" onClick={() => navigate(`/place/${b.id}`)}>
@@ -211,13 +215,16 @@ function BreadBTI() {
             )}
 
             <div className="bti-result-actions">
-              <button className="bti-btn-retry" onClick={handleRetry}>다시하기</button>
-              <button className="bti-btn-explore" onClick={() => navigate(`/places?menu=${encodeURIComponent(typeMenuMap[result].primary)}`)}>
-                {results[result].name} 빵집 더보기 →
-              </button>
+              <button className="bti-btn-retry" onClick={startBTI}>다시하기</button>
+              {result.keywords?.[0] && (
+                <button className="bti-btn-explore" onClick={() => navigate(`/places?menu=${encodeURIComponent(result.keywords[0])}`)}>
+                  {result.typeName} 빵집 더보기 →
+                </button>
+              )}
             </div>
           </div>
         )}
+
       </div>
     </section>
   );

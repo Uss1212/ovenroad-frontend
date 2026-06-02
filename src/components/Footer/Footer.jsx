@@ -50,15 +50,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div className="footer-sns">
-            <div className="footer-sns-row">
-              <button className="footer-sns-btn" title="Instagram"></button>
-              <button className="footer-sns-btn" title="YouTube"></button>
-              <button className="footer-sns-btn" title="Blog"></button>
-              <button className="footer-sns-btn" title="Twitter"></button>
-            </div>
-          </div>
-
         </div>
 
         <div className="footer-copyright"></div>

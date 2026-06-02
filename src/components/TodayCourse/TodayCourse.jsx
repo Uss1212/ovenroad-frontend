@@ -50,7 +50,7 @@ export default function TodayCourse() {
 
     const scale = isCenter ? 1 : Math.max(0.74, 1 - Math.abs(offset) * 0.26);
     const opacity = isCenter ? 1 : Math.max(0.5, 1 - Math.abs(offset) * 0.3);
-    const translateX = offset * 510;
+    const translateX = offset * 560;
     const zIndex = 10 - Math.abs(offset);
 
     return {
