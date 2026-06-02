@@ -10,7 +10,7 @@
 // BrowserRouter: 브라우저의 URL을 관리하는 최상위 컨테이너
 // Routes: 여러 Route를 감싸는 그룹
 // Route: "이 URL이면 → 이 컴포넌트를 보여줘" 라는 규칙
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 
 import Header from './components/Header/Header';  // 공통 헤더
 import Footer from './components/Footer/Footer';  // 공통 푸터
@@ -58,54 +58,42 @@ function MainPage() {
   );
 }
 
+const HIDE_HEADER_PATHS = ['/login', '/signup', '/find-account'];
+
+function AppInner() {
+  const location = useLocation();
+  const showHeader = !HIDE_HEADER_PATHS.includes(location.pathname);
+  return (
+    <div className="app">
+      {showHeader && <Header />}
+      <main className="main-content">
+        <Routes>
+          <Route path="/" element={<MainPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/login/naver-callback" element={<NaverCallback />} />
+          <Route path="/login/kakao-callback" element={<KakaoCallback />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/find-account" element={<FindAccount />} />
+          <Route path="/courses/:id" element={<CourseDetail />} />
+          <Route path="/mypage" element={<MyPage />} />
+          <Route path="/create" element={<CreateCourse />} />
+          <Route path="/place/:id" element={<PlaceDetail />} />
+          <Route path="/places" element={<PlaceList />} />
+          <Route path="/courses" element={<CourseList />} />
+          <Route path="/notice" element={<NoticeList />} />
+          <Route path="/notice/:id" element={<NoticeDetail />} />
+          <Route path="/admin" element={<Admin />} />
+        </Routes>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
 function App() {
   return (
-    /* BrowserRouter: URL 변화를 감지해서 페이지를 바꿔줌 */
     <BrowserRouter>
-      <div className="app">
-        {/* 공통 헤더 - 모든 페이지 상단에 표시 */}
-        <Header />
-
-        {/* 바디 영역 - URL에 따라 다른 컴포넌트가 보임 */}
-        <main className="main-content">
-          <Routes>
-            {/* "/" → 메인 페이지 */}
-            <Route path="/" element={<MainPage />} />
-            {/* "/login" → 로그인 페이지 */}
-            <Route path="/login" element={<Login />} />
-            {/* "/login/naver-callback" → 네이버 로그인 후 돌아오는 페이지 */}
-            <Route path="/login/naver-callback" element={<NaverCallback />} />
-            {/* "/login/kakao-callback" → 카카오 로그인 후 돌아오는 페이지 */}
-            <Route path="/login/kakao-callback" element={<KakaoCallback />} />
-            {/* "/signup" → 회원가입 페이지 */}
-            <Route path="/signup" element={<Signup />} />
-            {/* "/find-account" → 아이디/비밀번호 찾기 페이지 */}
-            <Route path="/find-account" element={<FindAccount />} />
-            {/* "/courses/:id" → 코스 상세 페이지 (:id는 코스 번호) */}
-            <Route path="/courses/:id" element={<CourseDetail />} />
-            {/* "/mypage" → 마이페이지 */}
-            <Route path="/mypage" element={<MyPage />} />
-            {/* "/create" → 코스 만들기 */}
-            <Route path="/create" element={<CreateCourse />} />
-            {/* "/place/:id" → 빵집 상세 페이지 (:id는 빵집 번호) */}
-            <Route path="/place/:id" element={<PlaceDetail />} />
-            {/* "/places" → 빵집 목록 (인기있는 빵집 View more) */}
-            <Route path="/places" element={<PlaceList />} />
-            {/* /map 라우트 제거 → 메인 HeroBanner 지도로 통합 */}
-            {/* "/courses" → 추천코스 목록 */}
-            <Route path="/courses" element={<CourseList />} />
-            {/* "/notice" → 고객지원 (공지사항/FAQ/문의하기) */}
-            <Route path="/notice" element={<NoticeList />} />
-            {/* "/notice/:id" → 공지사항 상세 */}
-            <Route path="/notice/:id" element={<NoticeDetail />} />
-            {/* "/admin" → 관리자 페이지 */}
-            <Route path="/admin" element={<Admin />} />
-          </Routes>
-        </main>
-
-        {/* 공통 푸터 - 모든 페이지 하단에 표시 */}
-        <Footer />
-      </div>
+      <AppInner />
     </BrowserRouter>
   );
 }
