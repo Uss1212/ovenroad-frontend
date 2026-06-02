@@ -21,61 +21,47 @@ export default function Footer() {
         {/* ---- 상단 영역: 4개 컬럼으로 나눔 ---- */}
         <div className="footer-columns">
 
-          {/* ===== 1번 컬럼: 회사 정보 ===== */}
           <div className="footer-company">
-            {/* 브랜드 이름 */}
             <div className="footer-brand">오븐로드</div>
-            {/* 회사 상세 정보 */}
             <div className="footer-info">
-              <p>서울 빵투어 큐레이션 서비스</p>
-              <p>이메일 : contact@ovenroad.com</p>
-              <p>주소 : 인천광역시 미추홀구 숙골로 113</p>
+              <p>대표자명 : 홍길동</p>
+              <p>사업자등록번호 : 000-00-00000</p>
+              <p>이메일 : google@google.com</p>
+              <p>주소 : 서울특별시 OOO구 OOO로 OO번길 OOO-O</p>
             </div>
           </div>
 
-          {/* ===== 2번 컬럼: 서비스 링크 ===== */}
           <div className="footer-link-group">
-            {/* 컬럼 제목 */}
-            <div className="footer-link-title">서비스</div>
-            {/* 실제 페이지로 이동하는 링크들 */}
             <ul className="footer-links">
-              <li><Link to="/places">빵집 목록</Link></li>
-              <li><Link to="/courses">추천코스</Link></li>
+              <li><Link to="/">소개</Link></li>
+              <li><Link to="/notice?tab=qna">문의하기</Link></li>
+              <li>제휴제안</li>
+              <li>찾아오시는 길</li>
             </ul>
           </div>
 
-          {/* ===== 3번 컬럼: 고객지원 링크 ===== */}
           <div className="footer-link-group">
-            <div className="footer-link-title">고객지원</div>
             <ul className="footer-links">
               <li><Link to="/notice">공지사항</Link></li>
-              <li><Link to="/notice?tab=faq">FAQ</Link></li>
-              <li><Link to="/notice?tab=qna">문의하기</Link></li>
+              <li>이용약관</li>
+              <li>개인정보처리방침</li>
+              <li>쿠키 정책</li>
+              <li>자주 묻는 질문</li>
             </ul>
           </div>
 
-          {/* ===== 4번 컬럼: SNS 아이콘들 ===== */}
           <div className="footer-sns">
-            <div className="footer-link-title">SNS</div>
             <div className="footer-sns-row">
-              <button className="footer-sns-btn" title="Instagram">
-                <span className="footer-sns-emoji">📷</span>
-              </button>
-              <button className="footer-sns-btn" title="YouTube">
-                <span className="footer-sns-emoji">🎬</span>
-              </button>
-              <button className="footer-sns-btn" title="Blog">
-                <span className="footer-sns-emoji">📝</span>
-              </button>
+              <button className="footer-sns-btn" title="Instagram"></button>
+              <button className="footer-sns-btn" title="YouTube"></button>
+              <button className="footer-sns-btn" title="Blog"></button>
+              <button className="footer-sns-btn" title="Twitter"></button>
             </div>
           </div>
 
         </div>
 
-        {/* ---- 하단 영역: 저작권 문구 ---- */}
-        <div className="footer-copyright">
-          © 2026 오븐로드(OvenRoad). All rights reserved. | 캡스톤디자인 프로젝트
-        </div>
+        <div className="footer-copyright"></div>
 
       </div>
     </footer>

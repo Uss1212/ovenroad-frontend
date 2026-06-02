@@ -96,7 +96,7 @@
   height: 244px;
   border-radius: 12px;
   overflow: hidden;
-  background: #1c1917;
+  background: #a0a0a0;
   margin-bottom: 40px;
 }
 
@@ -111,7 +111,7 @@
 .cc-hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.6) 100%);
+  background: none;
   pointer-events: none;
 }
 

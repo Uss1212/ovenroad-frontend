@@ -53,17 +53,22 @@ export default function MyPage() {
   const [myPosts, setMyPosts] = useState([]);
   const [bookmarkedPlaces, setBookmarkedPlaces] = useState([]);
   const [tabLoading, setTabLoading] = useState(false);
+  const [expandedSections, setExpandedSections] = useState({});
   const profileImageRef = useRef(null);
 
+  const toggleSection = (key) => {
+    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+  const PREVIEW_COUNT = 4;
+
   const menuItems = [
-    { id: 'profile', label: '회원 정보 관리', icon: '👤' },
-    { id: 'courses', label: '내가 만든 코스', icon: '🗺️' },
-    { id: 'drafts', label: '임시저장', icon: '📝' },
-    { id: 'reviews', label: '내가 남긴 리뷰', icon: '⭐' },
-    { id: 'liked', label: '좋아요한 코스', icon: '❤️' },
-    { id: 'scraped', label: '저장된 코스', icon: '🔖' },
-    { id: 'bookmarkedPlaces', label: '저장한 빵집', icon: '📌' },
-    { id: 'qna', label: '내가 작성한 질문', icon: '💬' },
+    { id: 'profile', label: '회원 정보 관리' },
+    { id: 'courses', label: '내가 만든 코스' },
+    { id: 'drafts', label: '임시저장' },
+    { id: 'reviews', label: '리뷰 기록' },
+    { id: 'liked', label: '좋아요 기록' },
+    { id: 'scraped', label: '저장된 기록' },
+    { id: 'qna', label: '내가 작성한 질문' },
   ];
 
   useEffect(() => {
@@ -105,14 +110,19 @@ export default function MyPage() {
           const data = await getMyReviews(userNum);
           setMyReviews(data);
         } else if (activeMenu === 'liked') {
-          const data = await getLikedCourses(userNum);
-          setLikedCourses(data);
+          const [courses, places] = await Promise.all([
+            getLikedCourses(userNum),
+            getMyBookmarkedPlaces(),
+          ]);
+          setLikedCourses(courses);
+          setBookmarkedPlaces(places);
         } else if (activeMenu === 'scraped') {
-          const data = await getScrapedCourses(userNum);
-          setScrapedCourses(data);
-        } else if (activeMenu === 'bookmarkedPlaces') {
-          const data = await getMyBookmarkedPlaces();
-          setBookmarkedPlaces(data);
+          const [courses, places] = await Promise.all([
+            getScrapedCourses(userNum),
+            getMyBookmarkedPlaces(),
+          ]);
+          setScrapedCourses(courses);
+          setBookmarkedPlaces(places);
         } else if (activeMenu === 'qna') {
           const data = await getMyPosts(userNum);
           setMyPosts(data);
@@ -388,11 +398,13 @@ export default function MyPage() {
               </div>
               <h2 className="mypage-name">{userNickname}</h2>
               <p className="mypage-email">{userEmail}</p>
-              <button
-                className="mypage-profile-edit-btn"
-                onClick={() => profileImageRef.current?.click()}
-              >
-                프로필 사진 수정
+              <div className="mypage-stats">
+                <span className="mypage-stat">✏️ {myCourses.length || 0}</span>
+                <span className="mypage-stat-divider">|</span>
+                <span className="mypage-stat">❤️ {likedCourses.length || 0}</span>
+              </div>
+              <button className="mypage-logout-text" onClick={handleLogout}>
+                로그아웃
               </button>
             </div>
 
@@ -403,17 +415,10 @@ export default function MyPage() {
                   className={`mypage-menu-item ${activeMenu === item.id ? 'active' : ''}`}
                   onClick={() => { setActiveMenu(item.id); setMessage(''); setError(''); setNicknameMsg(''); }}
                 >
-                  <span className="mypage-menu-label">
-                    <span className="mypage-menu-icon">{item.icon}</span>
-                    {item.label}
-                  </span>
-                  {activeMenu === item.id && <span className="mypage-menu-arrow">→</span>}
+                  <span className="mypage-menu-label">{item.label}</span>
+                  {activeMenu === item.id && <span className="mypage-menu-arrow">›</span>}
                 </button>
               ))}
-              <div className="mypage-menu-divider" />
-              <button className="mypage-logout-btn" onClick={handleLogout}>
-                🚪 로그아웃
-              </button>
             </div>
           </div>
 
@@ -431,33 +436,32 @@ export default function MyPage() {
                     value={user.ID || user.id || '소셜 로그인 사용자'}
                     disabled
                   />
-                  <p style={{ fontSize: '0.8rem', color: '#a8a29e', marginTop: '4px' }}>아이디는 변경할 수 없습니다.</p>
+                  <p className="mypage-field-hint">아이디는 변경할 수 없습니다.</p>
                 </div>
 
-                <hr className="mypage-divider" />
-
-                <h3 className="mypage-section-title">닉네임 수정</h3>
                 <div className="mypage-field">
                   <label className="mypage-label">닉네임</label>
-                  <input
-                    type="text"
-                    className="mypage-input"
-                    value={nickname}
-                    onChange={(e) => setNickname(e.target.value)}
-                  />
+                  <div className="mypage-inline-field">
+                    <input
+                      type="text"
+                      className="mypage-input"
+                      value={nickname}
+                      onChange={(e) => setNickname(e.target.value)}
+                    />
+                    <button className="mypage-inline-btn" onClick={handleSave}>
+                      닉네임 변경
+                    </button>
+                  </div>
+                  {nicknameMsg && (
+                    <p className={`mypage-message ${nicknameMsg.startsWith('success') ? 'success' : 'error'}`}>
+                      {nicknameMsg.replace(/^(success|error):/, '')}
+                    </p>
+                  )}
                 </div>
-                <button className="mypage-save-btn" onClick={handleSave}>
-                  닉네임 저장
-                </button>
-                {nicknameMsg && (
-                  <p className={`mypage-message ${nicknameMsg.startsWith('success') ? 'success' : 'error'}`}>
-                    {nicknameMsg.replace(/^(success|error):/, '')}
-                  </p>
-                )}
 
                 <hr className="mypage-divider" />
 
-                <h3 className="mypage-section-title">이메일 수정</h3>
+                <h3 className="mypage-section-title">이메일</h3>
                 <div className="mypage-field">
                   <label className="mypage-label">현재 이메일</label>
                   <input
@@ -469,35 +473,35 @@ export default function MyPage() {
                 </div>
                 <div className="mypage-field">
                   <label className="mypage-label">새 이메일</label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div className="mypage-inline-field">
                     <input
                       type="email"
                       className="mypage-input"
                       placeholder="새 이메일 입력"
                       value={newEmail}
                       onChange={(e) => { setNewEmail(e.target.value); setEmailCodeSent(false); setEmailVerified(false); }}
-                      style={{ flex: 1 }}
                     />
-                    <button className="mypage-save-btn" style={{ whiteSpace: 'nowrap', flexShrink: 0, width: 'auto' }} onClick={handleSendEmailCode}>
+                    <button className="mypage-inline-btn outlined" onClick={handleSendEmailCode}>
                       인증코드 발송
                     </button>
                   </div>
                 </div>
                 {emailCodeSent && (
                   <div className="mypage-field">
-                    <label className="mypage-label">인증코드</label>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div className="mypage-inline-field">
                       <input
                         type="text"
                         className="mypage-input"
                         placeholder="인증코드 6자리 입력"
                         value={emailCode}
                         onChange={(e) => setEmailCode(e.target.value)}
-                        style={{ flex: 1 }}
                         disabled={emailVerified}
                       />
-                      <button className="mypage-save-btn" style={{ whiteSpace: 'nowrap', flexShrink: 0, width: 'auto' }} onClick={handleVerifyEmailCode} disabled={emailVerified}>
-                        {emailVerified ? '인증완료' : '인증 확인'}
+                      <button className="mypage-inline-btn outlined" onClick={handleSendEmailCode}>
+                        재발송
+                      </button>
+                      <button className="mypage-inline-btn" onClick={handleVerifyEmailCode} disabled={emailVerified}>
+                        {emailVerified ? '인증완료' : '확인'}
                       </button>
                     </div>
                   </div>
@@ -512,16 +516,6 @@ export default function MyPage() {
 
                 <h3 className="mypage-section-title">비밀번호 변경</h3>
                 <div className="mypage-field">
-                  <label className="mypage-label">현재 비밀번호</label>
-                  <input
-                    type="password"
-                    className="mypage-input"
-                    placeholder="현재 비밀번호 입력"
-                    value={currentPw}
-                    onChange={(e) => setCurrentPw(e.target.value)}
-                  />
-                </div>
-                <div className="mypage-field">
                   <label className="mypage-label">새 비밀번호</label>
                   <input
                     type="password"
@@ -530,10 +524,30 @@ export default function MyPage() {
                     value={newPw}
                     onChange={(e) => setNewPw(e.target.value)}
                   />
+                  {newPw && (
+                    <div className="mypage-pw-strength">
+                      <span className={`mypage-pw-bar ${newPw.length >= 8 ? 'active' : ''}`} />
+                      <span className={`mypage-pw-bar ${newPw.length >= 12 ? 'active' : ''}`} />
+                      <span className={`mypage-pw-bar ${newPw.length >= 16 ? 'active' : ''}`} />
+                    </div>
+                  )}
+                  <p className="mypage-field-hint">8~16자의 영문 대소문자, 숫자, 특수문자만 가능합니다.</p>
                 </div>
-                <button className="mypage-save-btn" onClick={handleChangePassword}>
-                  비밀번호 변경
-                </button>
+                <div className="mypage-field">
+                  <label className="mypage-label">새 비밀번호 확인</label>
+                  <div className="mypage-inline-field">
+                    <input
+                      type="password"
+                      className="mypage-input"
+                      placeholder="새 비밀번호 확인"
+                      value={currentPw}
+                      onChange={(e) => setCurrentPw(e.target.value)}
+                    />
+                    <button className="mypage-inline-btn" onClick={handleChangePassword}>
+                      확인
+                    </button>
+                  </div>
+                </div>
 
                 {message && <p className="mypage-message success">{message}</p>}
                 {error && <p className="mypage-message error">{error}</p>}
@@ -580,8 +594,7 @@ export default function MyPage() {
             {activeMenu === 'courses' && (
               <div className="my-card-grid">
                 <div className="my-card-create" onClick={() => navigate('/create')}>
-                  <span className="my-card-create-icon">🗺️</span>
-                  <span className="my-card-create-text">새 코스 만들기</span>
+                  <span className="my-card-create-icon">+</span>
                 </div>
                 {tabLoading && <p style={{ color: '#999', padding: '20px' }}>불러오는 중...</p>}
                 {myCourses.map((course) => (
@@ -595,17 +608,16 @@ export default function MyPage() {
                         const src = course.COVER_IMAGE || course.thumbnailImage;
                         if (src) {
                           const imgUrl = src.startsWith('http') ? src : `${BASE_URL}${src}`;
-                          return <img src={imgUrl} alt={course.TITLE} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />;
+                          return <img src={imgUrl} alt={course.TITLE} />;
                         }
-                        return <div style={{ width: '100%', height: '100%', background: '#e7e5e4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>🍞</div>;
+                        return <div className="my-course-card-placeholder">🍞</div>;
                       })()}
-                      <span className="my-course-card-badge">공개</span>
+                      <button className="my-course-card-menu" onClick={(e) => e.stopPropagation()}>···</button>
                     </div>
                     <div className="my-course-card-info">
+                      <span className="my-course-card-date">{new Date(course.CREATED_TIME).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '')}</span>
                       <h3 className="my-course-card-title">{course.TITLE}</h3>
-                      <p className="my-course-card-meta">
-                        {new Date(course.CREATED_TIME).toLocaleDateString('ko-KR')} · 📍 {course.placeCount}곳 · ❤️ {course.likeCount}
-                      </p>
+                      <p className="my-course-card-meta">❤️ {course.likeCount || 0}</p>
                     </div>
                   </div>
                 ))}
@@ -618,37 +630,21 @@ export default function MyPage() {
                   <p style={{ textAlign: 'center', color: '#999', padding: '40px' }}>불러오는 중...</p>
                 ) : myDrafts.length > 0 ? (
                   <div className="my-card-list">
-                    {myDrafts.map((draft) => {
-                      const draftPlaces = typeof draft.PLACES === 'string' ? JSON.parse(draft.PLACES) : (draft.PLACES || []);
-                      return (
-                        <div key={draft.DRAFT_NUM} className="my-card">
-                          <div className="my-card-thumb">📝</div>
-                          <div className="my-card-info">
-                            <span className="my-card-title">
-                              {draft.TITLE || '제목 없음'}
-                            </span>
-                            <span className="my-card-meta">
-                              📍 {draftPlaces.length}곳 · {new Date(draft.UPDATED_TIME).toLocaleDateString('ko-KR')} 저장
-                            </span>
-                          </div>
-                          <div className="my-card-actions" style={{ display: 'flex', gap: '8px' }}>
-                            <button
-                              className="mypage-save-btn"
-                              style={{ padding: '6px 14px', fontSize: '12px', marginTop: 0 }}
-                              onClick={() => handleEditDraft(draft)}
-                            >
-                              이어서 작성
-                            </button>
-                            <button
-                              className="my-card-delete-btn"
-                              onClick={() => handleDeleteDraft(draft.DRAFT_NUM)}
-                            >
-                              삭제
-                            </button>
-                          </div>
+                    {myDrafts.map((draft) => (
+                      <div key={draft.DRAFT_NUM} className="my-card" onClick={() => handleEditDraft(draft)}>
+                        <div className="my-card-thumb my-card-thumb-draft">✏️</div>
+                        <div className="my-card-info">
+                          <span className="my-card-date">{new Date(draft.UPDATED_TIME).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '')}</span>
+                          <span className="my-card-title">{draft.TITLE || '제목 없음'}</span>
                         </div>
-                      );
-                    })}
+                        <div className="my-card-actions">
+                          <button
+                            className="my-card-more-btn"
+                            onClick={(e) => { e.stopPropagation(); handleDeleteDraft(draft.DRAFT_NUM); }}
+                          >⋮</button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div className="mypage-empty">
@@ -670,20 +666,21 @@ export default function MyPage() {
                 ) : myReviews.length > 0 ? (
                   <div className="my-card-list">
                     {myReviews.map((review) => (
-                      <div key={review.REVIEW_NUM} className="my-card">
-                        <div className="my-card-thumb">🍞</div>
+                      <div key={`${review.REVIEW_TYPE || 'place'}-${review.REVIEW_NUM}`} className="my-card" onClick={() => navigate(review.REVIEW_TYPE === 'course' ? `/courses/${review.PLACE_NUM}` : `/places/${review.PLACE_NUM}`)} style={{ cursor: 'pointer' }}>
+                        <div className="my-card-thumb">
+                          {review.IMAGE_URL ? (
+                            <img src={review.IMAGE_URL.startsWith('http') ? review.IMAGE_URL : `${BASE_URL}${review.IMAGE_URL}`} alt="" />
+                          ) : '🍞'}
+                        </div>
                         <div className="my-card-info">
-                          <div className="my-review-top">
-                            <span className="my-card-title">{review.PLACE_NAME}</span>
-                            <span className="my-review-stars">
-                              {'★'.repeat(review.RATING)}{'☆'.repeat(5 - review.RATING)}
-                            </span>
-                          </div>
-                          <p className="my-review-content">{review.CONTENT}</p>
-                          <span className="my-card-meta">{new Date(review.CREATED_TIME).toLocaleDateString('ko-KR')}</span>
+                          <span className="my-card-title">{review.CONTENT}</span>
+                          <span className="my-card-sub">{review.PLACE_NAME}</span>
                         </div>
                         <div className="my-card-actions">
-                          <button className="my-card-delete-btn" onClick={() => handleDeleteReview(review.REVIEW_NUM)}>삭제</button>
+                          <button
+                            className="my-card-more-btn"
+                            onClick={(e) => { e.stopPropagation(); handleDeleteReview(review.REVIEW_NUM); }}
+                          >⋮</button>
                         </div>
                       </div>
                     ))}
@@ -702,32 +699,81 @@ export default function MyPage() {
               <div>
                 {tabLoading ? (
                   <p style={{ textAlign: 'center', color: '#999', padding: '40px' }}>불러오는 중...</p>
-                ) : likedCourses.length > 0 ? (
-                  <div className="my-card-list">
-                    {likedCourses.map((course) => (
-                      <div
-                        key={course.COURSE_NUM}
-                        className="my-card"
-                        onClick={() => navigate(`/courses/${course.COURSE_NUM}`)}
-                      >
-                        <div className="my-card-thumb">🍞</div>
-                        <div className="my-card-info">
-                          <span className="my-card-title">{course.TITLE}</span>
-                          <span className="my-card-meta">
-                            by {course.author} · 📍 {course.placeCount}곳 · ❤️ {course.likeCount}
-                          </span>
+                ) : (likedCourses.length > 0 || bookmarkedPlaces.length > 0) ? (
+                  <>
+                    {likedCourses.length > 0 && (
+                      <div className="my-section">
+                        <h3 className="my-section-title">좋아요한 코스</h3>
+                        <div className="my-card-list">
+                          {(expandedSections.likedCourses ? likedCourses : likedCourses.slice(0, PREVIEW_COUNT)).map((course) => (
+                            <div
+                              key={course.COURSE_NUM}
+                              className="my-card"
+                              onClick={() => navigate(`/courses/${course.COURSE_NUM}`)}
+                            >
+                              <div className="my-card-thumb">
+                                {course.COVER_IMAGE ? (
+                                  <img src={course.COVER_IMAGE.startsWith('http') ? course.COVER_IMAGE : `${BASE_URL}${course.COVER_IMAGE}`} alt={course.TITLE} />
+                                ) : '🍞'}
+                              </div>
+                              <div className="my-card-info">
+                                <span className="my-card-date">{new Date(course.CREATED_TIME).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '')}</span>
+                                <span className="my-card-title">{course.TITLE}</span>
+                              </div>
+                              <div className="my-card-actions">
+                                <button
+                                  className="my-card-cancel-btn liked"
+                                  onClick={(e) => { e.stopPropagation(); handleUnlike(course.COURSE_NUM); }}
+                                >
+                                  ❤️ 취소
+                                </button>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                        <div className="my-card-actions">
-                          <button
-                            className="my-card-unlike-btn"
-                            onClick={(e) => { e.stopPropagation(); handleUnlike(course.COURSE_NUM); }}
-                          >
-                            ❤️ 취소
+                        {likedCourses.length > PREVIEW_COUNT && (
+                          <button className="my-expand-btn" onClick={() => toggleSection('likedCourses')}>
+                            <span className={`my-expand-arrow ${expandedSections.likedCourses ? 'up' : ''}`}>⌄</span>
                           </button>
-                        </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
+                    )}
+                    {bookmarkedPlaces.length > 0 && (
+                      <div className="my-section">
+                        <h3 className="my-section-title">좋아요한 가게</h3>
+                        <div className="my-place-grid">
+                          {(expandedSections.likedPlaces ? bookmarkedPlaces : bookmarkedPlaces.slice(0, PREVIEW_COUNT)).map((place) => (
+                            <div
+                              key={place.PLACE_NUM}
+                              className="my-place-card"
+                              onClick={() => navigate(`/place/${place.PLACE_NUM}`)}
+                            >
+                              <div className="my-place-card-img">
+                                <span className="my-place-card-spacer" />
+                                {place.thumbnailImage ? (
+                                  <img src={place.thumbnailImage.startsWith('http') ? place.thumbnailImage : `${BASE_URL}${place.thumbnailImage}`} alt={place.PLACE_NAME} />
+                                ) : <div className="my-place-card-placeholder">🍞</div>}
+                                <button
+                                  className="my-place-card-heart"
+                                  onClick={(e) => { e.stopPropagation(); handleUnbookmarkPlace(place.PLACE_NUM); }}
+                                >❤️</button>
+                              </div>
+                              <div className="my-place-card-info">
+                                <span className="my-place-card-name">{place.PLACE_NAME}</span>
+                                <span className="my-place-card-address">{place.ADDRESS}</span>
+                                {place.AVG_RATING && <span className="my-place-card-rating">⭐ {place.AVG_RATING}</span>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {bookmarkedPlaces.length > PREVIEW_COUNT && (
+                          <button className="my-expand-btn" onClick={() => toggleSection('likedPlaces')}>
+                            <span className={`my-expand-arrow ${expandedSections.likedPlaces ? 'up' : ''}`}>⌄</span>
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="mypage-empty">
                     <span className="mypage-empty-icon">❤️</span>
@@ -745,32 +791,81 @@ export default function MyPage() {
               <div>
                 {tabLoading ? (
                   <p style={{ textAlign: 'center', color: '#999', padding: '40px' }}>불러오는 중...</p>
-                ) : scrapedCourses.length > 0 ? (
-                  <div className="my-card-list">
-                    {scrapedCourses.map((course) => (
-                      <div
-                        key={course.COURSE_NUM}
-                        className="my-card"
-                        onClick={() => navigate(`/courses/${course.COURSE_NUM}`)}
-                      >
-                        <div className="my-card-thumb">🍞</div>
-                        <div className="my-card-info">
-                          <span className="my-card-title">{course.TITLE}</span>
-                          <span className="my-card-meta">
-                            by {course.author} · 📍 {course.placeCount}곳 · 🔖 {course.scrapCount}
-                          </span>
+                ) : (scrapedCourses.length > 0 || bookmarkedPlaces.length > 0) ? (
+                  <>
+                    {scrapedCourses.length > 0 && (
+                      <div className="my-section">
+                        <h3 className="my-section-title">저장된 코스</h3>
+                        <div className="my-card-list">
+                          {(expandedSections.scrapedCourses ? scrapedCourses : scrapedCourses.slice(0, PREVIEW_COUNT)).map((course) => (
+                            <div
+                              key={course.COURSE_NUM}
+                              className="my-card"
+                              onClick={() => navigate(`/courses/${course.COURSE_NUM}`)}
+                            >
+                              <div className="my-card-thumb">
+                                {course.COVER_IMAGE ? (
+                                  <img src={course.COVER_IMAGE.startsWith('http') ? course.COVER_IMAGE : `${BASE_URL}${course.COVER_IMAGE}`} alt={course.TITLE} />
+                                ) : '🍞'}
+                              </div>
+                              <div className="my-card-info">
+                                <span className="my-card-date">{new Date(course.CREATED_TIME).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '')}</span>
+                                <span className="my-card-title">{course.TITLE}</span>
+                              </div>
+                              <div className="my-card-actions">
+                                <button
+                                  className="my-card-cancel-btn scraped"
+                                  onClick={(e) => { e.stopPropagation(); handleUnscrap(course.COURSE_NUM); }}
+                                >
+                                  🔖 취소
+                                </button>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                        <div className="my-card-actions">
-                          <button
-                            className="my-card-unscrap-btn"
-                            onClick={(e) => { e.stopPropagation(); handleUnscrap(course.COURSE_NUM); }}
-                          >
-                            🔖 취소
+                        {scrapedCourses.length > PREVIEW_COUNT && (
+                          <button className="my-expand-btn" onClick={() => toggleSection('scrapedCourses')}>
+                            <span className={`my-expand-arrow ${expandedSections.scrapedCourses ? 'up' : ''}`}>⌄</span>
                           </button>
-                        </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
+                    )}
+                    {bookmarkedPlaces.length > 0 && (
+                      <div className="my-section">
+                        <h3 className="my-section-title">저장된 가게</h3>
+                        <div className="my-place-grid">
+                          {(expandedSections.scrapedPlaces ? bookmarkedPlaces : bookmarkedPlaces.slice(0, PREVIEW_COUNT)).map((place) => (
+                            <div
+                              key={place.PLACE_NUM}
+                              className="my-place-card"
+                              onClick={() => navigate(`/place/${place.PLACE_NUM}`)}
+                            >
+                              <div className="my-place-card-img">
+                                <span className="my-place-card-spacer" />
+                                {place.thumbnailImage ? (
+                                  <img src={place.thumbnailImage.startsWith('http') ? place.thumbnailImage : `${BASE_URL}${place.thumbnailImage}`} alt={place.PLACE_NAME} />
+                                ) : <div className="my-place-card-placeholder">🍞</div>}
+                                <button
+                                  className="my-place-card-bookmark"
+                                  onClick={(e) => { e.stopPropagation(); handleUnbookmarkPlace(place.PLACE_NUM); }}
+                                >🔖</button>
+                              </div>
+                              <div className="my-place-card-info">
+                                <span className="my-place-card-name">{place.PLACE_NAME}</span>
+                                <span className="my-place-card-address">{place.ADDRESS}</span>
+                                {place.AVG_RATING && <span className="my-place-card-rating">⭐ {place.AVG_RATING}</span>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {bookmarkedPlaces.length > PREVIEW_COUNT && (
+                          <button className="my-expand-btn" onClick={() => toggleSection('scrapedPlaces')}>
+                            <span className={`my-expand-arrow ${expandedSections.scrapedPlaces ? 'up' : ''}`}>⌄</span>
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="mypage-empty">
                     <span className="mypage-empty-icon">🔖</span>
@@ -779,48 +874,6 @@ export default function MyPage() {
                     <button className="mypage-empty-btn" onClick={() => navigate('/courses')}>
                       코스 둘러보기
                     </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeMenu === 'bookmarkedPlaces' && (
-              <div>
-                {tabLoading ? (
-                  <p style={{ textAlign: 'center', color: '#999', padding: '40px' }}>불러오는 중...</p>
-                ) : bookmarkedPlaces.length > 0 ? (
-                  <div className="my-card-list">
-                    {bookmarkedPlaces.map((place) => (
-                      <div
-                        key={place.PLACE_NUM}
-                        className="my-card"
-                        onClick={() => navigate(`/place/${place.PLACE_NUM}`)}
-                      >
-                        <div className="my-card-thumb">
-                          {place.thumbnailImage ? (
-                            <img src={place.thumbnailImage.startsWith('http') ? place.thumbnailImage : `${BASE_URL}${place.thumbnailImage}`} alt={place.PLACE_NAME} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
-                          ) : '🍞'}
-                        </div>
-                        <div className="my-card-info">
-                          <span className="my-card-title">{place.PLACE_NAME}</span>
-                          <span className="my-card-meta">{place.ADDRESS}</span>
-                        </div>
-                        <div className="my-card-actions">
-                          <button
-                            className="my-card-unlike-btn"
-                            onClick={(e) => { e.stopPropagation(); handleUnbookmarkPlace(place.PLACE_NUM); }}
-                          >
-                            📌 해제
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="mypage-empty">
-                    <span className="mypage-empty-icon">📌</span>
-                    <p className="mypage-empty-title">저장한 빵집이 없어요</p>
-                    <p className="mypage-empty-desc">빵집 상세페이지에서 북마크를 눌러보세요!</p>
                   </div>
                 )}
               </div>
@@ -840,15 +893,12 @@ export default function MyPage() {
                       >
                         <div className="my-card-thumb my-card-thumb-question">💬</div>
                         <div className="my-card-info">
+                          <span className="my-card-date">{new Date(post.CREATED_TIME).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '')}</span>
                           <span className="my-card-title">{post.TITLE}</span>
-                          <span className="my-card-meta">
-                            💬 댓글 {post.commentCount}개 · {new Date(post.CREATED_TIME).toLocaleDateString('ko-KR')}
-                          </span>
+                          <span className="my-card-sub">{post.commentCount > 0 ? '답변완료' : '답변대기'}</span>
                         </div>
                         <div className="my-card-actions">
-                          <span className={`my-question-status ${post.commentCount > 0 ? 'answered' : 'waiting'}`}>
-                            {post.commentCount > 0 ? '답변완료' : '답변대기'}
-                          </span>
+                          <button className="my-card-more-btn" onClick={(e) => e.stopPropagation()}>⋮</button>
                         </div>
                       </div>
                     ))}

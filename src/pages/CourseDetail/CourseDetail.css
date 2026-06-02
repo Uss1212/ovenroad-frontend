@@ -120,6 +120,7 @@
   color: #ffffff;
   margin: 0 0 8px;
   font-weight: 500;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
 }
 
 .cd-hero-title {
@@ -129,7 +130,7 @@
   margin: 0 0 6px;
   margin-left: -2px;
   line-height: 1.2;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
 .cd-hero-subtitle {
@@ -137,6 +138,7 @@
   color: #ffffff;
   margin: 0;
   font-weight: 400;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
 }
 
 /* Hero tags */
@@ -307,6 +309,13 @@
   color: #888888;
   margin: 8px 0 0;
   line-height: 1.6;
+}
+
+.cd-content-body {
+  padding: 2rem 60px;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #1c1917;
 }
 
 /* ===== Map + Place list ===== */

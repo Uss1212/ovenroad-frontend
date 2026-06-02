@@ -341,6 +341,10 @@ export default function CourseDetail() {
         </div>
       )}
 
+      {course.CONTENT && (
+        <div className="cd-content-body" dangerouslySetInnerHTML={{ __html: course.CONTENT }} />
+      )}
+
       {/* Map + Place list */}
       {places.length > 0 && (
         <div className="cd-map-places">
