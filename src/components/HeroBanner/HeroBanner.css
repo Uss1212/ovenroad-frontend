@@ -27,7 +27,7 @@
 }
 
 /* =========================================
-   지도 컨테이너 (전체 너비)
+   지도 컨테이너
    ========================================= */
 .hero-map-container {
   position: relative;
@@ -115,7 +115,7 @@
     box-shadow: 0 4px 24px rgba(0,0,0,0.13);
   }
 
-  /* 지도: 전체 너비 (양쪽 32px 마진) */
+  /* 지도: 양쪽 32px 마진 */
   .hero-map-container {
     height: calc(100% - 40px);
     margin: 20px 32px;
@@ -123,10 +123,10 @@
     overflow: hidden;
   }
 
-  /* 뱃지 필터: 패널 오른쪽 (52 + 360 + 16 = 428px) */
+  /* 뱃지 필터: 패널 오른쪽 (52 + 360 + 16 - 32마진 = 396) */
   .hero-badge-filters {
     top: 16px;
-    left: 428px;
+    left: 396px;
     gap: 6px;
   }
 
@@ -165,7 +165,7 @@
     box-shadow: 0 4px 24px rgba(0,0,0,0.13);
   }
 
-  /* 지도: 전체 너비 (양쪽 60px 마진) */
+  /* 지도: 양쪽 60px 마진 */
   .hero-map-container {
     height: calc(100% - 40px);
     margin: 20px 60px;
@@ -173,7 +173,7 @@
     overflow: hidden;
   }
 
-  /* 뱃지 필터: 패널 오른쪽 (80 + 460 + 16 = 556px, 지도 margin 60 기준 → 556-60=496) */
+  /* 뱃지 필터: 패널 오른쪽 (80 + 460 + 16 - 60마진 = 496) */
   .hero-badge-filters {
     top: 24px;
     left: 496px;
