@@ -13,7 +13,7 @@
 }
 
 /* =========================================
-   왼쪽 패널
+   왼쪽 패널 (지도 위 플로팅)
    ========================================= */
 .hero-left {
   background: rgba(255, 255, 255, 0.97);
@@ -22,12 +22,12 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  flex-shrink: 0;
-  z-index: 10;
+  position: absolute;
+  z-index: 20;
 }
 
 /* =========================================
-   지도 컨테이너
+   지도 컨테이너 (전체 너비)
    ========================================= */
 .hero-map-container {
   position: relative;
@@ -101,30 +101,32 @@
    ========================================= */
 @media (min-width: 768px) and (max-width: 1279px) {
   .hero-section {
-    flex-direction: row;
     height: 600px;
   }
 
+  /* 패널: 지도 위 플로팅 */
   .hero-left {
-    width: 380px;
-    height: calc(100% - 40px);
-    max-height: 560px;
-    margin: 20px 0 20px 32px;
+    width: 360px;
+    max-height: calc(100% - 64px);
+    top: 32px;
+    left: 52px;
     padding: 24px 20px;
     border-radius: 12px;
     box-shadow: 0 4px 24px rgba(0,0,0,0.13);
   }
 
+  /* 지도: 전체 너비 (양쪽 32px 마진) */
   .hero-map-container {
     height: calc(100% - 40px);
-    margin: 20px 32px 20px 20px;
+    margin: 20px 32px;
     border-radius: 12px;
     overflow: hidden;
   }
 
+  /* 뱃지 필터: 패널 오른쪽 (52 + 360 + 16 = 428px) */
   .hero-badge-filters {
     top: 16px;
-    left: 16px;
+    left: 428px;
     gap: 6px;
   }
 
@@ -149,30 +151,32 @@
    ========================================= */
 @media (min-width: 1280px) {
   .hero-section {
-    flex-direction: row;
     height: 740px;
   }
 
+  /* 패널: 지도 위 플로팅 */
   .hero-left {
-    width: 480px;
-    height: calc(100% - 40px);
-    max-height: 700px;
-    margin: 20px 0 20px 60px;
+    width: 460px;
+    max-height: calc(100% - 80px);
+    top: 40px;
+    left: 80px;
     padding: 24px;
     border-radius: 12px;
     box-shadow: 0 4px 24px rgba(0,0,0,0.13);
   }
 
+  /* 지도: 전체 너비 (양쪽 60px 마진) */
   .hero-map-container {
     height: calc(100% - 40px);
-    margin: 20px 60px 20px 20px;
+    margin: 20px 60px;
     border-radius: 12px;
     overflow: hidden;
   }
 
+  /* 뱃지 필터: 패널 오른쪽 (80 + 460 + 16 = 556px, 지도 margin 60 기준 → 556-60=496) */
   .hero-badge-filters {
     top: 24px;
-    left: 24px;
+    left: 496px;
     gap: 8px;
   }
 
