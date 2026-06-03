@@ -171,8 +171,10 @@ export default function HeroBanner() {
         mapTypeControl: false,
       });
       mapInstanceRef.current = map;
+      setTimeout(() => window.naver.maps.Event.trigger(map, 'resize'), 100);
     } else {
       mapInstanceRef.current.panTo(new window.naver.maps.LatLng(userLocation.lat, userLocation.lng));
+      window.naver.maps.Event.trigger(mapInstanceRef.current, 'resize');
     }
   }, [userLocation]);
 
