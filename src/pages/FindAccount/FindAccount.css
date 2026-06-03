@@ -1,53 +1,52 @@
 /* ===================================================
-   FindAccount 스타일 (아이디/비밀번호 찾기)
-   - 로그인/회원가입과 비슷한 가운데 카드 구조
-   - 상단에 탭 2개 (아이디 찾기 / 비밀번호 찾기)
-   - 선택된 탭 아래에 굵은 밑줄 표시
+   FindAccount 스타일 — Signup 디자인 통일
    =================================================== */
 
-/* --- 찾기 영역 전체 --- */
+/* --- 페이지 전체 --- */
 .find-wrapper {
+  min-height: 100vh;
+  background: #ffffff;
   display: flex;
   justify-content: center;
-  align-items: center;
-  min-height: calc(100vh - 52px);
-  background: #f8f8f8;
+  padding: 0 0 80px;
 }
 
-/* --- 찾기 카드 --- */
+/* --- 컨테이너 --- */
 .find-card {
-  width: 500px;
-  padding: 50px 40px;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 560px;
+  padding: 0 24px;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
-/* --- 제목 --- */
+/* --- 제목: 50pt bold --- */
 .find-title {
-  font-size: 22px;
+  font-size: 50px;
   font-weight: 700;
-  color: #111111;
+  color: #1c1917;
   text-align: center;
-  margin: 0 0 32px;
+  margin: 0;
+  padding-top: 32px;
+  margin-bottom: 0;
 }
 
-/* --- 탭 메뉴 영역 --- */
-/* 2개의 탭을 가로로 나란히 배치 */
-/* 아래에 얇은 구분선이 깔려있고, 선택된 탭은 굵은 밑줄 */
+/* --- 탭 메뉴 --- */
 .find-tabs {
   display: flex;
-  border-bottom: 1px solid #eeeeee;
-  margin-bottom: 32px;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 24px;
+  margin-bottom: 0;
+  border-bottom: none;
 }
 
-/* --- 각 탭 버튼 --- */
 .find-tab {
-  flex: 1;
   padding: 12px 0;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 400;
-  color: #aaaaaa;
+  color: #b2b2b2;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
@@ -56,65 +55,73 @@
   transition: all 0.2s;
 }
 
-/* 선택된 탭: 글자가 진해지고, 아래에 검정 밑줄 */
 .find-tab.active {
   font-weight: 700;
-  color: #111111;
-  border-bottom-color: #111111;
+  color: #333333;
+  border-bottom-color: #333333;
 }
 
-/* --- 폼 영역 --- */
+/* --- 폼 --- */
 .find-form {
   display: flex;
   flex-direction: column;
+  gap: 0;
+  margin-top: 100px;
+}
+
+/* --- 필드 그룹 --- */
+.find-input-group {
+  padding: 0;
+  margin-bottom: 40px;
+}
+
+/* --- 입력 + 버튼 가로 배치 --- */
+.find-input-row {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-/* --- 입력 필드 그룹 --- */
-.find-input-group {
-  padding: 8px 0;
-}
-
-/* --- 입력 + 버튼을 가로로 나란히 --- */
-.find-input-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-}
-
-/* --- 입력 필드 (밑줄 스타일) --- */
+/* --- 입력 필드: 20pt, 밑줄 --- */
 .find-input {
   width: 100%;
-  padding: 12px 0;
-  font-size: 14px;
+  padding: 8px 0;
+  font-size: 20px;
+  font-weight: 500;
   font-family: inherit;
   color: #111111;
   border: none;
-  border-bottom: 1px solid #dddddd;
+  border-bottom: 1px solid #b2b2b2;
   outline: none;
   background: transparent;
   transition: border-color 0.2s;
 }
 
 .find-input:focus {
-  border-bottom-color: #111111;
+  border-bottom-color: #333333;
 }
 
 .find-input::placeholder {
-  color: #aaaaaa;
+  color: #bbbbbb;
+  font-weight: 400;
 }
 
-/* --- 인증번호 전송 / 확인 버튼 (옆에 붙는 작은 버튼) --- */
+.find-input:disabled {
+  color: #999999;
+  background: #fafafa;
+}
+
+/* --- 인증번호 전송 / 확인 버튼 (pill) --- */
 .find-side-btn {
   flex-shrink: 0;
-  padding: 10px 16px;
-  border-radius: 20px;
-  border: 1px solid #dddddd;
+  padding: 12px 24px;
+  border-radius: 9999px;
+  border: 1px solid #666666;
   background: #ffffff;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 400;
   font-family: inherit;
-  color: #555555;
+  color: #666666;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
@@ -122,24 +129,22 @@
 
 .find-side-btn:hover {
   background: #f5f5f5;
-  border-color: #111111;
 }
 
-/* 전송완료/인증완료 상태 */
 .find-side-btn.done {
-  background: #111111;
+  background: #333333;
   color: #ffffff;
-  border-color: #111111;
+  border-color: #333333;
 }
 
-/* --- 제출 버튼 (아이디 찾기 / 비밀번호 찾기) --- */
+/* --- 제출 버튼 (pill) --- */
 .find-submit-btn {
   width: 100%;
   padding: 16px;
-  margin-top: 32px;
+  margin-top: 20px;
   border: none;
-  border-radius: 28px;
-  background: #111111;
+  border-radius: 9999px;
+  background: #333333;
   color: #ffffff;
   font-size: 17px;
   font-weight: 700;
@@ -149,5 +154,34 @@
 }
 
 .find-submit-btn:hover {
-  background: #333333;
+  background: #222222;
+}
+
+/* --- 반응형 --- */
+@media (max-width: 600px) {
+  .find-wrapper {
+    padding: 0 0 40px;
+  }
+
+  .find-card {
+    padding: 0 16px;
+  }
+
+  .find-title {
+    font-size: 28px;
+    padding-top: 40px;
+  }
+
+  .find-tabs {
+    gap: 24px;
+    margin-top: 16px;
+  }
+
+  .find-form {
+    margin-top: 60px;
+  }
+
+  .find-input {
+    font-size: 16px;
+  }
 }

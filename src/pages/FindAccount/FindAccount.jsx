@@ -173,9 +173,6 @@ export default function FindAccount() {
     <div className="find-wrapper">
       <div className="find-card">
 
-        {/* --- 제목 --- */}
-        <h2 className="find-title">아이디 / 비밀번호 찾기</h2>
-
         {/* --- 탭 메뉴 --- */}
         <div className="find-tabs">
           <button

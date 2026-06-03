@@ -1,67 +1,69 @@
 /* ===================================================
-   PlaceList 스타일 (빵집 탐색 페이지)
-   - 깔끔한 카드 그리드 (높이 통일)
-   - 따뜻한 갈색 계열 디자인
-   - 반응형: 4열 → 3열 → 2열 → 1열
+   PlaceList 스타일 — CourseList 디자인 통일
+   - 1920px 기준, 4열 그리드
+   - 카드: 정사각형 이미지 + 정보
    =================================================== */
 
-/* --- 전체 페이지 배경 --- */
-/* 따뜻한 미색 배경 */
+/* --- 페이지 전체 --- */
 .pl-page {
   min-height: 100vh;
-  background: #fafaf9;
-  padding: 2rem 0 5rem;
+  background: #ffffff;
+  padding: 0 0 80px;
 }
 
-/* --- 가운데 정렬 컨테이너 --- */
-/* 최대 너비 1280px, 양쪽 패딩 */
+/* --- 컨테이너 --- */
 .pl-container {
-  max-width: 1280px;
+  max-width: 1800px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 30px;
 }
 
-/* ===== 1. 헤더 영역 ===== */
+/* ===== 헤더 ===== */
 .pl-header {
-  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 24px;
+  margin-bottom: 40px;
+  position: relative;
 }
 
-/* 페이지 제목 */
 .pl-title {
-  font-size: 1.875rem;
-  font-weight: 900;
+  font-size: 50px;
+  font-weight: 700;
   color: #1c1917;
-  margin: 0 0 0.5rem;
-  letter-spacing: -0.025em;
+  margin: 40px 0 0;
+  text-align: center;
 }
 
-/* 부제목 */
 .pl-subtitle {
-  color: #78716c;
-  margin: 0;
-  font-size: 1rem;
+  font-size: 16px;
+  color: #999999;
+  margin: 12px 0 0;
+  text-align: center;
 }
 
 /* ===== 검색바 ===== */
 .pl-search-bar {
   display: flex;
   align-items: center;
-  background: white;
-  border: 1px solid #e7e5e4;
+  max-width: 600px;
+  margin: 0 auto 32px;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
   border-radius: 9999px;
-  padding: 0.5rem 1rem;
-  margin-bottom: 1rem;
+  padding: 12px 20px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .pl-search-bar:focus-within {
-  border-color: #92400e;
-  box-shadow: 0 0 0 3px rgba(146, 64, 14, 0.1);
+  border-color: #333333;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 .pl-search-icon {
-  font-size: 1rem;
-  margin-right: 0.5rem;
+  font-size: 16px;
+  margin-right: 10px;
   flex-shrink: 0;
 }
 
@@ -69,11 +71,10 @@
   flex: 1;
   border: none;
   outline: none;
-  font-size: 0.875rem;
+  font-size: 15px;
   font-family: inherit;
   color: #1c1917;
   background: transparent;
-  padding: 0.25rem 0;
 }
 
 .pl-search-input::placeholder {
@@ -83,96 +84,144 @@
 .pl-search-clear {
   background: none;
   border: none;
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #a8a29e;
   cursor: pointer;
-  padding: 0.25rem;
+  padding: 4px;
   line-height: 1;
   transition: color 0.2s;
 }
 
 .pl-search-clear:hover {
-  color: #57534e;
+  color: #333333;
 }
 
 /* ===== 인기 메뉴 태그 ===== */
 .pl-tag-section {
-  margin-bottom: 1.25rem;
+  margin-bottom: 24px;
+  text-align: center;
 }
 
-/* "인기 메뉴" 라벨 */
 .pl-tag-label {
-  font-size: 0.8125rem;
+  font-size: 14px;
   font-weight: 700;
-  color: #78716c;
-  margin: 0 0 0.625rem;
+  color: #999999;
+  margin: 0 0 12px;
 }
 
-/* 태그 버튼 나열 (가로 스크롤 가능) */
 .pl-tag-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 8px;
+  justify-content: center;
 }
 
-/* 각 메뉴 태그 버튼 */
 .pl-tag-btn {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.4rem 0.875rem;
+  gap: 6px;
+  padding: 8px 16px;
   border-radius: 9999px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  border: 1px solid #e7e5e4;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid #e0e0e0;
   cursor: pointer;
   transition: all 0.2s;
-  background: white;
-  color: #57534e;
+  background: #ffffff;
+  color: #666666;
   font-family: inherit;
   white-space: nowrap;
 }
 
 .pl-tag-btn:hover {
-  background: #fef3c7;
-  border-color: #fde68a;
-  color: #92400e;
+  border-color: #999999;
 }
 
-/* 선택된 태그 → 갈색 배경 */
 .pl-tag-btn.active {
-  background: #92400e;
-  color: white;
-  border-color: #92400e;
+  background: #333333;
+  color: #ffffff;
+  border-color: #333333;
 }
 
-.pl-tag-btn.active:hover {
-  background: #78350f;
-}
-
-/* 태그 옆에 표시되는 빵집 수 */
 .pl-tag-count {
-  font-size: 0.6875rem;
+  font-size: 12px;
   font-weight: 500;
   opacity: 0.7;
 }
 
-/* 결과 행 (개수 + 태그 해제 버튼) */
+/* ===== 필터 / 정렬 ===== */
+.pl-filter-area {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 32px;
+  border: none;
+  padding: 0;
+}
+
+.pl-sort-group {
+  display: flex;
+  gap: 8px;
+}
+
+.pl-sort-btn {
+  padding: 8px 20px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #ffffff;
+  color: #666666;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.pl-sort-btn:hover {
+  border-color: #999999;
+}
+
+.pl-sort-btn.active {
+  background: #333333;
+  color: #ffffff;
+  border-color: #333333;
+}
+
+/* 결과 행 */
 .pl-result-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
+  margin-bottom: 24px;
 }
 
-/* 태그 해제 버튼 */
+.pl-result-count {
+  font-size: 14px;
+  color: #a8a29e;
+  margin: 0;
+}
+
+.pl-result-count strong {
+  color: #1c1917;
+  font-weight: 700;
+}
+
+.pl-result-external {
+  font-size: 13px;
+  color: #aaa;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
 .pl-tag-clear {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.375rem 0.875rem;
+  gap: 4px;
+  padding: 6px 14px;
   border-radius: 9999px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   border: 1px solid #fecaca;
   background: #fef2f2;
@@ -186,236 +235,30 @@
   background: #fee2e2;
 }
 
-/* ===== 2. 필터 영역 ===== */
-/* 정렬 버튼 + 구분선 + 지역 필터를 감싸는 영역 */
-.pl-filter-area {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e7e5e4;
-  overflow-x: auto;
-  /* 스크롤바 숨기기 */
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.pl-filter-area::-webkit-scrollbar {
-  display: none;
-}
-
-/* --- 정렬 버튼 그룹 --- */
-.pl-sort-group {
-  display: flex;
-  gap: 0.5rem;
-  flex-shrink: 0;
-}
-
-/* 정렬 버튼 */
-.pl-sort-btn {
-  padding: 0.5rem 1rem;
-  border-radius: 9999px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  border: 1px solid #e7e5e4;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: white;
-  color: #57534e;
-  font-family: inherit;
-  white-space: nowrap;
-}
-
-.pl-sort-btn:hover {
-  background: #fafaf9;
-}
-
-/* 선택된 정렬 버튼 */
-.pl-sort-btn.active {
-  background: #1c1917;
-  color: white;
-  border-color: #1c1917;
-}
-
-/* --- 구분선 (세로) --- */
-.pl-filter-divider {
-  width: 1px;
-  height: 24px;
-  background: #d6d3d1;
-  flex-shrink: 0;
-}
-
-/* --- 지역 필터 그룹 --- */
-.pl-region-group {
-  display: flex;
-  gap: 0.375rem;
-  flex-shrink: 0;
-}
-
-/* 지역 버튼 */
-.pl-region-btn {
-  padding: 0.5rem 0.875rem;
-  border-radius: 9999px;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: transparent;
-  color: #78716c;
-  font-family: inherit;
-  white-space: nowrap;
-}
-
-.pl-region-btn:hover {
-  background: #f5f5f4;
-  color: #57534e;
-}
-
-/* 선택된 지역 버튼 */
-.pl-region-btn.active {
-  background: #92400e;
-  color: white;
-  border-color: #92400e;
-}
-
-/* --- 결과 개수 --- */
-.pl-result-count {
-  font-size: 0.8125rem;
-  color: #a8a29e;
-  margin: 0;
-}
-
-.pl-result-count strong {
-  color: #1c1917;
-  font-weight: 700;
-}
-
-/* ===== 3. 로딩 상태 ===== */
-.pl-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 5rem 0;
-  gap: 0.75rem;
-  color: #78716c;
-}
-
-/* 빙글빙글 도는 빵 아이콘 */
-.pl-loading-icon {
-  font-size: 2.5rem;
-  animation: pl-spin 1s infinite linear;
-}
-
-@keyframes pl-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* ===== 4. 빵집 카드 그리드 ===== */
-/* 기본 1열 → 화면 커지면 2열 → 3열 → 4열 */
+/* ===== 카드 그리드 ===== */
 .pl-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.25rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px 24px;
+  row-gap: 80px;
 }
 
-@media (min-width: 520px) {
-  .pl-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (min-width: 900px) {
-  .pl-grid { grid-template-columns: repeat(3, 1fr); }
-}
-
-@media (min-width: 1200px) {
-  .pl-grid { grid-template-columns: repeat(4, 1fr); }
-}
-
-/* --- 각 빵집 카드 --- */
+/* --- 각 카드 --- */
 .pl-card {
-  background: white;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid #f0ede8;
+  background: none;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  overflow: visible;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.2s;
 }
 
-/* 카드 hover → 위로 뜨면서 그림자 */
 .pl-card:hover {
-  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
   transform: translateY(-4px);
 }
 
-/* --- 카드 이미지 영역 (높이 통일!) --- */
-.pl-card-img {
-  position: relative;
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-  background: #f0ede8;
-}
-
-/* 실제 이미지 */
-.pl-card-photo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-/* 카드 hover 시 사진 살짝 확대 */
-.pl-card:hover .pl-card-photo {
-  transform: scale(1.05);
-}
-
-/* 이미지 없을 때 플레이스홀더 */
-.pl-card-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #f5f0eb 0%, #e8e0d8 100%);
-}
-
-.pl-card-placeholder span {
-  font-size: 3rem;
-  opacity: 0.5;
-}
-
-/* 블루리본 뱃지 (이미지 위에 떠있음) */
-.pl-card-ribbon {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  background: rgba(254, 243, 199, 0.95);
-  backdrop-filter: blur(4px);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  color: #92400e;
-}
-
-/* 지도 검색 결과 배지 (외부 빵집) */
-.pl-card-external-badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  background: rgba(240, 240, 240, 0.95);
-  backdrop-filter: blur(4px);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  color: #666;
-}
-
-/* 외부 빵집 카드: 약간 흐리게 */
 .pl-card-external {
   opacity: 0.88;
 }
@@ -424,20 +267,168 @@
   opacity: 1;
 }
 
-/* 결과 개수 - 주변 베이커리 포함 표시 */
-.pl-result-external {
-  font-size: 0.8rem;
-  color: #aaa;
-  font-weight: 400;
-  margin-left: 4px;
+/* 카드 이미지: 정사각형 */
+.pl-card-img {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #f0ede8;
 }
 
-/* 주변 베이커리 검색 중 안내 */
+.pl-card-photo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s;
+}
+
+.pl-card:hover .pl-card-photo {
+  transform: scale(1.03);
+}
+
+.pl-card-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0ede8;
+}
+
+.pl-card-placeholder span {
+  font-size: 3rem;
+  opacity: 0.4;
+}
+
+/* 뱃지 */
+.pl-card-ribbon {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: rgba(254, 243, 199, 0.95);
+  backdrop-filter: blur(4px);
+  font-size: 12px;
+  font-weight: 700;
+  color: #92400e;
+  z-index: 2;
+}
+
+.pl-card-external-badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: rgba(240, 240, 240, 0.95);
+  backdrop-filter: blur(4px);
+  font-size: 12px;
+  font-weight: 700;
+  color: #666;
+  z-index: 2;
+}
+
+/* 카드 본문 */
+.pl-card-body {
+  padding: 16px 0 0;
+}
+
+.pl-card-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333333;
+  margin: 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pl-card-address {
+  font-size: 14px;
+  font-weight: 400;
+  color: #999999;
+  margin: 0 0 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pl-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.pl-card-tag {
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 12px;
+  background: #f5f5f5;
+  color: #666666;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+.pl-card-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pl-card-rating {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f59e0b;
+}
+
+.pl-card-review-count {
+  font-weight: 400;
+  color: #a8a29e;
+  margin-left: 2px;
+}
+
+.pl-card-region {
+  font-size: 14px;
+  color: #666666;
+  font-weight: 500;
+}
+
+/* ===== 로딩 ===== */
+.pl-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  gap: 12px;
+  color: #999999;
+}
+
+.pl-loading-icon {
+  font-size: 40px;
+  animation: pl-spin 1s infinite linear;
+}
+
+@keyframes pl-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .pl-external-loading {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.85rem;
+  font-size: 14px;
   color: #aaa;
   margin-bottom: 12px;
 }
@@ -455,176 +446,117 @@
   50% { opacity: 0.3; }
 }
 
-/* --- 카드 하단 정보 영역 --- */
-.pl-card-body {
-  padding: 1rem 1.125rem 1.125rem;
-}
-
-/* 빵집 이름 */
-.pl-card-name {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #1c1917;
-  margin: 0 0 0.25rem;
-  /* 1줄 말줄임 */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 주소 (1줄 말줄임) */
-.pl-card-address {
-  font-size: 0.8125rem;
-  color: #a8a29e;
-  margin: 0 0 0.75rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 메뉴 태그 (카드 안에 표시) */
-.pl-card-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-  margin-bottom: 0.625rem;
-}
-
-/* 각 메뉴 태그 칩 */
-.pl-card-tag {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  background: #fef3c7;
-  color: #92400e;
-  border-radius: 0.375rem;
-}
-
-/* 하단: 별점 + 지역 */
-.pl-card-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-/* 별점 */
-.pl-card-rating {
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: #f59e0b;
-}
-
-/* 리뷰 수 */
-.pl-card-review-count {
-  font-weight: 400;
-  color: #a8a29e;
-  margin-left: 2px;
-}
-
-/* 지역 태그 */
-.pl-card-region {
-  font-size: 0.75rem;
-  color: #a8a29e;
-  font-weight: 500;
-}
-
-/* ===== 5. 더보기 버튼 ===== */
-.pl-load-more {
-  text-align: center;
-  margin-top: 3rem;
-}
-
-.pl-more-btn {
-  padding: 0.875rem 2.5rem;
-  border-radius: 9999px;
-  border: 1px solid #d6d3d1;
-  background: white;
-  font-size: 0.875rem;
-  font-weight: 600;
-  font-family: inherit;
-  color: #57534e;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.pl-more-btn:hover {
-  background: #92400e;
-  color: white;
-  border-color: #92400e;
-  transform: translateY(-2px);
-}
-
-/* ===== 6. 빈 상태 (검색 결과 없음) ===== */
+/* ===== 빈 상태 ===== */
 .pl-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 5rem 1rem;
+  padding: 80px 16px;
   text-align: center;
 }
 
 .pl-empty-icon {
-  font-size: 3rem;
-  opacity: 0.5;
-  margin-bottom: 1rem;
+  font-size: 48px;
+  opacity: 0.4;
+  margin-bottom: 16px;
 }
 
 .pl-empty-title {
-  font-size: 1.125rem;
+  font-size: 18px;
   font-weight: 700;
-  color: #1c1917;
-  margin: 0 0 0.375rem;
+  color: #333333;
+  margin: 0 0 6px;
 }
 
 .pl-empty-desc {
-  font-size: 0.875rem;
-  color: #a8a29e;
-  margin: 0 0 1.25rem;
+  font-size: 14px;
+  color: #999999;
+  margin: 0 0 20px;
 }
 
 .pl-empty-btn {
-  padding: 0.625rem 1.5rem;
+  padding: 10px 24px;
   border-radius: 9999px;
   border: none;
-  background: #92400e;
-  color: white;
-  font-size: 0.8125rem;
-  font-weight: 700;
+  background: #333333;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
   font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pl-empty-btn:hover {
+  background: #222222;
+}
+
+/* ===== 더보기 ===== */
+.pl-load-more {
+  text-align: center;
+  margin-top: 80px;
+}
+
+.pl-more-btn {
+  padding: 14px 40px;
+  border-radius: 9999px;
+  border: 1px solid #e0e0e0;
+  background: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #333333;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.pl-empty-btn:hover {
-  background: #78350f;
+.pl-more-btn:hover {
+  background: #333333;
+  color: #ffffff;
+  border-color: #333333;
 }
 
-/* ===== 반응형: 모바일 ===== */
-@media (max-width: 600px) {
-  .pl-page {
-    padding: 1.5rem 0 3rem;
+/* ===== 반응형: 3열 ===== */
+@media (max-width: 1200px) {
+  .pl-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
+}
 
-  .pl-container {
-    padding: 0 1rem;
+/* ===== 반응형: 2열 ===== */
+@media (max-width: 900px) {
+  .pl-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .pl-title {
-    font-size: 1.5rem;
+    font-size: 36px;
+  }
+}
+
+/* ===== 반응형: 1열 ===== */
+@media (max-width: 600px) {
+  .pl-page {
+    padding: 0 0 40px;
   }
 
-  /* 필터 영역 세로 배치 */
+  .pl-container {
+    padding: 0 16px;
+  }
+
+  .pl-grid {
+    grid-template-columns: 1fr;
+    row-gap: 48px;
+  }
+
+  .pl-title {
+    font-size: 28px;
+    margin-top: 24px;
+  }
+
   .pl-filter-area {
-    flex-wrap: wrap;
-  }
-
-  .pl-filter-divider {
-    display: none;
-  }
-
-  /* 카드 이미지 높이 줄이기 */
-  .pl-card-img {
-    height: 160px;
+    justify-content: flex-start;
+    overflow-x: auto;
   }
 }
